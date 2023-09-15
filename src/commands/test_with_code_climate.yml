@@ -1,0 +1,68 @@
+---
+description: |
+    Sets up code climate test reporter and uploads results when complete.
+parameters:
+    logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/scan
+    build_logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/DiagnosticReports/
+    test_output_path:
+        description: Path to test reports.
+        type: string
+        default: ./fastlane/test_output
+    cc_prefix:
+        description: >
+            Code climate command appended to ./cc-test-reporter.  NOTE: the
+            default cmd is after-build format-coverage -p /Users/distiller/project/
+        type: string
+        default: after-build format-coverage -p /Users/distiller/project/
+    lane:
+        description: Lane to run using fastlane.  Only applicable when `use_fastlane` is true.
+        type: string
+        default: ''
+    pretest_steps:
+        description: Scripts to run before starting the test command.
+        type: steps
+        default: []
+    test_steps:
+        description: Scripts to run between settting up code climage and uploading the results.
+        type: steps
+        default: []
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+
+steps:
+    - << parameters.pretest_steps >>
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - restore_spm_cache:
+                    xcode_project: << parameters.xcode_project >>
+    - macos/install-rosetta
+    - run:
+          name: Setup Code Climate test-reporter
+          command: |
+              curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64 > ./cc-test-reporter
+              chmod +x ./cc-test-reporter
+              ./cc-test-reporter before-build
+    - << parameters.test_steps >>
+    - when:
+          condition: << parameters.lane >>
+          steps:
+              - lane:
+                    named: << parameters.lane >>
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - cache_spm:
+                    xcode_project: << parameters.xcode_project >>
+    - run:
+          name: cc-test-reporter after build
+          command: |
+              ./cc-test-reporter << parameters.cc_prefix >>

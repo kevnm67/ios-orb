@@ -1,0 +1,36 @@
+---
+dependencies:
+  - Gemfile
+  - Gemfile.lock
+  - Brewfile
+
+enhancement:
+  - src/*
+
+config-iOS:
+  - orbs/ios/*
+  - orbs/ios-orb/*
+
+configs-ruby:
+  - "*/ruby/*"
+
+CI/CD:
+  - .circleci/*
+  - .codeclimate.yml
+  - .dependabot
+  - .github/*
+  - .pre-commit-config.yaml
+  - .ruby-version
+  - .swift-version
+  - .yamllint
+  - Dangerfile
+  - fastlane/*
+  - Makefile
+  - scripts/*
+
+documentation:
+  - CHANGELOG.md
+  - doc/*
+  - Documentation/*
+  - jazzy.yml
+  - README.md

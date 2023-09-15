@@ -1,0 +1,14 @@
+---
+version: '2'
+plugins:
+    swiftlint:
+        enabled: true
+    bundler-audit:
+        enabled: true
+    rubocop:
+        enabled: true
+        channel: beta
+    shellcheck:
+        enabled: true
+    markdownlint:
+        enabled: true
