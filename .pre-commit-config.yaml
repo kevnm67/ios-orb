@@ -1,0 +1,30 @@
+---
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.4.0
+      hooks:
+          - id: trailing-whitespace
+          - id: detect-aws-credentials
+          - id: check-merge-conflict
+
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.30.0
+      hooks:
+          - id: yamllint
+
+    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+      rev: 0.2.2
+      hooks:
+          - id: yamlfmt
+            args: [--mapping, '4']
+
+    # - repo: https://github.com/syntaqx/git-hooks
+    #   rev: v0.0.17
+    #   hooks:
+    #       - id: circleci-config-validate
+
+    - repo: https://github.com/milin/giticket
+      rev: v1.4
+      hooks:
+          - id: giticket
+            args: ['--regex=[A-Z]+-\d+', '--format={ticket} {commit_msg}'] # Optional

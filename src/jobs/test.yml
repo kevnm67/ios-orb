@@ -1,0 +1,92 @@
+---
+description: Run tests using Code Climate reporter to upload coverage.
+
+executor:
+    name: macos
+    xcode_version: <<parameters.xcode_version>>
+
+parameters:
+    attach_workspace:
+        default: true
+        description: |
+            Whether to attach to an existing workspace.
+        type: boolean
+    checkout:
+        default: true
+        description: |
+            Whether to checkout as a first step.
+        type: boolean
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+    homebrew_no_auto_update:
+        default: 1
+        description: |
+            Whether to auto update homebrew.  Default is 1 (e.g. don't update).
+        type: integer
+    with_spm:
+        description: |
+            Setup environment for installing SPM packages (to get around xcbuild errors).
+        type: boolean
+        default: false
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 14.3.1
+    logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/scan
+    build_logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/DiagnosticReports/
+    test_output_path:
+        description: Path to test reports.
+        type: string
+        default: ./fastlane/test_output
+    cc_prefix:
+        description: >
+            Code climate prefix relative to the project root.
+        type: string
+        default: format-coverage --prefix /Users/distiller/project/
+    pretest_steps:
+        description: Scripts to run before starting the test command.
+        type: steps
+        default: []
+    test_steps:
+        description: Scripts to run between settting up code climage and uploading the results.
+        type: steps
+        default: []
+    lane:
+        description: Lane to run using fastlane.  Only applicable when `use_fastlane` is true.
+        type: string
+        default: ''
+    scripts:
+        description: Scripts to run when setting up the workspace.
+        type: steps
+        default: []
+    use_fastlane:
+        description: Whether to run tests using fastlane.
+        type: boolean
+        default: true
+
+environment:
+    HOMEBREW_NO_AUTO_UPDATE: << parameters.homebrew_no_auto_update >>
+
+steps:
+    - setup:
+          checkout: << parameters.checkout >>
+          attach_workspace: << parameters.attach_workspace >>
+          xcode_project: << parameters.xcode_project >>
+    - test_with_code_climate:
+          pretest_steps: << parameters.pretest_steps >>
+          test_steps: << parameters.test_steps >>
+          lane: << parameters.lane >>
+          cc_prefix: << parameters.cc_prefix >>
+          xcode_project: << parameters.xcode_project >>
+    - save_build_artifacts:
+          logs_path: << parameters.logs_path >>
+          build_logs_path: << parameters.build_logs_path >>
+          test_output_path: << parameters.test_output_path >>

@@ -1,0 +1,7 @@
+---
+enhancement: ['feature/*', 'feat/*']
+fix: ['fix/*', 'hotfix/*', 'bug/*']
+chore: chore/*
+CI/CD: ['ci/*']
+documentation: ['docs/*', 'documentation/*']
+security: ['sec/*', 'security/*']

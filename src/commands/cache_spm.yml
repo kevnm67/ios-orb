@@ -1,0 +1,22 @@
+---
+description: |
+    Cache swift packages.
+parameters:
+    key:
+        description: Cache key (prefixed).  The key is immutable.
+        type: string
+        default: spm-v1
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+    path:
+        description: Path where swift packages to be cached are located.
+        type: string
+        default: .build_output/SourcePackages
+steps:
+    - save_cache:
+          key: << parameters.key >>-{{ arch }}-{{ .Branch }}-{{ checksum "<< parameters.xcode_project >>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+              }}
+          paths:
+              - << parameters.path >>

@@ -1,0 +1,12 @@
+---
+description: |
+    macos xcode executor.
+    Supported xcode versions: https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+parameters:
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 14.3.1
+macos:
+    xcode: << parameters.xcode_version >>
+resource_class: macos.m1.large.gen1
