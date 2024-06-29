@@ -15,7 +15,7 @@ workflows:
             - orb-tools/lint:
                   filters: *filters
             - orb-tools/pack:
-                  context: orb-publisher
+                  context: orb-publishing
                   filters: *filters
             - orb-tools/review:
                   exclude: RC006,RC007
@@ -26,10 +26,8 @@ workflows:
                   orb_name: kevnm67/ios-orb
                   vcs_type: << pipeline.project.type >>
                   requires: [orb-tools/lint, orb-tools/review, orb-tools/pack, shellcheck/check]
-          # Use a context to hold your publishing token.
                   context: orb-publishing
                   filters: *filters
-      # Triggers the next workflow in the Orb Development Kit.
             - orb-tools/continue:
                   orb_name: ios-orb
                   pipeline_number: << pipeline.number >>
