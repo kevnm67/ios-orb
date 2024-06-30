@@ -19,8 +19,9 @@ jobs:
 workflows:
     test-deploy:
         jobs:
-      # Make sure to include "filters: *filters" in every test job you want to run as part of your deployment.
-            - command-tests:
+        # Make sure to include "filters: *filters" in every test job you want to run as part of your deployment.
+            - ios-orb/setup:
+                  name: ios_setup_test
                   filters: *filters
             - orb-tools/pack:
                   filters: *filters
@@ -30,7 +31,7 @@ workflows:
                   pub_type: production
                   requires:
                       - orb-tools/pack
-                      - command-tests
+                      - ios_setup_test
                   context: orb-publishing
                   filters:
                       branches:
