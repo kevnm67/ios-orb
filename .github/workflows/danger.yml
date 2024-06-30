@@ -8,7 +8,7 @@ jobs:
         runs-on: ubuntu-latest
         if: github.event_name  == 'pull_request' # if only run pull request when multiple trigger workflow
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - uses: ruby/setup-ruby@v1
               with:
                   bundler-cache: true
