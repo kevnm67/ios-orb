@@ -1,0 +1,14 @@
+---
+description: >
+    Run iOS tests using fastlane.
+usage:
+    version: 2.1
+    orbs:
+        ios: kevnm67/ios-orb@0.0.1
+    workflows:
+        run_tests:
+            jobs:
+                - ios/test:
+                      lane: run_ios_tests
+                      pretest_steps:
+                          - run: echo "Run steps before starting the test job"

@@ -1,18 +1,19 @@
 ---
 version: 2.1
-
 description: >
-    iOS orb for building, testing, deploying and mobile devOps.
+    iOS orb for CircleCI.
 
-    ## References
+    Uses the following orbs:
+      ## References
+      - [AWS-S3](https://circleci.com/developer/orbs/orb/circleci/aws-s3)
+      - [Slack](https://circleci.com/developer/orbs/orb/circleci/slack)
 
-    - [Orb dev workflows](https://circleci.com/orbs/registry/orb/circleci/orb-tools#usage-orb-dev-workflows)
+      - [Orb dev workflows](https://circleci.com/orbs/registry/orb/circleci/orb-tools#usage-orb-dev-workflows)
 
-# This information will be displayed in the orb registry and is not mandatory.
 display:
     home_url: https://github.com/kevnm67/ios-orb
     source_url: https://github.com/kevnm67/ios-orb
 
 orbs:
-    macos: circleci/macos@2.3.4
-    ruby: circleci/ruby@2.0.0
+    macos: circleci/macos@2.3.6
+    ruby: circleci/ruby@2.0.1
