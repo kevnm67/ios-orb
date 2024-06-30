@@ -13,7 +13,7 @@ help:
 	@echo "  install_bundler    to install bundler."
 
 orb_org=kevnm67
-orbname=$orb_org/ios-pipelines
+orbname=$orb_org/ios-orb
 default=validate
 
 default: setup
