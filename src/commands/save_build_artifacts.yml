@@ -30,6 +30,7 @@ steps:
           path: ~/Library/Logs/gym
           destination: gym-logs
     - store_artifacts:
+          name: Store build logs/diagnostic artifacts
           path: << parameters.build_logs_path >>
           destination: build-logs
     - store_test_results:

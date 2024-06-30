@@ -21,10 +21,15 @@ parameters:
         description: Name of your xcodeproj for setting the path to the Package.resolved file.
         type: string
         default: ''
+    homebrew_no_auto_update:
+        default: 1
+        description: |
+            Whether to auto update homebrew.  Default is 1 (e.g. don't update).
+        type: integer
     xcode_version:
         description: Xcode version.
         type: string
-        default: 14.3.1
+        default: 15.4.0
     logs_path:
         description: Path to build logs.
         type: string
@@ -54,10 +59,8 @@ steps:
           scripts: << parameters.scripts >>
           xcode_project: << parameters.xcode_project >>
     - when:
-          or:
-              - condition: << parameters.logs_path >>
-              - condition: << parameters.build_logs_path >>
-              - condition: << parameters.test_output_path >>
+          condition:
+              or: [<< parameters.logs_path >>, << parameters.build_logs_path >>, << parameters.test_output_path >>]
           steps:
               - save_build_artifacts:
                     logs_path: << parameters.logs_path >>

@@ -21,7 +21,7 @@ parameters:
         type: string
         default: after-build format-coverage -p /Users/distiller/project/
     lane:
-        description: Lane to run using fastlane.  Only applicable when `use_fastlane` is true.
+        description: Lane to run using fastlane.  Only applicable when using fastlane.
         type: string
         default: ''
     pretest_steps:
@@ -47,10 +47,7 @@ steps:
     - macos/install-rosetta
     - run:
           name: Setup Code Climate test-reporter
-          command: |
-              curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64 > ./cc-test-reporter
-              chmod +x ./cc-test-reporter
-              ./cc-test-reporter before-build
+          command: <<include(scripts/cc_before_build.sh)>>
     - << parameters.test_steps >>
     - when:
           condition: << parameters.lane >>
@@ -63,6 +60,5 @@ steps:
               - cache_spm:
                     xcode_project: << parameters.xcode_project >>
     - run:
-          name: cc-test-reporter after build
-          command: |
-              ./cc-test-reporter << parameters.cc_prefix >>
+          name: Exec cc-test-reporter after test command
+          command: ./cc-test-reporter << parameters.cc_prefix >>
