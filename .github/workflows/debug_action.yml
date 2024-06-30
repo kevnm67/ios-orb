@@ -1,0 +1,27 @@
+---
+name: Debug Actions
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, synchronize]
+  label:
+    types: [created, edited]
+
+jobs:
+  debug_env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hmarr/debug-action@v2
+      
+      - name: Check env variables
+        # if: ${{ failure() }}
+        if: contains(github.event.issue.labels.*.name, 'debug-action')
+        run: |
+          echo "Github env variables"
+          echo ""
+          echo "  branch or tag name triggering workflow                  : ${{ env.GITHUB_REF_NAME }}"
+          echo "  branch or tag ref triggering workflow                   : ${{ env.GITHUB_REF }}"
+          echo ""
+          echo "  ----------------- Only set for PR events ---------------"
+          echo "  Head branch.                                            : ${{ env.GITHUB_HEAD_REF }}"
+          echo "  Base branch.                                            : ${{ env.GITHUB_BASE_REF }}"

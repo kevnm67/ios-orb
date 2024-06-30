@@ -1,0 +1,31 @@
+---
+name: Auto approve
+
+on: pull_request_target
+
+jobs:
+
+    auto-approve:
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+        if: github.actor == 'dependabot[bot]'
+        steps:
+            - uses: hmarr/auto-approve-action@v3
+              with:
+                  github-token: ${{ secrets.PAT_GITHUB_TOKEN }}
+                  review-message: '@dependabot squash and merge'
+
+    add-comment:
+        runs-on: ubuntu-latest
+        permissions:
+            issues: write
+        if: github.event.label.name == 'automerge'
+        steps:
+            - name: Add comment
+              uses: peter-evans/create-or-update-comment@v2
+              with:
+                  token: ${{ secrets.PAT_GITHUB_TOKEN }}
+                  issue-number: ${{ github.event.pull_request.number }}
+                  body: |-
+                      @dependabot squash and merge

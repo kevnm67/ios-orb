@@ -1,0 +1,45 @@
+---
+documentation:
+    - changed-files:
+          - any-glob-to-any-file:
+                - doc/**
+                - docs/**
+                - Documentation/**
+                - README.md
+                - CHANGELOG.md
+
+ci-cd:
+    - changed-files:
+          - any-glob-to-any-file:
+                - .circleci/**
+                - .codeclimate.yml
+                - .github/**
+                - .pre-commit-config.yaml
+                - .ruby-version
+                - .swift-version
+                - .yamllint
+                - Dangerfile
+                - fastlane/**
+                - Makefile
+
+tests:
+    - changed-files:
+          - any-glob-to-any-file:
+                - Tests iOS
+                - Tests macOS
+                - tests/**
+
+dependencies:
+    - changed-files:
+          - any-glob-to-any-file:
+                - Gemfile
+                - .gitmodules
+                - Brewfile
+                - Cartfile
+                - Cartfile.private
+                - Carthage/*
+                - Gemfile
+                - Gemfile.lock
+                - Podfile
+                - Podfile.lock
+                - Pods/*
