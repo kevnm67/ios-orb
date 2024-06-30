@@ -1,20 +1,18 @@
 ---
 version: 2.1
 description: >
-  iOS orb for CircleCI.
+    iOS orb for CircleCI.
 
-  Uses the following orbs:
-    - [Jira](https://circleci.com/developer/orbs/orb/circleci/jira)
-    - [AWS-S3](https://circleci.com/developer/orbs/orb/circleci/aws-s3)
-    - [Slack](https://circleci.com/developer/orbs/orb/circleci/slack)
+    Uses the following orbs:
+      ## References
+      - [AWS-S3](https://circleci.com/developer/orbs/orb/circleci/aws-s3)
+      - [Slack](https://circleci.com/developer/orbs/orb/circleci/slack)
 
-  ## References
-    - [supported-xcode-versions-silicon](https://circleci.com/docs/using-macos/#supported-xcode-versions-silicon)
-    - [Orb dev workflows](https://circleci.com/orbs/registry/orb/circleci/orb-tools#usage-orb-dev-workflows)
-    
+      - [Orb dev workflows](https://circleci.com/orbs/registry/orb/circleci/orb-tools#usage-orb-dev-workflows)
+
 display:
-  home_url: "https://github.com/kevnm67/ios-orb"
-  source_url: "https://github.com/kevnm67/ios-orb"
+    home_url: https://github.com/kevnm67/ios-orb
+    source_url: https://github.com/kevnm67/ios-orb
 
 orbs:
     macos: circleci/macos@2.3.6

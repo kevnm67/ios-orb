@@ -2,4 +2,4 @@
 
 source 'https://rubygems.org'
 
-gem 'danger', '~> 9.3.1'
+gem 'danger', '~> 9.4.3'

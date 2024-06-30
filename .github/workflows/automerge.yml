@@ -1,0 +1,36 @@
+---
+name: Automerge
+on:
+    pull_request:
+        types:
+            - opened
+            - labeled
+            - unlabeled
+            - synchronize
+            - ready_for_review
+    pull_request_review:
+        types:
+            - submitted
+    check_suite:
+        types:
+            - completed
+    status: {}
+
+jobs:
+    automerge:
+        if: contains(github.event.pull_request.labels.*.name, 'automerge')
+        runs-on: ubuntu-latest
+        steps:
+            - name: Merge pull requests
+              uses: pascalgn/automerge-action@v0.15.6
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  MERGE_COMMIT_MESSAGE: pull-request-title-and-description
+                  MERGE_COMMIT_MESSAGE_REGEX: (.*)^----
+                  MERGE_DELETE_BRANCH: 'true'
+                  MERGE_LABELS: 'automerge, !WIP, !wip,!PR: unreviewed, !invalid, !PR:draft, !wontfix'
+                  MERGE_REMOVE_LABELS: automerge
+                  MERGE_METHOD: squash
+                  MERGE_RETRY_SLEEP: '10000'
+                  MERGE_RETRIES: '5'
+                  UPDATE_LABELS: automerge
