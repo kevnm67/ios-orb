@@ -7,8 +7,23 @@ plugins:
         enabled: true
     rubocop:
         enabled: true
-        channel: beta
+        channel: rubocop-1-23-0
     shellcheck:
         enabled: true
     markdownlint:
         enabled: true
+exclude_patterns:
+    - docs/
+    - Documentation/
+    - Configs/
+    - fastlane/
+    - Resources/
+    - Templates/
+    - Example/
+    - Tests/
+    - '**/*.css'
+    - '**/spec/'
+    - '**/test/'
+    - '**/tests/'
+    - '*file'
+    - '*.lock'

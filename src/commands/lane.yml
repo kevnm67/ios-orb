@@ -1,0 +1,12 @@
+---
+description: Run fastlane command
+
+parameters:
+    named:
+        description: Lane to run
+        type: string
+steps:
+    - run:
+          name: fastlane << parameters.named >>
+          command: |-
+              bundle exec fastlane << parameters.named >>

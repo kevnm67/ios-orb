@@ -17,9 +17,13 @@ parameters:
         description: Whether to run 'bundle install'.
         type: boolean
         default: true
-    ruby-version:
+    ruby_version:
         default: '3.2'
         description: Ruby version to install.
+        type: string
+    key:
+        default: gems-v2
+        description: The cache key to use for ruby. The key is immutable.
         type: string
     persist_workspace:
         default: true
@@ -36,6 +40,11 @@ parameters:
         description: Name of your xcodeproj for setting the path to the Package.resolved file.
         type: string
         default: ''
+    with_spm:
+        description: |
+            Setup environment for installing SPM packages (to get around xcbuild errors).
+        type: boolean
+        default: false
     workspace_root:
         default: .
         description: |
@@ -47,16 +56,22 @@ steps:
           steps:
               - checkout
     - when:
+          condition: << parameters.with_spm >>
+          steps:
+              - run: rm ~/.ssh/id_rsa
+              - run: for ip in $(dig @8.8.8.8 bitbucket.org +short); do ssh-keyscan bitbucket.org,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts
+                    || true
+              - run: for ip in $(dig @8.8.8.8 github.com +short); do ssh-keyscan github.com,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts
+                    || true
+
+    - when:
           condition: << parameters.attach_workspace >>
           steps:
               - attach_workspace:
                     at: .
     - run:
           name: Verify Ruby version
-          command: |
-              ruby -v || rbenv local $(rbenv versions --bare | tail -1) || rbenv local $(rbenv global)
-              ruby -v
-              which ruby
+          command: <<include(scripts/verify_rbenv.sh)>>
     - when:
           condition: << parameters.xcode_project >>
           steps:
@@ -66,8 +81,9 @@ steps:
           condition: << parameters.bundle_install >>
           steps:
               - macos/switch-ruby:
-                    version: << parameters.ruby-version >>
-              - ruby/install-deps
+                    version: << parameters.ruby_version >>
+              - ruby/install-deps:
+                    key: << parameters.key >>
     - << parameters.scripts >>
     - when:
           condition: << parameters.persist_workspace >>

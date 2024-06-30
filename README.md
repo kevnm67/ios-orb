@@ -1,11 +1,14 @@
 # Orb Template
 
+| Badges  | Insights |
+| ------------- | ------------- |
+| [![CircleCI][circleci_main]][circle_project] | [![CircleCI][insights]][insights_snapshot] |
+| [![Maintainability][maintainability_badge]][maintainability] | |
+| [![Test Coverage][test_coverage_badge]][test_coverage] | |
 
-[![CircleCI Build Status](https://circleci.com/gh/kevnm67/ios-orb.svg?style=shield "CircleCI Build Status")](https://circleci.com/gh/kevnm67/ios-orb) [![CircleCI Orb Version](https://badges.circleci.com/orbs/kevnm67/ios-orb.svg)](https://circleci.com/orbs/registry/orb/kevnm67/ios-orb) [![GitHub License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://raw.githubusercontent.com/kevnm67/ios-orb/master/LICENSE) [![CircleCI Community](https://img.shields.io/badge/community-CircleCI%20Discuss-343434.svg)](https://discuss.circleci.com/c/ecosystem/orbs)
-
-
-
-A project template for Orbs.
+- [Resources](#resources)
+    - [How to Contribute](#how-to-contribute)
+    - [How to Publish An Update](#how-to-publish-an-update)
 
 This repository is designed to be automatically ingested and modified by the CircleCI CLI's `orb init` command.
 
@@ -24,6 +27,7 @@ _**Edit this area to include a custom title and description.**_
 We welcome [issues](https://github.com/kevnm67/ios-orb/issues) to and [pull requests](https://github.com/kevnm67/ios-orb/pulls) against this repository!
 
 ### How to Publish An Update
+
 1. Merge pull requests with desired changes to the main branch.
     - For the best experience, squash-and-merge and use [Conventional Commit Messages](https://conventionalcommits.org/).
 2. Find the current version of the orb.
@@ -31,9 +35,21 @@ We welcome [issues](https://github.com/kevnm67/ios-orb/issues) to and [pull requ
 3. Create a [new Release](https://github.com/kevnm67/ios-orb/releases/new) on GitHub.
     - Click "Choose a tag" and _create_ a new [semantically versioned](http://semver.org/) tag. (ex: v1.0.0)
       - We will have an opportunity to change this before we publish if needed after the next step.
-4.  Click _"+ Auto-generate release notes"_.
+4. Click _"+ Auto-generate release notes"_.
     - This will create a summary of all of the merged pull requests since the previous release.
     - If you have used _[Conventional Commit Messages](https://conventionalcommits.org/)_ it will be easy to determine what types of changes were made, allowing you to ensure the correct version tag is being published.
 5. Now ensure the version tag selected is semantically accurate based on the changes included.
 6. Click _"Publish Release"_.
     - This will push a new tag and trigger your publishing pipeline on CircleCI.
+
+[circle_project]: https://dl.circleci.com/status-badge/redirect/gh/kevnm67/ios-orb/tree/main
+[circleci_main]: https://dl.circleci.com/status-badge/img/gh/kevnm67/ios-orb/tree/main.svg?style=svg
+
+[insights_snapshot]: https://circleci.com/orbs/registry/orb/kevnm67/ios-orb
+[insights]: https://badges.circleci.com/orbs/kevnm67/ios-orb.svg
+
+[maintainability]: https://codeclimate.com/github/kevnm67/ios-orb/maintainability
+[maintainability_badge]: https://api.codeclimate.com/v1/badges/1cfc2fcff5164444fd22/maintainability
+
+[test_coverage]: https://codeclimate.com/github/kevnm67/ios-orb/test_coverage
+[test_coverage_badge]: https://api.codeclimate.com/v1/badges/1cfc2fcff5164444fd22/test_coverage
