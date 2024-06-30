@@ -3,9 +3,9 @@
 # Global Variables
 # Update the path here depending on folder you run command
 # Best place to run script is the main directory
-source ./scripts/variables.sh
+# shellcheck disable=SC1091
+source ../scripts/variables.sh
 
-ORB_DIR="${PWD}"
 local_dir="${ORB_DIR}/src"
 output_orb_name="ios.yml"
 
