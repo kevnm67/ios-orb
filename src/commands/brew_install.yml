@@ -1,0 +1,60 @@
+---
+description: Install missing brew formula.
+
+parameters:
+    brew_cache_key:
+        description: Cache key (prefixed).  The key is immutable.
+        type: string
+        default: brew-v1
+    brew_dir:
+        description: Local homebrew directory.
+        type: string
+        default: /usr/local/Homebrew
+    cellar_dir:
+        description: Local cellar directory for brew casks.
+        type: string
+        default: /usr/local/Cellar
+    formula:
+        description: Homebrew formula to install if needed.
+        type: string
+        default: blender/homebrew-tap/rome
+    reinstall:
+        description: Whether to reinstall the formula.
+        type: boolean
+        default: false
+    with_cache:
+        description: Whether to restore and save cache between brew commands.
+        type: boolean
+        default: true
+    post_steps:
+        description: Additional steps to run after brew install.
+        type: steps
+        default: []
+steps:
+    - when:
+          condition: << parameters.with_cache >>
+          steps:
+              - restore_brew:
+                    brew_cache_key: << parameters.brew_cache_key >>
+    - when:
+          condition: << parameters.reinstall >>
+          steps:
+              - run:
+                    command: >
+                        brew reinstall << parameters.formula >>
+    - unless:
+          condition: << parameters.reinstall >>
+          steps:
+              - run:
+                    command: >
+                        brew list << parameters.formula >> || brew install << parameters.formula >>
+    - << parameters.post_steps >>
+    - when:
+          condition: << parameters.with_cache >>
+          steps:
+              - save_cache:
+                    name: Persisting brew cache
+                    key: << parameters.brew_cache_key >>-{{ arch }}-{{ .Branch }}
+                    paths:
+                        - << parameters.brew_dir >>
+                        - << parameters.cellar_dir >>

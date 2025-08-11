@@ -1,0 +1,95 @@
+---
+description: >
+    Run a lane from your fastfile.
+
+executor:
+    name: macos
+    xcode_version: <<parameters.xcode_version>>
+
+parameters:
+    logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/scan
+    build_logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/DiagnosticReports/
+    test_output_path:
+        description: Path to test reports.
+        type: string
+        default: ./fastlane/test_output
+    attach_workspace:
+        default: true
+        description: |
+            Whether to attach to an existing workspace.
+        type: boolean
+    checkout:
+        default: true
+        description: |
+            Whether to checkout as a first step.
+        type: boolean
+    homebrew_no_auto_update:
+        default: 1
+        description: |
+            Whether to auto update homebrew.  Default is 1 (e.g. don't update).
+        type: integer
+    with_spm:
+        description: |
+            Setup environment for installing SPM packages (to get around xcbuild errors).
+        type: boolean
+        default: false
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 16.4.0
+    run_setup:
+        default: true
+        description: |
+            Whether to run setup as the first step.
+        type: boolean
+    pre_steps:
+        description: Steps to run right before running the fastlane command.
+        type: steps
+        default: []
+    lane:
+        description: Lane to run using fastlane.
+        type: string
+        default: ''
+    scripts:
+        description: >
+            Scripts to run between attaching and saving the workspace.
+            Designed for installing dependencies.
+        type: steps
+        default: []
+
+environment:
+    HOMEBREW_NO_AUTO_UPDATE: << parameters.homebrew_no_auto_update >>
+
+steps:
+    - when:
+          condition: << parameters.run_setup >>
+          steps:
+              - setup:
+                    checkout: << parameters.checkout >>
+                    attach_workspace: << parameters.attach_workspace >>
+                    scripts: << parameters.scripts >>
+                    with_spm: << parameters.with_spm >>
+                    xcode_project: << parameters.xcode_project >>
+    - macos/install-rosetta
+    - << parameters.pre_steps >>
+    - lane:
+          named: << parameters.lane >>
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - cache_spm:
+                    xcode_project: << parameters.xcode_project >>
+    - save_build_artifacts:
+          logs_path: << parameters.logs_path >>
+          build_logs_path: << parameters.build_logs_path >>
+          test_output_path: << parameters.test_output_path >>

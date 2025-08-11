@@ -1,0 +1,95 @@
+---
+description: |
+    Designed as a jobs 1st step to checkout, attach the workspace and install dependencies.
+
+parameters:
+    attach_workspace:
+        default: false
+        description: |
+            Whether to attach to an existing workspace.
+        type: boolean
+    checkout:
+        default: false
+        description: |
+            Whether to checkout as a first step.
+        type: boolean
+    bundle_install:
+        description: Whether to run 'bundle install'.
+        type: boolean
+        default: true
+    ruby_version:
+        default: 3.3.8
+        description: Ruby version to install.
+        type: string
+    key:
+        default: gems-v2
+        description: The cache key to use for ruby. The key is immutable.
+        type: string
+    persist_workspace:
+        default: true
+        description: |
+            Whether the job should persist files to a workspace.
+        type: boolean
+    scripts:
+        description: |
+            Scripts to run between attaching and saving the
+            workspace.  Designed for installing dependencies.
+        type: steps
+        default: []
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+    with_spm:
+        description: |
+            Setup environment for installing SPM packages (to get around xcbuild errors).
+        type: boolean
+        default: false
+    workspace_root:
+        default: .
+        description: |
+            Either an absolute path or a path relative to working_directory.
+        type: string
+steps:
+    - when:
+          condition: << parameters.checkout >>
+          steps:
+              - checkout
+    - when:
+          condition: << parameters.with_spm >>
+          steps:
+              - run: rm ~/.ssh/id_rsa
+              - run: for ip in $(dig @8.8.8.8 bitbucket.org +short); do ssh-keyscan bitbucket.org,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts
+                    || true
+              - run: for ip in $(dig @8.8.8.8 github.com +short); do ssh-keyscan github.com,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts
+                    || true
+
+    - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+              - attach_workspace:
+                    at: .
+    - run:
+          name: Verify Ruby version
+          command: <<include(scripts/verify_rbenv.sh)>>
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - restore_spm_cache:
+                    xcode_project: << parameters.xcode_project >>
+    - when:
+          condition: << parameters.bundle_install >>
+          steps:
+              - macos/switch-ruby:
+                    version: << parameters.ruby_version >>
+              - ruby/install-deps:
+                    key: << parameters.key >>
+    - << parameters.scripts >>
+    - when:
+          condition: << parameters.persist_workspace >>
+          steps:
+              - persist_to_workspace:
+                    root: << parameters.workspace_root >>
+                    paths:
+                        - .bundle
+                        - vendor/bundle

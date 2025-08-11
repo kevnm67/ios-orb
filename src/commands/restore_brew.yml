@@ -1,0 +1,13 @@
+---
+description: |
+    Tries to restore local homebrew cache.
+parameters:
+    brew_cache_key:
+        description: Cache key (prefixed).  The key is immutable.
+        type: string
+        default: brew-v1
+steps:
+    - restore_cache:
+          keys:
+              - << parameters.brew_cache_key >>-{{ arch }}-{{ .Branch }}
+              - << parameters.brew_cache_key >>-{{ arch }}
