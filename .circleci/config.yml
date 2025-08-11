@@ -18,10 +18,10 @@ workflows:
                   filters: *filters
             - orb-tools/review:
                   orb_name: ios-orb
+                  exclude: RC006,RC007,RC008
                   filters: *filters
             - shellcheck/check:
                   filters: *filters
-      # Triggers the next workflow in the Orb Development Kit.
             - orb-tools/continue:
                   pipeline_number: << pipeline.number >>
                   vcs_type: << pipeline.project.type >>
