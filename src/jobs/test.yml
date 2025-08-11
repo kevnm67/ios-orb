@@ -51,7 +51,7 @@ parameters:
         type: steps
         default: []
     test_steps:
-        description: Scripts to run between settting up code climage and uploading the results.
+        description: Scripts to run between setting up code climate and uploading the results.
         type: steps
         default: []
     lane:

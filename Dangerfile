@@ -4,7 +4,7 @@
 @ci_files = ['.config.yml', 'Dangerfile', '.yamllint']
 
 # set the files to watch and warn about if there are
-@dependency_files = ['Gemfile, Gemfile.lock']
+@dependency_files = ['Gemfile', 'Gemfile.lock']
 
 # determine if any of the files were modified
 def did_modify(files_array)
@@ -27,14 +27,14 @@ warn('Changes to CI/CD files') if did_modify(@ci_files)
 warn('Changes to dependency related files') if did_modify(@dependency_files)
 
 # Make it more obvious that a PR is a work in progress and shouldn't be merged yet
-warn("PR is classed as Work in Progress") if github.pr_title.include? "[WIP]"
+warn('PR is classed as Work in Progress') if github.pr_title.include? '[WIP]'
 
 # Sometimes it's a README fix, or something like that - which isn't relevant for
 # including in a project's CHANGELOG for example
-not_declared_trivial = !(github.pr_title.include? "#trivial")
+not_declared_trivial = !(github.pr_title.include? '#trivial')
 
 # Changelog entries are required for changes to library files.
-no_changelog_entry = !git.modified_files.include?("CHANGELOG.md")
+no_changelog_entry = !git.modified_files.include?('CHANGELOG.md')
 
 # Dont warn about changelog until we decide on our process.
 temp_skip_changelog = true
