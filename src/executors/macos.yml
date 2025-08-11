@@ -1,0 +1,13 @@
+---
+description: |
+    Default iOS executor.
+    NOTE: Default is m4pro.large.
+    Supported xcode versions: https://circleci.com/docs/2.0/testing-ios/#supported-xcode-versions
+parameters:
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 16.4.0
+macos:
+    xcode: << parameters.xcode_version >>
+resource_class: m4pro.large

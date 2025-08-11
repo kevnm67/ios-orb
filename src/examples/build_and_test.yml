@@ -1,0 +1,21 @@
+---
+description: >
+    Setup the environment for running tests, run tests using fastlane and upload results to Qlty.
+usage:
+    version: 2.1
+    orbs:
+        ios: kevnm67/ios-orb@0.0.1
+
+    workflows:
+        build_and_test:
+            jobs:
+                - ios/prepare:
+                      name: prepare
+                      scripts:
+                          - run: bundle exec danger
+
+                - ios/test:
+                      lane: test_ios
+                      pretest_steps:
+                          - run: make install_ios_dependencies
+                      requires: [prepare]

@@ -1,0 +1,78 @@
+---
+description: >
+    Run steps after installing deps (e.g. setup).
+
+executor:
+    name: macos
+    xcode_version: <<parameters.xcode_version>>
+
+parameters:
+    attach_workspace:
+        default: true
+        description: |
+            Whether to attach to an existing workspace.
+        type: boolean
+    checkout:
+        default: true
+        description: |
+            Whether to checkout as a first step.
+        type: boolean
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+    homebrew_no_auto_update:
+        default: 1
+        description: |
+            Whether to auto update homebrew.  Default is 1 (e.g. don't update).
+        type: integer
+    with_spm:
+        description: |
+            Setup environment for installing SPM packages (to get around xcbuild errors).
+        type: boolean
+        default: false
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 16.4.0
+    logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/scan
+    build_logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/DiagnosticReports/
+    test_output_path:
+        description: Path to test reports.
+        type: string
+        default: ./fastlane/test_output
+    save_artifacts:
+        default: true
+        description: |
+            Whether to save and upload artifacts to circleCI.
+        type: boolean
+    scripts:
+        description: >
+            Scripts to run between attaching and saving the workspace.
+            Designed for installing dependencies.
+        type: steps
+        default: []
+
+environment:
+    HOMEBREW_NO_AUTO_UPDATE: << parameters.homebrew_no_auto_update >>
+
+steps:
+    - setup:
+          checkout: << parameters.checkout >>
+          attach_workspace: << parameters.attach_workspace >>
+          scripts: << parameters.scripts >>
+          with_spm: << parameters.with_spm >>
+          xcode_project: << parameters.xcode_project >>
+    - when:
+          condition: << parameters.save_artifacts >>
+          steps:
+              - save_build_artifacts:
+                    logs_path: << parameters.logs_path >>
+                    build_logs_path: << parameters.build_logs_path >>
+                    test_output_path: << parameters.test_output_path >>

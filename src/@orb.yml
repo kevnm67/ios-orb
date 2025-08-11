@@ -1,0 +1,19 @@
+---
+version: 2.1
+
+description: >
+    iOS Orb for building, testing, deploying iOS applications.
+
+    ## References
+
+    - [Orb dev workflows](https://circleci.com/orbs/registry/orb/circleci/orb-tools#usage-orb-dev-workflows)
+
+display:
+    home_url: https://github.com/kevnm67/ios-orb/wiki
+    source_url: https://github.com/kevnm67/ios-orb
+
+# If your orb requires other orbs, you can import them like this. Otherwise remove the "orbs" stanza.
+orbs:
+    macos: circleci/macos@2.3.4
+    ruby: circleci/ruby@2.0.0
+    qlty: qltysh/qlty-orb@0.0.11
