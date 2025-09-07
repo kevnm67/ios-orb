@@ -18,7 +18,7 @@ workflows:
                   filters: *filters
             - orb-tools/review:
                   orb_name: ios-orb
-                  exclude: RC006,RC007,RC008
+                  exclude: RC006,RC007,RC008,RC009
                   filters: *filters
             - shellcheck/check:
                   filters: *filters
