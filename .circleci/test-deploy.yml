@@ -2,19 +2,29 @@
 version: 2.1
 orbs:
     ios-orb: kevnm67/ios-orb@dev:<<pipeline.git.revision>>
-    orb-tools: circleci/orb-tools@12.1.0
+    orb-tools: circleci/orb-tools@12.3.1
+
+###########
+# Aliases #
+###########
+
+# ios_contexts: &ios_contexts [iOS, env.automations]
+
+# release build for release/hotfix branches
+release_filters: &release_filters [main, /^hotfix.*/, /^release.*/]
 
 filters: &filters
     tags:
         only: /.*/
 
 jobs:
-    command-tests:
-        docker:
-            - image: cimg/base:current
-        steps:
-            - checkout
-            - ios-orb/setup
+    ios-orb/run_with_setup:
+        name: test run with setup
+        scripts:
+            - run: make danger
+        filters:
+            branches:
+                ignore: *release_filters
 
 workflows:
     test-deploy:
