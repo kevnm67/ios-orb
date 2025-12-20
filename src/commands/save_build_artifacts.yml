@@ -1,0 +1,38 @@
+---
+description: |
+    Saves build artifacts, logs and test results.  These will be available
+    on Circle-CI's UI.
+parameters:
+    logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/scan
+    build_logs_path:
+        description: Path to build logs.
+        type: string
+        default: ~/Library/Logs/DiagnosticReports/
+    test_output_path:
+        description: Path to test reports.
+        type: string
+        default: ./fastlane/test_output
+
+steps:
+    - store_artifacts:
+          name: Scan test output
+          path: << parameters.test_output_path >>
+          destination: scan-test-output
+    - store_artifacts:
+          name: Store log artifacts
+          path: << parameters.logs_path >>
+          destination: scan-logs
+    - store_artifacts:
+          name: Store gym artifacts
+          path: ~/Library/Logs/gym
+          destination: gym-logs
+    - store_artifacts:
+          name: Store build logs/diagnostic artifacts
+          path: << parameters.build_logs_path >>
+          destination: build-logs
+    - store_test_results:
+          name: Scan test results
+          path: << parameters.test_output_path >>

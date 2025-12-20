@@ -1,0 +1,20 @@
+---
+description: |
+    Restores SPM cache.
+parameters:
+    key:
+        description: Cache key (prefixed).  The key is immutable.
+        type: string
+        default: spm-v1
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+steps:
+    - restore_cache:
+          keys:
+              - << parameters.key >>-{{ arch }}-{{ .Branch }}-{{ checksum "<< parameters.xcode_project >>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+                }}
+              - << parameters.key >>-{{ arch }}-{{ checksum "<< parameters.xcode_project >>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+                }}
+              - << parameters.key >>-{{ checksum "<< parameters.xcode_project >>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved" }}

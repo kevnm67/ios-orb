@@ -1,0 +1,16 @@
+---
+description: |
+    macos xcode executor.
+    Supported xcode versions: https://circleci.com/docs/testing-ios/#supported-xcode-versions
+parameters:
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 26.2.0
+    resource_class:
+        description: macOS resource class.
+        type: string
+        default: m4pro.medium
+macos:
+    xcode: << parameters.xcode_version >>
+resource_class: << parameters.resource_class >>

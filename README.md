@@ -1,70 +1,157 @@
-# Orb Template
+# iOS Orb
 
-[![CircleCI Build Status](https://circleci.com/gh/kevnm67/ios-orb.svg?style=shield "CircleCI Build Status")](https://circleci.com/gh/kevnm67/ios-orb)
-[![CircleCI Orb Version](https://badges.circleci.com/orbs/kevnm67/ios-orb.svg)](https://circleci.com/developer/orbs/orb/kevnm67/ios-orb)
-[![GitHub License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://raw.githubusercontent.com/kevnm67/ios-orb/master/LICENSE)
-[![CircleCI Community](https://img.shields.io/badge/community-CircleCI%20Discuss-343434.svg)](https://discuss.circleci.com/c/ecosystem/orbs)
+| Badges  | Insights |
+| ------------- | ------------- |
+| [![CircleCI][circleci_main]][circle_project] | [![CircleCI][insights]][insights_snapshot] |
+| [![Maintainability][maintainability_badge]][maintainability] | |
+| [![Test Coverage][test_coverage_badge]][test_coverage] | |
 
-- [Resources](#resources)
-    - [How to Contribute](#how-to-contribute)
-    - [How to Publish An Update](#how-to-publish-an-update)
-    - [Development Orbs](#development-orbs)
+A CircleCI orb for iOS development that provides reusable commands, jobs, and executors for building, testing, and deploying iOS applications.
 
+## Features
 
-<!-- markdownlint-disable MD033 MD013 -->
-A project template for Orbs.
+- macOS executor with configurable Xcode version and resource class
+- Ruby/Bundler setup with caching
+- Swift Package Manager (SPM) caching
+- Homebrew formula installation with caching
+- Code Climate test coverage integration
+- Fastlane lane execution
+- Build artifact storage
 
-This repository is designed to be automatically ingested and modified by the CircleCI CLI's `orb init` command.
+## Requirements
 
-_**Edit this area to include a custom title and description.**_
+- CircleCI account with macOS execution environment access
+- Xcode project or workspace
 
----
+## Usage
+
+Add the orb to your `.circleci/config.yml`:
+
+```yaml
+version: 2.1
+
+orbs:
+    ios: kevnm67/ios-orb@1.0.0
+
+workflows:
+    build-test:
+        jobs:
+            - ios/run_with_setup:
+                  name: build_and_test
+                  scripts:
+                      - run: bundle exec fastlane test
+```
+
+## Executors
+
+### macos
+
+macOS executor with Xcode support.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `xcode_version` | string | `26.2.0` | Xcode version to use |
+| `resource_class` | string | `m4pro.medium` | macOS resource class |
+
+```yaml
+jobs:
+    build:
+        executor:
+            name: ios/macos
+            xcode_version: "26.2.0"
+            resource_class: m4pro.medium
+```
+
+## Jobs
+
+### run_with_setup
+
+Run scripts or commands with automatic environment setup including checkout, workspace attachment, Ruby/Bundler installation, and SPM cache restoration.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `xcode_version` | string | `26.2.0` | Xcode version |
+| `resource_class` | string | `m4pro.medium` | macOS resource class |
+| `checkout` | boolean | `true` | Whether to checkout code |
+| `attach_workspace` | boolean | `true` | Whether to attach workspace |
+| `scripts` | steps | `[]` | Steps to run after setup |
+| `xcode_project` | string | `""` | Xcode project name for SPM cache |
+
+### test
+
+Run tests with Code Climate coverage reporting.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `xcode_version` | string | `26.2.0` | Xcode version |
+| `resource_class` | string | `m4pro.medium` | macOS resource class |
+| `lane` | string | `""` | Fastlane lane to run |
+| `pretest_steps` | steps | `[]` | Steps before testing |
+| `test_steps` | steps | `[]` | Custom test steps |
+
+## Commands
+
+### setup
+
+Initialize the build environment with checkout, workspace attachment, Ruby installation, and dependency caching.
+
+### lane
+
+Execute a Fastlane lane.
+
+```yaml
+steps:
+    - ios/lane:
+          named: test
+```
+
+### brew_install
+
+Install Homebrew formulas with optional caching.
+
+### cache_spm / restore_spm_cache
+
+Cache and restore Swift Package Manager dependencies.
+
+### save_build_artifacts
+
+Store build logs, diagnostic reports, and test results as CircleCI artifacts.
+
+## Orb Dependencies
+
+This orb uses the following CircleCI orbs:
+
+- `circleci/macos@2.5.2` - macOS utilities
+- `circleci/ruby@2.6.0` - Ruby installation and caching
 
 ## Resources
 
-[CircleCI Orb Registry Page](https://circleci.com/developer/orbs/orb/kevnm67/ios-orb) - The official registry page of this orb for all versions, executors, commands, and jobs described.
+- [CircleCI Orb Registry](https://circleci.com/orbs/registry/orb/kevnm67/ios-orb) - Official registry page
+- [CircleCI Orb Docs](https://circleci.com/docs/orb-intro/) - Documentation for using and creating orbs
 
-[CircleCI Orb Docs](https://circleci.com/docs/orb-intro/#section=configuration) - Docs for using, creating, and publishing CircleCI Orbs.
+## Contributing
 
-### How to Contribute
+We welcome [issues](https://github.com/kevnm67/ios-orb/issues) and [pull requests](https://github.com/kevnm67/ios-orb/pulls)!
 
-We welcome [issues](https://github.com/kevnm67/ios-orb/issues) to and [pull requests](https://github.com/kevnm67/ios-orb/pulls) against this repository!
+## Publishing Updates
 
-### How to Publish An Update
+1. Merge pull requests with desired changes to the main branch
+    - Use [Conventional Commit Messages](https://conventionalcommits.org/) for best experience
+2. Check the current version: `circleci orb info kevnm67/ios-orb | grep "Latest"`
+3. Create a [new Release](https://github.com/kevnm67/ios-orb/releases/new) on GitHub
+    - Create a [semantically versioned](http://semver.org/) tag (e.g., v1.0.0)
+4. Click "Auto-generate release notes"
+5. Verify the version tag is semantically accurate
+6. Click "Publish Release" to trigger the publishing pipeline
 
-1. Merge pull requests with desired changes to the main branch.
-    - For the best experience, squash-and-merge and use [Conventional Commit Messages](https://conventionalcommits.org/).
-2. Find the current version of the orb.
-    - You can run `circleci orb info kevnm67/ios-orb | grep "Latest"` to see the current version.
-3. Create a [new Release](https://github.com/kevnm67/ios-orb/releases/new) on GitHub.
-    - Click "Choose a tag" and _create_ a new [semantically versioned](http://semver.org/) tag. (ex: v1.0.0)
-      - We will have an opportunity to change this before we publish if needed after the next step.
-4. Click _"+ Auto-generate release notes"_.
-    - This will create a summary of all of the merged pull requests since the previous release.
-    - If you have used _[Conventional Commit Messages](https://conventionalcommits.org/)_ it will be easy to determine what types of changes were made, allowing you to ensure the correct version tag is being published.
-5. Now ensure the version tag selected is semantically accurate based on the changes included.
-6. Click _"Publish Release"_.
-    - This will push a new tag and trigger your publishing pipeline on CircleCI.
+[circle_project]: https://dl.circleci.com/status-badge/redirect/gh/kevnm67/ios-orb/tree/main
+[circleci_main]: https://dl.circleci.com/status-badge/img/gh/kevnm67/ios-orb/tree/main.svg?style=svg
 
-### Development Orbs
+[insights_snapshot]: https://circleci.com/orbs/registry/orb/kevnm67/ios-orb
+[insights]: https://badges.circleci.com/orbs/kevnm67/ios-orb.svg
 
-Prerequisites:
+[maintainability]: https://codeclimate.com/github/kevnm67/ios-orb/maintainability
+[maintainability_badge]: https://api.codeclimate.com/v1/badges/1cfc2fcff5164444fd22/maintainability
 
-- An initial sevmer deployment must be performed in order for Development orbs to be published and seen in the [Orb Registry](https://circleci.com/developer/orbs).
-
-A [Development orb](https://circleci.com/docs/orb-concepts/#development-orbs) can be created to help with rapid development or testing. To create a Development orb, change the `orb-tools/publish` job in `test-deploy.yml` to be the following:
-
-```yaml
-- orb-tools/publish:
-    orb_name: kevnm67/ios-orb
-    vcs_type: << pipeline.project.type >>
-    pub_type: dev
-    # Ensure this job requires all test jobs and the pack job.
-    requires:
-      - orb-tools/pack
-      - command-test
-    context: orb-publishing
-    filters: *filters
-```
-
-The job output will contain a link to the Development orb Registry page. The parameters `enable_pr_comment` and `github_token` can be set to add the relevant publishing information onto a pull request. Please refer to the [orb-tools/publish](https://circleci.com/developer/orbs/orb/circleci/orb-tools#jobs-publish) documentation for more information and options.
+[test_coverage]: https://codeclimate.com/github/kevnm67/ios-orb/test_coverage
+[test_coverage_badge]: https://api.codeclimate.com/v1/badges/1cfc2fcff5164444fd22/test_coverage

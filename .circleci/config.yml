@@ -1,0 +1,30 @@
+---
+version: 2.1
+setup: true
+orbs:
+    orb-tools: circleci/orb-tools@12.4.0
+    shellcheck: circleci/shellcheck@3.4.0
+
+filters: &filters
+    tags:
+        only: /.*/
+
+workflows:
+    lint-pack:
+        jobs:
+            - orb-tools/lint:
+                  filters: *filters
+            - orb-tools/pack:
+                  filters: *filters
+            - orb-tools/review:
+                  orb_name: ios-orb
+                  exclude: RC006,RC007,RC008,RC009
+                  filters: *filters
+            - shellcheck/check:
+                  filters: *filters
+            - orb-tools/continue:
+                  pipeline_number: << pipeline.number >>
+                  vcs_type: << pipeline.project.type >>
+                  orb_name: ios-orb
+                  requires: [orb-tools/lint, orb-tools/pack, orb-tools/review, shellcheck/check]
+                  filters: *filters
