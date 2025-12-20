@@ -24,9 +24,12 @@ jobs:
   # Create jobs to test the commands of your orbs.
   # You may want to add additional validation steps to ensure the commands are working as expected.
     command-test:
+        executor: ios-orb/macos
         steps:
             - checkout
-            - ios-orb/setup
+            - ios-orb/setup:
+                  checkout: false
+                  persist_workspace: false
 workflows:
     test-deploy:
         jobs:
