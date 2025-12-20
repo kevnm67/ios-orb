@@ -21,3 +21,7 @@ orb.yml
 
 .idea
 .vscode
+/src/ios.yml
+
+# Claude Code
+.claude/
