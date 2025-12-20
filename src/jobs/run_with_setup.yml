@@ -5,6 +5,7 @@ description: >
 executor:
     name: macos
     xcode_version: <<parameters.xcode_version>>
+    resource_class: <<parameters.resource_class>>
 
 parameters:
     attach_workspace:
@@ -29,7 +30,11 @@ parameters:
     xcode_version:
         description: Xcode version.
         type: string
-        default: 15.4.0
+        default: 26.2.0
+    resource_class:
+        description: macOS resource class.
+        type: string
+        default: m4pro.medium
     logs_path:
         description: Path to build logs.
         type: string
