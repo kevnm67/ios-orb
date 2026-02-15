@@ -11,16 +11,16 @@ IFS=',' read -ra TYPES <<< "${MATCH_TYPES}"
 
 for t in "${TYPES[@]}"; do
     t=$(echo "$t" | xargs)  # trim whitespace
-    ARGS="match ${t}"
+    ARGS=("match" "${t}")
 
     if [ "${MATCH_READONLY}" = "true" ]; then
-        ARGS="${ARGS} --readonly"
+        ARGS+=("--readonly")
     fi
 
     if [ -n "${MATCH_APP_IDENTIFIER:-}" ]; then
-        ARGS="${ARGS} --app_identifier ${MATCH_APP_IDENTIFIER}"
+        ARGS+=("--app_identifier" "${MATCH_APP_IDENTIFIER}")
     fi
 
-    echo "→ Running: bundle exec fastlane ${ARGS}"
-    bundle exec fastlane ${ARGS}
+    echo "→ Running: bundle exec fastlane ${ARGS[*]}"
+    bundle exec fastlane "${ARGS[@]}"
 done

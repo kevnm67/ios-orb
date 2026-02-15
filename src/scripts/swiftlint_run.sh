@@ -6,19 +6,19 @@
 #   SWIFTLINT_REPORTER - reporter type (optional)
 set -euo pipefail
 
-ARGS=""
+ARGS=()
 
 if [ "${SWIFTLINT_STRICT}" = "true" ]; then
-    ARGS="${ARGS} --strict"
+    ARGS+=("--strict")
 fi
 
 if [ -n "${SWIFTLINT_CONFIG:-}" ]; then
-    ARGS="${ARGS} --config ${SWIFTLINT_CONFIG}"
+    ARGS+=("--config" "${SWIFTLINT_CONFIG}")
 fi
 
 if [ -n "${SWIFTLINT_REPORTER:-}" ]; then
-    ARGS="${ARGS} --reporter ${SWIFTLINT_REPORTER}"
+    ARGS+=("--reporter" "${SWIFTLINT_REPORTER}")
 fi
 
-echo "→ Running: swiftlint ${ARGS}"
-swiftlint ${ARGS}
+echo "→ Running: swiftlint ${ARGS[*]}"
+swiftlint "${ARGS[@]}"

@@ -5,11 +5,11 @@
 #   XCODEGEN_QUIET - "true" or "false"
 set -euo pipefail
 
-ARGS="--spec ${XCODEGEN_SPEC}"
+ARGS=("--spec" "${XCODEGEN_SPEC}")
 
 if [ "${XCODEGEN_QUIET}" = "true" ]; then
-    ARGS="${ARGS} --quiet"
+    ARGS+=("--quiet")
 fi
 
-echo "→ Running: xcodegen generate ${ARGS}"
-xcodegen generate ${ARGS}
+echo "→ Running: xcodegen generate ${ARGS[*]}"
+xcodegen generate "${ARGS[@]}"
