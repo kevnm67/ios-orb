@@ -15,15 +15,10 @@ parameters:
 steps:
     - run:
           name: Install XcodeGen
-          command: |
-              if ! command -v xcodegen &>/dev/null; then
-                brew install xcodegen
-              fi
+          command: << include(scripts/xcodegen_install.sh) >>
     - run:
           name: Generate Xcode project
-          command: |
-              ARGS="--spec << parameters.spec >>"
-              if [ "<< parameters.quiet >>" = "true" ]; then
-                ARGS="$ARGS --quiet"
-              fi
-              xcodegen generate $ARGS
+          environment:
+              XCODEGEN_SPEC: << parameters.spec >>
+              XCODEGEN_QUIET: "<< parameters.quiet >>"
+          command: << include(scripts/xcodegen_generate.sh) >>

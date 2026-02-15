@@ -12,7 +12,6 @@ parameters:
 steps:
     - run:
           name: Install tools
-          command: |
-              for tool in << parameters.tools >>; do
-                command -v "$tool" &>/dev/null || brew install "$tool"
-              done
+          environment:
+              TOOLS: << parameters.tools >>
+          command: << include(scripts/install_tools.sh) >>

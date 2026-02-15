@@ -1,31 +1,32 @@
 ---
 description: |
     Run Fastlane match to sync code signing certificates and profiles.
+    Supports multiple types in a single step (e.g. "adhoc,appstore").
     Requires match environment variables (MATCH_PASSWORD, etc.) set via CircleCI context.
 
 parameters:
     type:
-        description: "Match type: development, adhoc, appstore, or enterprise."
+        description: >
+            Comma-separated match types: development, adhoc, appstore, enterprise.
+            Example: "adhoc,appstore"
         type: string
         default: appstore
     readonly:
         description: Whether to run match in read-only mode.
         type: boolean
-        default: true
+        default: false
     app_identifier:
-        description: App bundle identifier. Leave empty to use Matchfile default.
+        description: >
+            App bundle identifier. Leave empty to infer from Matchfile
+            or MATCH_APP_IDENTIFIER environment variable.
         type: string
         default: ""
 
 steps:
     - run:
-          name: Sync code signing via match
-          command: |
-              ARGS="match << parameters.type >>"
-              if [ "<< parameters.readonly >>" = "true" ]; then
-                ARGS="$ARGS --readonly"
-              fi
-              if [ -n "<< parameters.app_identifier >>" ]; then
-                ARGS="$ARGS --app_identifier << parameters.app_identifier >>"
-              fi
-              bundle exec fastlane $ARGS
+          name: Sync code signing via match (<< parameters.type >>)
+          environment:
+              MATCH_TYPES: << parameters.type >>
+              MATCH_READONLY: "<< parameters.readonly >>"
+              MATCH_APP_IDENTIFIER: << parameters.app_identifier >>
+          command: << include(scripts/match_signing.sh) >>

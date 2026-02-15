@@ -19,19 +19,11 @@ parameters:
 steps:
     - run:
           name: Install SwiftLint
-          command: |
-              command -v swiftlint &>/dev/null || brew install swiftlint
+          command: << include(scripts/swiftlint_install.sh) >>
     - run:
           name: Run SwiftLint
-          command: |
-              ARGS=""
-              if [ "<< parameters.strict >>" = "true" ]; then
-                ARGS="$ARGS --strict"
-              fi
-              if [ -n "<< parameters.config >>" ]; then
-                ARGS="$ARGS --config << parameters.config >>"
-              fi
-              if [ -n "<< parameters.reporter >>" ]; then
-                ARGS="$ARGS --reporter << parameters.reporter >>"
-              fi
-              swiftlint $ARGS
+          environment:
+              SWIFTLINT_STRICT: "<< parameters.strict >>"
+              SWIFTLINT_CONFIG: << parameters.config >>
+              SWIFTLINT_REPORTER: << parameters.reporter >>
+          command: << include(scripts/swiftlint_run.sh) >>

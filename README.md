@@ -94,26 +94,21 @@ steps:
 
 ### `match_signing`
 
-Sync code signing via Fastlane match.
+Sync code signing via Fastlane match. Supports multiple types in a
+single step.
 
 ```yaml
 steps:
   - ios/match_signing:
-      type: appstore
-      readonly: true
+      type: "adhoc,appstore"
+      readonly: false
 ```
 
-### `deploy_testflight`
-
-Deploy to TestFlight via Fastlane. Expects ASC API key env vars
-from a CircleCI context.
-
-```yaml
-steps:
-  - ios/deploy_testflight:
-      lane: deploy_testflight
-      platform: ios
-```
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `type` | `appstore` | Comma-separated match types |
+| `readonly` | `false` | Run match in read-only mode |
+| `app_identifier` | `""` | Bundle ID (inferred from Matchfile if empty) |
 
 ### `brew_install`
 
