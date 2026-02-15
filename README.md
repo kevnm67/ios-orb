@@ -1,6 +1,9 @@
 # iOS Orb
 
+<!-- TODO: Add CircleCI badge (requires push protection bypass for CCIPRJ token) -->
 [![CircleCI Orb Version][orb_badge]][orb_registry]
+[![Maintainability](https://qlty.sh/badges/gh/kevnm67/projects/ios-orb/maintainability.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
+[![Code Coverage](https://qlty.sh/badges/gh/kevnm67/projects/ios-orb/coverage.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
 
 A CircleCI orb for iOS CI/CD pipelines — reusable commands, jobs,
 and executors for building, testing, and deploying iOS/macOS apps.
