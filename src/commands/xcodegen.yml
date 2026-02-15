@@ -1,0 +1,24 @@
+---
+description: |
+    Install XcodeGen (if missing) and generate the Xcode project.
+
+parameters:
+    spec:
+        description: Path to the XcodeGen spec file.
+        type: string
+        default: project.yml
+    quiet:
+        description: Whether to suppress XcodeGen output.
+        type: boolean
+        default: true
+
+steps:
+    - run:
+          name: Install XcodeGen
+          command: << include(scripts/xcodegen_install.sh) >>
+    - run:
+          name: Generate Xcode project
+          environment:
+              XCODEGEN_SPEC: << parameters.spec >>
+              XCODEGEN_QUIET: "<< parameters.quiet >>"
+          command: << include(scripts/xcodegen_generate.sh) >>

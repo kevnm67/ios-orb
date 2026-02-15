@@ -8,16 +8,11 @@ repos:
             args: [--allow-missing-credentials]
           - id: detect-private-key
           - id: end-of-file-fixer
-          - id: fix-encoding-pragma
-            args: [--remove]
-          - id: name-tests-test
           - id: trailing-whitespace
-          - id: detect-aws-credentials
-            args: [--allow-missing-credentials]
           - id: check-merge-conflict
 
     - repo: https://github.com/adrienverge/yamllint.git
-      rev: v1.37.1
+      rev: v1.38.0
       hooks:
           - id: yamllint
 
@@ -26,14 +21,3 @@ repos:
       hooks:
           - id: yamlfmt
             args: [--mapping, '4']
-
-    # - repo: https://github.com/syntaqx/git-hooks
-    #   rev: v0.0.17
-    #   hooks:
-    #       - id: circleci-config-validate
-
-    - repo: https://github.com/milin/giticket
-      rev: v1.5
-      hooks:
-          - id: giticket
-            args: ['--regex=[A-Z]+-\d+', '--format={ticket} {commit_msg}'] # Optional

@@ -2,4 +2,6 @@
 
 source 'https://rubygems.org'
 
-gem 'danger', '~> 9.3.1'
+gem 'danger', '~> 9.5'
+gem 'faraday', '>= 2.8'
+gem 'rexml', '>= 3.3.9'

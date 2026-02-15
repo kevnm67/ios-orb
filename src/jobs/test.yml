@@ -34,7 +34,7 @@ parameters:
     xcode_version:
         description: Xcode version.
         type: string
-        default: 26.2.0
+        default: 26.3.0
     resource_class:
         description: macOS resource class.
         type: string

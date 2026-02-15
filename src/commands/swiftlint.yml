@@ -1,0 +1,29 @@
+---
+description: |
+    Run SwiftLint. Installs via Homebrew if not already available.
+
+parameters:
+    strict:
+        description: Whether to use strict mode (warnings become errors).
+        type: boolean
+        default: false
+    config:
+        description: Path to SwiftLint configuration file.
+        type: string
+        default: ""
+    reporter:
+        description: Reporter type (xcode, json, csv, emoji, etc.).
+        type: string
+        default: ""
+
+steps:
+    - run:
+          name: Install SwiftLint
+          command: << include(scripts/swiftlint_install.sh) >>
+    - run:
+          name: Run SwiftLint
+          environment:
+              SWIFTLINT_STRICT: "<< parameters.strict >>"
+              SWIFTLINT_CONFIG: << parameters.config >>
+              SWIFTLINT_REPORTER: << parameters.reporter >>
+          command: << include(scripts/swiftlint_run.sh) >>
