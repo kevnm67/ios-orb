@@ -1,0 +1,18 @@
+---
+description: |
+    Install common iOS development tools via Homebrew.
+    Only installs tools that are not already available.
+
+parameters:
+    tools:
+        description: Space-separated list of Homebrew formulas to install.
+        type: string
+        default: xcodegen swiftlint
+
+steps:
+    - run:
+          name: Install tools
+          command: |
+              for tool in << parameters.tools >>; do
+                command -v "$tool" &>/dev/null || brew install "$tool"
+              done

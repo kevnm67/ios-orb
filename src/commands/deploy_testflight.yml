@@ -1,0 +1,30 @@
+---
+description: |
+    Deploy to TestFlight via Fastlane. Expects ASC API key env vars
+    (APP_STORE_CONNECT_API_KEY_KEY_ID, APP_STORE_CONNECT_API_KEY_ISSUER_ID,
+    APP_STORE_CONNECT_API_KEY_KEY) to be set via CircleCI context.
+
+parameters:
+    lane:
+        description: Fastlane lane to run for deployment.
+        type: string
+        default: deploy_testflight
+    platform:
+        description: "Platform prefix for fastlane (e.g., ios, mac). Leave empty for default."
+        type: string
+        default: ""
+    timeout:
+        description: No-output timeout for the deploy step.
+        type: string
+        default: 30m
+
+steps:
+    - run:
+          name: Deploy to TestFlight
+          command: |
+              if [ -n "<< parameters.platform >>" ]; then
+                bundle exec fastlane << parameters.platform >> << parameters.lane >>
+              else
+                bundle exec fastlane << parameters.lane >>
+              fi
+          no_output_timeout: << parameters.timeout >>

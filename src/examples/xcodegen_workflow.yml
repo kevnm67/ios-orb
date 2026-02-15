@@ -1,0 +1,43 @@
+---
+description: >
+    Full workflow with XcodeGen project generation, testing, and deployment.
+    Demonstrates the setup → test → deploy pattern.
+usage:
+    version: 2.1
+    orbs:
+        ios: kevnm67/ios-orb@1.0.0
+    jobs:
+        setup:
+            executor:
+                name: ios/macos
+            steps:
+                - checkout
+                - ios/install_tools:
+                      tools: xcodegen swiftlint
+                - ios/xcodegen
+                - run:
+                      name: Install gems
+                      command: |
+                          bundle config set --local path vendor/bundle
+                          bundle install
+                - persist_to_workspace:
+                      root: .
+                      paths:
+                          - .
+        test:
+            executor:
+                name: ios/macos
+            steps:
+                - attach_workspace:
+                      at: .
+                - ios/lane:
+                      named: test
+                - store_test_results:
+                      path: test-results
+    workflows:
+        build-test:
+            jobs:
+                - setup
+                - test:
+                      requires:
+                          - setup

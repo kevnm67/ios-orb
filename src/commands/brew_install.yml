@@ -17,7 +17,7 @@ parameters:
     formula:
         description: Homebrew formula to install if needed.
         type: string
-        default: blender/homebrew-tap/rome
+        default: ""
     reinstall:
         description: Whether to reinstall the formula.
         type: boolean
