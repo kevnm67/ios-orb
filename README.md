@@ -1,6 +1,5 @@
 # iOS Orb
 
-[![CircleCI][circleci_main]][circle_project]
 [![CircleCI Orb Version][orb_badge]][orb_registry]
 
 A CircleCI orb for iOS CI/CD pipelines — reusable commands, jobs,
@@ -223,8 +222,6 @@ workflows:
 2. Create a [semver tag](http://semver.org/) release on GitHub
 3. The CI pipeline publishes automatically
 
-[circle_project]: https://dl.circleci.com/status-badge/redirect/gh/kevnm67/ios-orb/tree/main
-[circleci_main]: https://dl.circleci.com/status-badge/img/gh/kevnm67/ios-orb/tree/main.svg?style=svg
 [orb_registry]: https://circleci.com/orbs/registry/orb/kevnm67/ios-orb
 [orb_badge]: https://badges.circleci.com/orbs/kevnm67/ios-orb.svg
 [qlty-orb]: https://circleci.com/developer/orbs/orb/qltysh/qlty-orb
