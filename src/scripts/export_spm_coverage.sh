@@ -1,32 +1,43 @@
 #!/usr/bin/env bash
 # Export SPM code coverage to cobertura XML.
-# Converts llvm-cov profdata -> lcov -> cobertura XML.
-set -eo pipefail
+# Converts llvm-cov profdata -> lcov -> coverage.xml
+# Non-fatal: exits 0 even if coverage export fails (CI should not break on coverage)
 
-BUILD_DIR=$(swift build --show-bin-path)
-PROFDATA=$(find "${BUILD_DIR}/../" -name "default.profdata" -type f | head -1)
+BUILD_DIR=$(swift build --show-bin-path 2>/dev/null || echo "")
+
+if [[ -z "${BUILD_DIR}" ]]; then
+    echo "⚠ Could not determine build directory. Skipping coverage export."
+    exit 0
+fi
+
+PROFDATA=$(find "${BUILD_DIR}/../" -name "default.profdata" -type f 2>/dev/null | head -1)
 
 if [[ -z "${PROFDATA}" ]]; then
-    echo "Error: No profdata file found. Did tests run with --enable-code-coverage?"
-    exit 1
+    echo "⚠ No profdata file found. Did tests run with --enable-code-coverage?"
+    exit 0
 fi
 
-# Find the test binary (PackageTests or *PackageTests.xctest)
-TEST_BINARY=$(find "${BUILD_DIR}" -name "*.xctest" -type d | head -1)
-if [[ -n "${TEST_BINARY}" ]]; then
-    # macOS .xctest bundles have the binary inside Contents/MacOS/
-    EXEC_NAME=$(basename "${TEST_BINARY}" .xctest)
-    TEST_BINARY="${TEST_BINARY}/Contents/MacOS/${EXEC_NAME}"
+# Find the test binary
+TEST_BINARY=""
+
+# Try .xctest bundle first (macOS)
+XCTEST_BUNDLE=$(find "${BUILD_DIR}" -name "*.xctest" -type d 2>/dev/null | head -1)
+if [[ -n "${XCTEST_BUNDLE}" ]]; then
+    EXEC_NAME=$(basename "${XCTEST_BUNDLE}" .xctest)
+    CANDIDATE="${XCTEST_BUNDLE}/Contents/MacOS/${EXEC_NAME}"
+    if [[ -f "${CANDIDATE}" ]]; then
+        TEST_BINARY="${CANDIDATE}"
+    fi
 fi
 
-if [[ -z "${TEST_BINARY}" || ! -f "${TEST_BINARY}" ]]; then
-    # Fallback: look for any executable in the build dir
-    TEST_BINARY=$(find "${BUILD_DIR}" -type f -perm +111 -name "*Tests" | head -1)
+# Fallback: look for any test executable
+if [[ -z "${TEST_BINARY}" ]]; then
+    TEST_BINARY=$(find "${BUILD_DIR}" -type f -perm +111 -name "*Tests" 2>/dev/null | head -1)
 fi
 
 if [[ -z "${TEST_BINARY}" ]]; then
-    echo "Error: No test binary found in ${BUILD_DIR}"
-    exit 1
+    echo "⚠ No test binary found in ${BUILD_DIR}. Skipping coverage export."
+    exit 0
 fi
 
 echo "-> Exporting coverage from ${PROFDATA}"
@@ -38,25 +49,12 @@ xcrun llvm-cov export \
     -instr-profile="${PROFDATA}" \
     "${TEST_BINARY}" \
     -ignore-filename-regex='.build|Tests|Mocks' \
-    > coverage.lcov
+    > coverage.lcov 2>/dev/null || true
 
-# Convert lcov to cobertura XML
-if command -v pycobertura &>/dev/null; then
-    # If pycobertura is available, use lcov directly renamed
-    echo "-> Converting lcov to cobertura XML"
+if [[ -s coverage.lcov ]]; then
+    cp coverage.lcov coverage.xml
+    echo "-> Coverage exported to coverage.xml ($(wc -l < coverage.lcov) lines)"
+else
+    echo "⚠ Coverage export produced empty output. Skipping."
+    exit 0
 fi
-
-# Use llvm-cov export in text format for cobertura-compatible output
-xcrun llvm-cov export \
-    -format=text \
-    -instr-profile="${PROFDATA}" \
-    "${TEST_BINARY}" \
-    -ignore-filename-regex='.build|Tests|Mocks' \
-    > coverage.json
-
-# Convert JSON to cobertura XML using a simple transformation
-# Most CI tools accept the llvm-cov JSON directly, but we also produce lcov
-# Rename lcov to coverage.xml as a simple cobertura-compatible format
-cp coverage.lcov coverage.xml
-
-echo "-> Coverage exported to coverage.xml and coverage.lcov"
