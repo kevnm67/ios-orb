@@ -1,0 +1,46 @@
+---
+description: |
+    Build an Xcode project or workspace.
+    Pipes output through xcbeautify for readable build logs.
+
+parameters:
+    scheme:
+        description: The Xcode scheme to build.
+        type: string
+    project:
+        description: Path to the .xcodeproj file. Leave empty to use the default project in the directory.
+        type: string
+        default: ''
+    destination:
+        description: Build destination (e.g. "platform=macOS" or "platform=iOS Simulator,name=iPhone 16").
+        type: string
+        default: platform=macOS
+    configuration:
+        description: Build configuration (Debug or Release).
+        type: string
+        default: Debug
+
+steps:
+    - run:
+          name: Install xcbeautify
+          command: |
+              if ! command -v xcbeautify &>/dev/null; then
+                  echo "-> Installing xcbeautify..."
+                  brew install xcbeautify
+              else
+                  echo "✓ xcbeautify already installed"
+              fi
+    - run:
+          name: Build Xcode project
+          command: |
+              PROJECT_FLAG=""
+              if [ -n "<< parameters.project >>" ]; then
+                  PROJECT_FLAG="-project << parameters.project >>"
+              fi
+
+              xcodebuild build \
+                  -scheme "<< parameters.scheme >>" \
+                  ${PROJECT_FLAG} \
+                  -destination "<< parameters.destination >>" \
+                  -configuration "<< parameters.configuration >>" \
+                  | xcbeautify

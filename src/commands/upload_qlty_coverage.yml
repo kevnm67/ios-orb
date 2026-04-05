@@ -1,0 +1,14 @@
+---
+description: |
+    Upload code coverage to Qlty Cloud.
+    Requires the QLTY_COVERAGE_TOKEN environment variable to be set.
+
+parameters:
+    file:
+        description: Path to the coverage file to upload.
+        type: string
+        default: coverage.xml
+
+steps:
+    - qlty/coverage_publish:
+          files: << parameters.file >>

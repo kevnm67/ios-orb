@@ -1,0 +1,21 @@
+---
+description: |
+    Automatically create and push a release tag.
+    Supports deriving the version from the latest git tag (patch increment)
+    or from the Xcode project MARKETING_VERSION.
+
+parameters:
+    version_source:
+        description: >
+            How to determine the version number.
+            "git-describe" increments patch from the latest tag.
+            "marketing-version" reads MARKETING_VERSION from the Xcode project.
+        type: string
+        default: git-describe
+
+steps:
+    - run:
+          name: Create release tag
+          environment:
+              VERSION_SOURCE: << parameters.version_source >>
+          command: <<include(scripts/create_release_tag.sh)>>

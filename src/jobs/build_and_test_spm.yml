@@ -1,0 +1,79 @@
+---
+description: |
+    Complete CI job for Swift Package Manager projects.
+    Builds, tests, exports coverage, and optionally uploads to Qlty Cloud.
+
+executor:
+    name: macos
+    xcode_version: <<parameters.xcode_version>>
+    resource_class: <<parameters.resource_class>>
+
+parameters:
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 26.3.0
+    resource_class:
+        description: macOS resource class.
+        type: string
+        default: m4pro.medium
+    parallelism:
+        description: CircleCI parallelism level.
+        type: integer
+        default: 1
+    coverage:
+        description: Whether to export code coverage.
+        type: boolean
+        default: true
+    qlty:
+        description: Whether to upload coverage to Qlty Cloud.
+        type: boolean
+        default: true
+    build_flags:
+        description: Additional flags to pass to swift build.
+        type: string
+        default: ''
+    configuration:
+        description: Build configuration (debug or release).
+        type: string
+        default: debug
+    filter:
+        description: Test filter pattern.
+        type: string
+        default: ''
+    pre_steps:
+        description: Steps to run before build.
+        type: steps
+        default: []
+
+parallelism: << parameters.parallelism >>
+
+steps:
+    - checkout
+    - << parameters.pre_steps >>
+    - restore_cache:
+          keys:
+              - spm-v2-{{ arch }}-{{ checksum "Package.resolved" }}
+              - spm-v2-{{ arch }}-
+    - build_spm:
+          build_flags: << parameters.build_flags >>
+          configuration: << parameters.configuration >>
+    - test_spm:
+          filter: << parameters.filter >>
+          coverage: << parameters.coverage >>
+    - when:
+          condition: << parameters.coverage >>
+          steps:
+              - export_coverage:
+                    type: spm
+    - when:
+          condition:
+              and:
+                  - << parameters.coverage >>
+                  - << parameters.qlty >>
+          steps:
+              - upload_qlty_coverage
+    - save_cache:
+          key: spm-v2-{{ arch }}-{{ checksum "Package.resolved" }}
+          paths:
+              - .build

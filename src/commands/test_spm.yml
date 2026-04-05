@@ -1,0 +1,46 @@
+---
+description: |
+    Run tests for a Swift Package Manager project with optional code coverage.
+    Pipes output through xcbeautify for readable results.
+
+parameters:
+    filter:
+        description: Test filter pattern (e.g. "MyModuleTests" or "MyModuleTests/testSpecificCase").
+        type: string
+        default: ''
+    parallel:
+        description: Whether to run tests in parallel.
+        type: boolean
+        default: true
+    coverage:
+        description: Whether to enable code coverage collection.
+        type: boolean
+        default: true
+
+steps:
+    - run:
+          name: Install xcbeautify
+          command: |
+              if ! command -v xcbeautify &>/dev/null; then
+                  echo "-> Installing xcbeautify..."
+                  brew install xcbeautify
+              else
+                  echo "✓ xcbeautify already installed"
+              fi
+    - run:
+          name: Run SPM tests
+          command: |
+              FLAGS=""
+              if [ "<< parameters.coverage >>" = "true" ]; then
+                  FLAGS="${FLAGS} --enable-code-coverage"
+              fi
+              if [ "<< parameters.parallel >>" = "true" ]; then
+                  FLAGS="${FLAGS} --parallel"
+              fi
+              if [ -n "<< parameters.filter >>" ]; then
+                  FLAGS="${FLAGS} --filter << parameters.filter >>"
+              fi
+
+              swift test ${FLAGS} 2>&1 | xcbeautify --report junit --junit-report-filename test-results.xml
+    - store_test_results:
+          path: test-results.xml
