@@ -1,0 +1,30 @@
+---
+description: >
+    XcodeGen project workflow with build, test, and code coverage.
+    Generates the Xcode project from project.yml, runs tests via Fastlane,
+    and uploads coverage to Code Climate.
+usage:
+    version: 2.1
+    orbs:
+        ios: kevnm67/ios-orb@2.0.0
+    workflows:
+        build-test:
+            jobs:
+                - ios/run_with_setup:
+                      name: setup
+                      xcode_version: 26.3.0
+                      xcode_project: MyApp
+                      scripts:
+                          - ios/install_tools:
+                                tools: xcodegen swiftlint
+                          - ios/xcodegen
+                - ios/test:
+                      name: test
+                      xcode_version: 26.3.0
+                      xcode_project: MyApp
+                      lane: test
+                      pretest_steps:
+                          - ios/swiftlint:
+                                strict: true
+                      requires:
+                          - setup

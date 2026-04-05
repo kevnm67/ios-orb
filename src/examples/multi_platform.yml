@@ -1,0 +1,57 @@
+---
+description: >
+    Dual-platform CI workflow testing on both iOS and macOS destinations.
+    Uses a matrix-style approach with separate jobs for each platform.
+usage:
+    version: 2.1
+    orbs:
+        ios: kevnm67/ios-orb@2.0.0
+    workflows:
+        multi-platform:
+            jobs:
+                - ios/run_with_setup:
+                      name: setup
+                      xcode_version: 26.3.0
+                      xcode_project: MyApp
+                      scripts:
+                          - ios/install_tools:
+                                tools: xcodegen
+                          - ios/xcodegen
+                - ios/run_with_setup:
+                      name: test-ios
+                      attach_workspace: true
+                      checkout: false
+                      xcode_version: 26.3.0
+                      scripts:
+                          - run:
+                                name: Test iOS
+                                command: |
+                                    xcodebuild test \
+                                      -project MyApp.xcodeproj \
+                                      -scheme MyApp \
+                                      -destination 'platform=iOS Simulator,name=iPhone 16' \
+                                      -resultBundlePath test-results/ios.xcresult \
+                                      | xcbeautify
+                          - store_test_results:
+                                path: test-results
+                      requires:
+                          - setup
+                - ios/run_with_setup:
+                      name: test-macos
+                      attach_workspace: true
+                      checkout: false
+                      xcode_version: 26.3.0
+                      scripts:
+                          - run:
+                                name: Test macOS
+                                command: |
+                                    xcodebuild test \
+                                      -project MyApp.xcodeproj \
+                                      -scheme MyApp \
+                                      -destination 'platform=macOS' \
+                                      -resultBundlePath test-results/macos.xcresult \
+                                      | xcbeautify
+                          - store_test_results:
+                                path: test-results
+                      requires:
+                          - setup

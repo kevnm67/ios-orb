@@ -1,0 +1,30 @@
+---
+description: >
+    Minimal SPM package CI workflow.
+    Builds, tests, and exports code coverage for a Swift Package Manager project.
+usage:
+    version: 2.1
+    orbs:
+        ios: kevnm67/ios-orb@2.0.0
+    workflows:
+        ci:
+            jobs:
+                - ios/run_with_setup:
+                      name: build-and-test
+                      xcode_version: 26.3.0
+                      scripts:
+                          - run:
+                                name: Build
+                                command: swift build
+                          - run:
+                                name: Test with coverage
+                                command: swift test --enable-code-coverage
+                          - run:
+                                name: Export coverage
+                                command: |
+                                    BIN_PATH=$(swift build --show-bin-path)
+                                    XCTEST=$(find "${BIN_PATH}" -name '*.xctest' -type d | head -1)
+                                    COV_BIN="${XCTEST}/Contents/MacOS/$(basename "${XCTEST}" .xctest)"
+                                    xcrun llvm-cov report "${COV_BIN}" \
+                                      -instr-profile "$(swift test --show-codecov-path | sed 's/codecov/default.profdata/')" \
+                                      -ignore-filename-regex '.build|Tests'

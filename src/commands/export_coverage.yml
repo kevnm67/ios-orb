@@ -1,0 +1,36 @@
+---
+description: |
+    Export code coverage to cobertura-compatible XML.
+    Supports both SPM (llvm-cov) and Xcode (xcresultparser) coverage sources.
+
+parameters:
+    type:
+        description: Coverage source type.
+        type: enum
+        enum:
+            - spm
+            - xcode
+    result_bundle:
+        description: Path to the xcresult bundle (only used when type is "xcode").
+        type: string
+        default: TestResults.xcresult
+
+steps:
+    - when:
+          condition:
+              equal: [spm, << parameters.type >>]
+          steps:
+              - run:
+                    name: Export SPM coverage
+                    when: always
+                    command: <<include(scripts/export_spm_coverage.sh)>>
+    - when:
+          condition:
+              equal: [xcode, << parameters.type >>]
+          steps:
+              - run:
+                    name: Export Xcode coverage
+                    when: always
+                    environment:
+                        RESULT_BUNDLE_PATH: << parameters.result_bundle >>
+                    command: <<include(scripts/export_xcode_coverage.sh)>>

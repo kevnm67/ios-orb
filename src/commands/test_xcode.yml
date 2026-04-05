@@ -1,0 +1,67 @@
+---
+description: |
+    Run tests for an Xcode project with code coverage.
+    Exports JUnit XML results and stores them for CircleCI test insights.
+
+parameters:
+    scheme:
+        description: The Xcode scheme to test.
+        type: string
+    project:
+        description: Path to the .xcodeproj file. Leave empty to use the default project in the directory.
+        type: string
+        default: ''
+    destination:
+        description: Test destination (e.g. "platform=macOS" or "platform=iOS Simulator,name=iPhone 16").
+        type: string
+        default: platform=macOS
+    result_bundle_path:
+        description: Path to store the xcresult bundle.
+        type: string
+        default: TestResults.xcresult
+
+steps:
+    - run:
+          name: Install xcbeautify
+          command: |
+              if ! command -v xcbeautify &>/dev/null; then
+                  echo "-> Installing xcbeautify..."
+                  brew install xcbeautify
+              else
+                  echo "✓ xcbeautify already installed"
+              fi
+    - run:
+          name: Run Xcode tests
+          command: |
+              # Remove stale result bundle
+              rm -rf "<< parameters.result_bundle_path >>"
+
+              PROJECT_FLAG=""
+              if [ -n "<< parameters.project >>" ]; then
+                  PROJECT_FLAG="-project << parameters.project >>"
+              fi
+
+              xcodebuild test \
+                  -scheme "<< parameters.scheme >>" \
+                  ${PROJECT_FLAG} \
+                  -destination "<< parameters.destination >>" \
+                  -enableCodeCoverage YES \
+                  -resultBundlePath "<< parameters.result_bundle_path >>" \
+                  | xcbeautify --report junit --junit-report-filename test-results.xml
+    - run:
+          name: Export JUnit results
+          when: always
+          command: |
+              if ! command -v xcresultparser &>/dev/null; then
+                  echo "-> Installing xcresultparser..."
+                  brew install a7ex/homebrew-formulae/xcresultparser
+              fi
+
+              if [[ -d "<< parameters.result_bundle_path >>" ]]; then
+                  xcresultparser \
+                      --output-format junit \
+                      "<< parameters.result_bundle_path >>" \
+                      > junit-results.xml
+              fi
+    - store_test_results:
+          path: test-results.xml

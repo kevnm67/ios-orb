@@ -1,0 +1,71 @@
+---
+description: >
+    Complete CI/CD workflow with PR checks, main branch testing,
+    and automated release tagging. Demonstrates branch-filtered
+    workflows for pull requests and trunk.
+usage:
+    version: 2.1
+    orbs:
+        ios: kevnm67/ios-orb@2.0.0
+    workflows:
+        pr:
+            when:
+                not:
+                    equal: [main, << pipeline.git.branch >>]
+            jobs:
+                - ios/run_with_setup:
+                      name: setup
+                      xcode_version: 26.3.0
+                      xcode_project: MyApp
+                      scripts:
+                          - ios/install_tools:
+                                tools: xcodegen swiftlint
+                          - ios/xcodegen
+                - ios/run_with_setup:
+                      name: lint
+                      attach_workspace: true
+                      checkout: false
+                      scripts:
+                          - ios/swiftlint:
+                                strict: true
+                      requires:
+                          - setup
+                - ios/test:
+                      name: test
+                      xcode_version: 26.3.0
+                      xcode_project: MyApp
+                      lane: test
+                      requires:
+                          - setup
+        main:
+            when:
+                equal: [main, << pipeline.git.branch >>]
+            jobs:
+                - ios/run_with_setup:
+                      name: setup
+                      xcode_version: 26.3.0
+                      xcode_project: MyApp
+                      scripts:
+                          - ios/install_tools:
+                                tools: xcodegen swiftlint
+                          - ios/xcodegen
+                - ios/test:
+                      name: test
+                      xcode_version: 26.3.0
+                      xcode_project: MyApp
+                      lane: test
+                      requires:
+                          - setup
+                - ios/run_with_setup:
+                      name: tag-release
+                      attach_workspace: true
+                      checkout: false
+                      scripts:
+                          - run:
+                                name: Create release tag
+                                command: |
+                                    VERSION=$(date +%Y.%m.%d)-${CIRCLE_BUILD_NUM}
+                                    git tag "v${VERSION}"
+                                    git push origin "v${VERSION}"
+                      requires:
+                          - test

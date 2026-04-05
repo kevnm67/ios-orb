@@ -1,0 +1,107 @@
+---
+description: |
+    Complete CI job for Xcode projects.
+    Optionally runs XcodeGen, builds, tests, exports coverage, and uploads to Qlty Cloud.
+
+executor:
+    name: macos
+    xcode_version: <<parameters.xcode_version>>
+    resource_class: <<parameters.resource_class>>
+
+parameters:
+    scheme:
+        description: The Xcode scheme to build and test.
+        type: string
+    xcode_version:
+        description: Xcode version.
+        type: string
+        default: 26.3.0
+    resource_class:
+        description: macOS resource class.
+        type: string
+        default: m4pro.medium
+    xcodegen:
+        description: Whether to generate the Xcode project with XcodeGen before building.
+        type: boolean
+        default: false
+    project:
+        description: Path to the .xcodeproj file. Leave empty to use the default project.
+        type: string
+        default: ''
+    destination:
+        description: Build and test destination.
+        type: string
+        default: platform=macOS
+    configuration:
+        description: Build configuration.
+        type: string
+        default: Debug
+    result_bundle_path:
+        description: Path to store the xcresult bundle.
+        type: string
+        default: TestResults.xcresult
+    parallelism:
+        description: CircleCI parallelism level.
+        type: integer
+        default: 1
+    coverage:
+        description: Whether to export code coverage.
+        type: boolean
+        default: true
+    qlty:
+        description: Whether to upload coverage to Qlty Cloud.
+        type: boolean
+        default: true
+    xcode_project:
+        description: Name of your xcodeproj for SPM cache key (without .xcodeproj extension).
+        type: string
+        default: ''
+    pre_steps:
+        description: Steps to run before build.
+        type: steps
+        default: []
+
+parallelism: << parameters.parallelism >>
+
+steps:
+    - checkout
+    - << parameters.pre_steps >>
+    - when:
+          condition: << parameters.xcodegen >>
+          steps:
+              - install_tools:
+                    tools: xcodegen
+              - xcodegen
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - restore_spm_cache:
+                    xcode_project: << parameters.xcode_project >>
+    - build_xcode:
+          scheme: << parameters.scheme >>
+          project: << parameters.project >>
+          destination: << parameters.destination >>
+          configuration: << parameters.configuration >>
+    - test_xcode:
+          scheme: << parameters.scheme >>
+          project: << parameters.project >>
+          destination: << parameters.destination >>
+          result_bundle_path: << parameters.result_bundle_path >>
+    - when:
+          condition: << parameters.coverage >>
+          steps:
+              - export_coverage:
+                    type: xcode
+                    result_bundle: << parameters.result_bundle_path >>
+    - when:
+          condition:
+              and:
+                  - << parameters.coverage >>
+                  - << parameters.qlty >>
+          steps:
+              - upload_qlty_coverage
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - cache_spm:
+                    xcode_project: << parameters.xcode_project >>

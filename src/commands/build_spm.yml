@@ -1,0 +1,32 @@
+---
+description: |
+    Build a Swift Package Manager project.
+    Installs xcbeautify if not already available and pipes output through it.
+
+parameters:
+    build_flags:
+        description: Additional flags to pass to swift build.
+        type: string
+        default: ''
+    configuration:
+        description: Build configuration (debug or release).
+        type: string
+        default: debug
+
+steps:
+    - run:
+          name: Install xcbeautify
+          command: |
+              if ! command -v xcbeautify &>/dev/null; then
+                  echo "-> Installing xcbeautify..."
+                  brew install xcbeautify
+              else
+                  echo "✓ xcbeautify already installed"
+              fi
+    - run:
+          name: Build SPM package
+          command: |
+              swift build \
+                  -c << parameters.configuration >> \
+                  << parameters.build_flags >> \
+                  2>&1 | xcbeautify

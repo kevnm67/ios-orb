@@ -4,12 +4,12 @@ description: >
 usage:
     version: 2.1
     orbs:
-        ios: kevnm67/ios-orb@1.0.0
+        ios: kevnm67/ios-orb@2.0.0
     workflows:
         test:
             jobs:
                 - ios/run_with_setup:
                       name: test
-                      xcode_version: "26.3.0"
+                      xcode_version: 26.3.0
                       scripts:
                           - run: bundle exec fastlane test
