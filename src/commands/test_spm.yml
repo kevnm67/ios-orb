@@ -41,6 +41,6 @@ steps:
                   FLAGS="${FLAGS} --filter << parameters.filter >>"
               fi
 
-              swift test ${FLAGS} 2>&1 | xcbeautify --report junit --junit-report-filename test-results.xml
+              swift test ${FLAGS} 2>&1 | xcbeautify --report junit --report-path build/reports
     - store_test_results:
-          path: test-results.xml
+          path: build/reports

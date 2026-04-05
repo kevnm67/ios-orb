@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Export SPM code coverage to cobertura XML.
 # Converts llvm-cov profdata -> lcov -> cobertura XML.
-set -euo pipefail
+set -eo pipefail
 
 BUILD_DIR=$(swift build --show-bin-path)
 PROFDATA=$(find "${BUILD_DIR}/../" -name "default.profdata" -type f | head -1)

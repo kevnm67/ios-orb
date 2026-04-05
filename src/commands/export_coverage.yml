@@ -22,6 +22,7 @@ steps:
           steps:
               - run:
                     name: Export SPM coverage
+                    when: always
                     command: <<include(scripts/export_spm_coverage.sh)>>
     - when:
           condition:
@@ -29,6 +30,7 @@ steps:
           steps:
               - run:
                     name: Export Xcode coverage
+                    when: always
                     environment:
                         RESULT_BUNDLE_PATH: << parameters.result_bundle >>
                     command: <<include(scripts/export_xcode_coverage.sh)>>
