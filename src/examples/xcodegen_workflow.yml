@@ -5,7 +5,7 @@ description: >
 usage:
     version: 2.1
     orbs:
-        ios: kevnm67/ios-orb@1.0.0
+        ios: kevnm67/ios-orb@2.0.0
     jobs:
         setup:
             executor:
