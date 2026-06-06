@@ -18,9 +18,7 @@ jobs:
             - checkout
             - run:
                   name: Install bats-core and kcov
-                  command: |
-                      sudo apt-get update -qq
-                      sudo apt-get install -y bats kcov
+                  command: ./scripts/ci/install-script-test-deps.sh
             - run:
                   name: Run bats + kcov coverage
                   command: ./scripts/ci/run-script-tests.sh
