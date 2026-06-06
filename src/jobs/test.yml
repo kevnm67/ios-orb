@@ -1,5 +1,5 @@
 ---
-description: Run tests using Code Climate reporter to upload coverage.
+description: Run tests and upload coverage to Qlty Cloud (qlty.sh).
 
 executor:
     name: macos
@@ -51,17 +51,28 @@ parameters:
         description: Path to test reports.
         type: string
         default: ./fastlane/test_output
-    cc_prefix:
-        description: >
-            Code climate prefix relative to the project root.
+    result_bundle_path:
+        description: Path to the xcresult bundle produced by the test run.
         type: string
-        default: format-coverage --prefix /Users/distiller/project/
+        default: TestResults.xcresult
+    coverage_file:
+        description: Path the exported cobertura XML is written to and uploaded from.
+        type: string
+        default: coverage.xml
+    qlty_tag:
+        description: Optional Qlty coverage tag (e.g. unit, ui).
+        type: string
+        default: ''
+    qlty_skip_errors:
+        description: Whether Qlty upload errors should be non-fatal to the pipeline.
+        type: boolean
+        default: false
     pretest_steps:
         description: Scripts to run before starting the test command.
         type: steps
         default: []
     test_steps:
-        description: Scripts to run between settting up code climage and uploading the results.
+        description: Scripts that execute the tests when not using a fastlane lane.
         type: steps
         default: []
     lane:
@@ -81,11 +92,14 @@ steps:
           checkout: << parameters.checkout >>
           attach_workspace: << parameters.attach_workspace >>
           xcode_project: << parameters.xcode_project >>
-    - test_with_code_climate:
+    - test_with_qlty:
           pretest_steps: << parameters.pretest_steps >>
           test_steps: << parameters.test_steps >>
           lane: << parameters.lane >>
-          cc_prefix: << parameters.cc_prefix >>
+          result_bundle_path: << parameters.result_bundle_path >>
+          coverage_file: << parameters.coverage_file >>
+          qlty_tag: << parameters.qlty_tag >>
+          qlty_skip_errors: << parameters.qlty_skip_errors >>
           xcode_project: << parameters.xcode_project >>
     - save_build_artifacts:
           logs_path: << parameters.logs_path >>

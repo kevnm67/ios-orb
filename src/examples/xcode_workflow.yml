@@ -2,11 +2,11 @@
 description: >
     XcodeGen project workflow with build, test, and code coverage.
     Generates the Xcode project from project.yml, runs tests via Fastlane,
-    and uploads coverage to Code Climate.
+    and uploads coverage to Qlty Cloud.
 usage:
     version: 2.1
     orbs:
-        ios-orb: kevnm67/ios-orb@2.0.0
+        ios-orb: kevnm67/ios-orb@3.0.0
     workflows:
         build-test:
             jobs:

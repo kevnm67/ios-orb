@@ -1,14 +1,48 @@
 ---
 description: |
-    Upload code coverage to Qlty Cloud.
-    Requires the QLTY_COVERAGE_TOKEN environment variable to be set.
+    Upload code coverage to Qlty Cloud via the official qltysh/qlty-orb.
+    Requires the QLTY_COVERAGE_TOKEN environment variable (project or
+    workspace coverage token from Qlty's settings) unless overridden
+    via the token parameter.
 
 parameters:
     file:
         description: Path to the coverage file to upload.
         type: string
         default: coverage.xml
+    format:
+        description: |
+            Coverage report format. Empty infers from the file extension or
+            contents (possible values match the qlty orb: simplecov, clover,
+            cobertura, coverprofile, lcov, jacoco, qlty).
+        type: enum
+        enum:
+            - ''
+            - clover
+            - cobertura
+            - coverprofile
+            - jacoco
+            - lcov
+            - simplecov
+            - qlty
+        default: ''
+    tag:
+        description: Optional tag for the coverage report (e.g. unit, ui).
+        type: string
+        default: ''
+    token:
+        description: Env var name holding the Qlty coverage token.
+        type: env_var_name
+        default: QLTY_COVERAGE_TOKEN
+    skip_errors:
+        description: Whether upload errors should be non-fatal to the pipeline.
+        type: boolean
+        default: false
 
 steps:
     - qlty/coverage_publish:
           files: << parameters.file >>
+          format: << parameters.format >>
+          tag: << parameters.tag >>
+          token: << parameters.token >>
+          skip_errors: << parameters.skip_errors >>
