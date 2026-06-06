@@ -1,49 +1,46 @@
-RUBY := $(shell command -v ruby 2>/dev/null)
-HOMEBREW := $(shell command -v brew 2>/dev/null)
-BUNDLER := $(shell command -v bundle 2>/dev/null)
+# Developer convenience targets for ios-orb.
+# Real CI runs via .circleci/config.yml (orb-tools) — these mirror it locally.
 
-VERSION = 0.0.1
+.DEFAULT_GOAL := help
 
 .PHONY: help
 help:
-	@echo "Please use \`make <command>' where <command> is one of"
-	@echo "  setup              to validate orb.yml and the main circle ci config."
-	@echo "  publish_ios_dev    to publish ios dev."
-	@echo "  install_gems       to install gem deps."
-	@echo "  install_bundler    to install bundler."
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "  pack       Pack src/ into src/ios.yml and validate it"
+	@echo "  validate   Validate the packed orb and .circleci configs"
+	@echo "  test       Run bats tests for src/scripts (no kcov needed locally)"
+	@echo "  coverage   Run bats tests under kcov -> coverage/cobertura.xml"
+	@echo "  lint       Run pre-commit hooks (yamllint, yamlfmt, hygiene) on all files"
+	@echo "  shellcheck Run shellcheck on all shell scripts"
+	@echo "  setup      Install local dev dependencies (bats-core, shellcheck, pre-commit)"
 
-orb_org=kevnm67
-orbname=$orb_org/ios-orb
-default=validate
+.PHONY: pack
+pack:
+	cd src && ./pack.sh
 
-default: setup
+.PHONY: validate
+validate: pack
+	circleci config validate .circleci/config.yml
+	circleci config validate .circleci/test-deploy.yml
 
-validate:
-	circleci orb validate orb.yaml
-	if [ -f .circleci/config.yml ]; then circleci config validate; fi
+.PHONY: test
+test:
+	bats tests/scripts
 
-publish_ios_dev:
-	$(sh echo "export VERSION = ${VERSION}")
-	Scripts/orb_publish.sh
+.PHONY: coverage
+coverage:
+	./scripts/ci/run-script-tests.sh
 
-setup: \
-	# $(MAKE) validate
-	$(MAKE) install_gems \
-	$(MAKE) install_ios_dependencies
+.PHONY: lint
+lint:
+	pre-commit run --all-files
 
-install_gems:
+.PHONY: shellcheck
+shellcheck:
+	shellcheck src/scripts/*.sh scripts/ci/*.sh src/pack.sh scripts/variables.sh
 
-ifeq ($(CIRCLECI),)
-	$(info Not running on circle CI...)
-	$(MAKE) install_bundler
-endif
-
-	bundle install
-
-install_bundler:
-
-ifeq ($(BUNDLER),)
-	gem install bundler
-else
-	gem update bundler
-endif
+.PHONY: setup
+setup:
+	brew install bats-core shellcheck pre-commit circleci
+	pre-commit install

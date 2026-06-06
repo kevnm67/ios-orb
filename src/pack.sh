@@ -11,8 +11,8 @@ output_orb_name="ios.yml"
 
 echo "packing local dir $local_dir"
 
-# pack
-circleci config pack "$local_dir" | tee "$local_dir"/"$output_orb_name"
+# pack (orb pack expands << include(...) >> directives; config pack does not)
+circleci orb pack "$local_dir" > "$local_dir"/"$output_orb_name"
 
-# validate
-circleci config validate "$local_dir"/"$output_orb_name"
+# validate (orb validate — config validate rejects orb definitions: "no workflows or build jobs")
+circleci orb validate "$local_dir"/"$output_orb_name"
