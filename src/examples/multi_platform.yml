@@ -5,19 +5,19 @@ description: >
 usage:
     version: 2.1
     orbs:
-        ios: kevnm67/ios-orb@2.0.0
+        ios-orb: kevnm67/ios-orb@2.0.0
     workflows:
         multi-platform:
             jobs:
-                - ios/run_with_setup:
+                - ios-orb/run_with_setup:
                       name: setup
                       xcode_version: 26.3.0
                       xcode_project: MyApp
                       scripts:
-                          - ios/install_tools:
+                          - ios-orb/install_tools:
                                 tools: xcodegen
-                          - ios/xcodegen
-                - ios/run_with_setup:
+                          - ios-orb/xcodegen
+                - ios-orb/run_with_setup:
                       name: test-ios
                       attach_workspace: true
                       checkout: false
@@ -36,7 +36,7 @@ usage:
                                 path: test-results
                       requires:
                           - setup
-                - ios/run_with_setup:
+                - ios-orb/run_with_setup:
                       name: test-macos
                       attach_workspace: true
                       checkout: false

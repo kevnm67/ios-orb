@@ -6,31 +6,31 @@ description: >
 usage:
     version: 2.1
     orbs:
-        ios: kevnm67/ios-orb@2.0.0
+        ios-orb: kevnm67/ios-orb@2.0.0
     workflows:
         pr:
             when:
                 not:
                     equal: [main, << pipeline.git.branch >>]
             jobs:
-                - ios/run_with_setup:
+                - ios-orb/run_with_setup:
                       name: setup
                       xcode_version: 26.3.0
                       xcode_project: MyApp
                       scripts:
-                          - ios/install_tools:
+                          - ios-orb/install_tools:
                                 tools: xcodegen swiftlint
-                          - ios/xcodegen
-                - ios/run_with_setup:
+                          - ios-orb/xcodegen
+                - ios-orb/run_with_setup:
                       name: lint
                       attach_workspace: true
                       checkout: false
                       scripts:
-                          - ios/swiftlint:
+                          - ios-orb/swiftlint:
                                 strict: true
                       requires:
                           - setup
-                - ios/test:
+                - ios-orb/test:
                       name: test
                       xcode_version: 26.3.0
                       xcode_project: MyApp
@@ -41,22 +41,22 @@ usage:
             when:
                 equal: [main, << pipeline.git.branch >>]
             jobs:
-                - ios/run_with_setup:
+                - ios-orb/run_with_setup:
                       name: setup
                       xcode_version: 26.3.0
                       xcode_project: MyApp
                       scripts:
-                          - ios/install_tools:
+                          - ios-orb/install_tools:
                                 tools: xcodegen swiftlint
-                          - ios/xcodegen
-                - ios/test:
+                          - ios-orb/xcodegen
+                - ios-orb/test:
                       name: test
                       xcode_version: 26.3.0
                       xcode_project: MyApp
                       lane: test
                       requires:
                           - setup
-                - ios/run_with_setup:
+                - ios-orb/run_with_setup:
                       name: tag-release
                       attach_workspace: true
                       checkout: false

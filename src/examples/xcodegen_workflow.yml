@@ -5,16 +5,16 @@ description: >
 usage:
     version: 2.1
     orbs:
-        ios: kevnm67/ios-orb@2.0.0
+        ios-orb: kevnm67/ios-orb@2.0.0
     jobs:
         setup:
             executor:
-                name: ios/macos
+                name: ios-orb/macos
             steps:
                 - checkout
-                - ios/install_tools:
+                - ios-orb/install_tools:
                       tools: xcodegen swiftlint
-                - ios/xcodegen
+                - ios-orb/xcodegen
                 - run:
                       name: Install gems
                       command: |
@@ -26,11 +26,11 @@ usage:
                           - .
         test:
             executor:
-                name: ios/macos
+                name: ios-orb/macos
             steps:
                 - attach_workspace:
                       at: .
-                - ios/lane:
+                - ios-orb/lane:
                       named: test
                 - store_test_results:
                       path: test-results
