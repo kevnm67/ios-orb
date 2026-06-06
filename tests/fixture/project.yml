@@ -1,0 +1,78 @@
+---
+name: FixtureApp
+options:
+    bundleIdPrefix: com.kevinmorton
+    deploymentTarget:
+        iOS: '18.0'
+    defaultConfig: Debug
+    xcodeVersion: '16.0'
+    generateEmptyDirectories: true
+    groupSortPosition: top
+
+settings:
+    base:
+        SWIFT_VERSION: '6.0'
+        DEVELOPMENT_TEAM: ''
+
+configs:
+    Debug:
+        buildSettings:
+            DEBUG_INFORMATION_FORMAT: dwarf
+    Release:
+        buildSettings:
+            DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+
+targets:
+    FixtureApp:
+        type: application
+        platform: iOS
+        deploymentTarget: '18.0'
+        sources:
+            - path: FixtureApp/Sources
+              type: group
+        settings:
+            base:
+                PRODUCT_BUNDLE_IDENTIFIER: com.kevinmorton.OrbFixture
+                SWIFT_VERSION: '6.0'
+                CODE_SIGNING_ALLOWED: NO
+                CODE_SIGNING_REQUIRED: NO
+                CODE_SIGN_IDENTITY: ''
+                ENABLE_BITCODE: NO
+                GENERATE_INFOPLIST_FILE: YES
+                ENABLE_PREVIEWS: NO
+
+    FixtureAppTests:
+        type: bundle.unit-test
+        platform: iOS
+        deploymentTarget: '18.0'
+        sources:
+            - path: FixtureAppTests
+        settings:
+            base:
+                PRODUCT_BUNDLE_IDENTIFIER: com.kevinmorton.OrbFixtureTests
+                SWIFT_VERSION: '6.0'
+                CODE_SIGNING_ALLOWED: NO
+                CODE_SIGNING_REQUIRED: NO
+                CODE_SIGN_IDENTITY: ''
+                TEST_HOST: $(BUILT_PRODUCTS_DIR)/FixtureApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FixtureApp
+                BUNDLE_LOADER: $(TEST_HOST)
+        dependencies:
+            - target: FixtureApp
+
+schemes:
+    FixtureApp:
+        build:
+            targets:
+                FixtureApp: all
+                FixtureAppTests: [test]
+        test:
+            config: Debug
+            gatherCoverageData: true
+            coverageTargets:
+                - FixtureApp
+            targets:
+                - name: FixtureAppTests
+                  parallelizable: true
+                  randomExecutionOrder: true
+        run:
+            config: Debug
