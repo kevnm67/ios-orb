@@ -1,5 +1,5 @@
 # ios-orb v3 — component architecture and coverage flow
-direction: right
+direction: down
 
 consumer: "Consumer config\n(e.g. TrailSync)" {
   shape: rectangle
@@ -8,6 +8,7 @@ consumer: "Consumer config\n(e.g. TrailSync)" {
 
 orb: "kevnm67/ios-orb@3.x" {
   style.fill: "#FFF8E1"
+  direction: right
 
   jobs: "Jobs" {
     batx: "build_and_test_xcode\n(xcodegen → build → test →\ncoverage → qlty)"
@@ -30,23 +31,32 @@ orb: "kevnm67/ios-orb@3.x" {
   }
 }
 
-bundled: "Bundled orbs" {
+coverage: "Coverage publishing" {
   style.fill: "#E6F4EA"
-  qlty: "qltysh/qlty-orb\ncoverage_publish"
+  direction: right
+
+  qlty_orb: "qltysh/qlty-orb\ncoverage_publish"
+  cloud: "Qlty Cloud\n(coverage + maintainability)" {
+    shape: cylinder
+  }
+  qlty_orb -> cloud: "QLTY_COVERAGE_TOKEN"
+}
+
+bundled: "Other bundled orbs" {
+  style.fill: "#E6F4EA"
+  direction: right
   macos: "circleci/macos"
   ruby: "circleci/ruby"
 }
 
-cloud: "Qlty Cloud\n(coverage + maintainability)" {
-  shape: cylinder
-  style.fill: "#E6F4EA"
-}
-
 release: "Release pipeline" {
   style.fill: "#FCE8E6"
+  direction: right
   tag: "git tag vX.Y.Z"
   publish: "orb-tools publish\n(CircleCI registry)"
   ghrel: "GitHub Release\n(release-on-tag workflow)"
+  tag -> publish
+  tag -> ghrel: "kept in lockstep"
 }
 
 consumer -> orb.jobs.batx: "qlty: true"
@@ -54,7 +64,4 @@ orb.jobs.batx -> orb.commands.exportcov
 orb.jobs.test -> orb.commands.twq
 orb.commands.twq -> orb.commands.exportcov
 orb.commands.exportcov -> orb.commands.upload
-orb.commands.upload -> bundled.qlty
-bundled.qlty -> cloud: "QLTY_COVERAGE_TOKEN"
-release.tag -> release.publish
-release.tag -> release.ghrel: "kept in lockstep"
+orb.commands.upload -> coverage.qlty_orb
