@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "xcodegen stub: $*" >&2
+echo "xcodegen $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "stub:xcodegen $*"

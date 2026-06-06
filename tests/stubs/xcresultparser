@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "xcresultparser stub: $*" >&2
+echo "xcresultparser $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "<?xml version=\"1.0\" ?><coverage version=\"4\"><packages/></coverage>"

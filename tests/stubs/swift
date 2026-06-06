@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+echo "swift stub: $*" >&2
+echo "swift $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+if [[ "$*" == *"--show-bin-path"* ]]; then
+    echo "${STUB_BUILD_DIR:-}"
+fi

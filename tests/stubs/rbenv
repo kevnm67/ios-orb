@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+echo "rbenv stub: $*" >&2
+echo "rbenv $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+case "$*" in
+    "versions --bare")
+        printf "3.1.0\n3.2.0\n"
+        ;;
+    global)
+        echo "3.2.0"
+        ;;
+    "local "*)
+        echo "stub:rbenv local set"
+        ;;
+    *)
+        echo "stub:rbenv $*"
+        ;;
+esac

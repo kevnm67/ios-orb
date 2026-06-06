@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "swiftlint stub: $*" >&2
+echo "swiftlint $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "stub:swiftlint $*"

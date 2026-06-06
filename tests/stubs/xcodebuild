@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+echo "xcodebuild stub: $*" >&2
+echo "xcodebuild $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+if [[ "$*" == *"showBuildSettings"* ]]; then
+    echo "    MARKETING_VERSION = 2.5.0"
+fi

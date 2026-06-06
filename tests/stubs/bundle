@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "bundle stub: $*" >&2
+echo "bundle $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "stub:bundle $*"
