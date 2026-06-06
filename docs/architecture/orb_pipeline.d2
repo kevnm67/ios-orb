@@ -1,0 +1,60 @@
+# ios-orb v3 — component architecture and coverage flow
+direction: right
+
+consumer: "Consumer config\n(e.g. TrailSync)" {
+  shape: rectangle
+  style.fill: "#E8F0FE"
+}
+
+orb: "kevnm67/ios-orb@3.x" {
+  style.fill: "#FFF8E1"
+
+  jobs: "Jobs" {
+    batx: "build_and_test_xcode\n(xcodegen → build → test →\ncoverage → qlty)"
+    bats: "build_and_test_spm"
+    test: "test\n(fastlane lane + qlty)"
+    rws: "run_with_setup"
+  }
+
+  commands: "Commands" {
+    swiftlint: "swiftlint"
+    twq: "test_with_qlty"
+    exportcov: "export_coverage\n(xcresult → cobertura)"
+    upload: "upload_qlty_coverage"
+    match: "match_signing"
+    spmcache: "cache_spm /\nrestore_spm_cache"
+  }
+
+  executor: "macos executor\nXcode 26.3 / m4pro" {
+    shape: rectangle
+  }
+}
+
+bundled: "Bundled orbs" {
+  style.fill: "#E6F4EA"
+  qlty: "qltysh/qlty-orb\ncoverage_publish"
+  macos: "circleci/macos"
+  ruby: "circleci/ruby"
+}
+
+cloud: "Qlty Cloud\n(coverage + maintainability)" {
+  shape: cylinder
+  style.fill: "#E6F4EA"
+}
+
+release: "Release pipeline" {
+  style.fill: "#FCE8E6"
+  tag: "git tag vX.Y.Z"
+  publish: "orb-tools publish\n(CircleCI registry)"
+  ghrel: "GitHub Release\n(release-on-tag workflow)"
+}
+
+consumer -> orb.jobs.batx: "qlty: true"
+orb.jobs.batx -> orb.commands.exportcov
+orb.jobs.test -> orb.commands.twq
+orb.commands.twq -> orb.commands.exportcov
+orb.commands.exportcov -> orb.commands.upload
+orb.commands.upload -> bundled.qlty
+bundled.qlty -> cloud: "QLTY_COVERAGE_TOKEN"
+release.tag -> release.publish
+release.tag -> release.ghrel: "kept in lockstep"
