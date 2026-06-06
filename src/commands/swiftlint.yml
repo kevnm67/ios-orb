@@ -10,11 +10,11 @@ parameters:
     config:
         description: Path to SwiftLint configuration file.
         type: string
-        default: ""
+        default: ''
     reporter:
         description: Reporter type (xcode, json, csv, emoji, etc.).
         type: string
-        default: ""
+        default: ''
 
 steps:
     - run:
@@ -23,7 +23,7 @@ steps:
     - run:
           name: Run SwiftLint
           environment:
-              SWIFTLINT_STRICT: "<< parameters.strict >>"
+              SWIFTLINT_STRICT: << parameters.strict >>
               SWIFTLINT_CONFIG: << parameters.config >>
               SWIFTLINT_REPORTER: << parameters.reporter >>
           command: << include(scripts/swiftlint_run.sh) >>

@@ -20,13 +20,13 @@ parameters:
             App bundle identifier. Leave empty to infer from Matchfile
             or MATCH_APP_IDENTIFIER environment variable.
         type: string
-        default: ""
+        default: ''
 
 steps:
     - run:
           name: Sync code signing via match (<< parameters.type >>)
           environment:
               MATCH_TYPES: << parameters.type >>
-              MATCH_READONLY: "<< parameters.readonly >>"
+              MATCH_READONLY: << parameters.readonly >>
               MATCH_APP_IDENTIFIER: << parameters.app_identifier >>
           command: << include(scripts/match_signing.sh) >>
