@@ -5,11 +5,11 @@ description: >
 usage:
     version: 2.1
     orbs:
-        ios: kevnm67/ios-orb@2.0.0
+        ios-orb: kevnm67/ios-orb@2.0.0
     workflows:
         ci:
             jobs:
-                - ios/run_with_setup:
+                - ios-orb/run_with_setup:
                       name: build-and-test
                       xcode_version: 26.3.0
                       scripts:
