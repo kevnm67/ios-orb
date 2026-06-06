@@ -2,11 +2,13 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/kevnm67/ios-orb/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kevnm67/ios-orb/tree/main)
 [![CircleCI Orb Version][orb_badge]][orb_registry]
-[![Maintainability](https://qlty.sh/badges/gh/kevnm67/projects/ios-orb/maintainability.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
-[![Code Coverage](https://qlty.sh/badges/gh/kevnm67/projects/ios-orb/coverage.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
+[![Maintainability](https://qlty.sh/badges/f5e5400a-92d0-4f83-82e8-640bd86fb9ee/maintainability.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
+[![Code Coverage](https://qlty.sh/badges/f5e5400a-92d0-4f83-82e8-640bd86fb9ee/coverage.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
 
 A CircleCI orb for iOS CI/CD pipelines — reusable commands, jobs,
 and executors for building, testing, and deploying iOS/macOS apps.
+
+**📦 [kevnm67/ios-orb on the CircleCI Orb Registry][orb_registry]**
 
 ---
 
