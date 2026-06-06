@@ -3,7 +3,7 @@ name: FixtureApp
 options:
     bundleIdPrefix: com.kevinmorton
     deploymentTarget:
-        iOS: '18.0'
+        iOS: '26.0'
     defaultConfig: Debug
     xcodeVersion: '16.0'
     generateEmptyDirectories: true
@@ -26,7 +26,7 @@ targets:
     FixtureApp:
         type: application
         platform: iOS
-        deploymentTarget: '18.0'
+        deploymentTarget: '26.0'
         sources:
             - path: FixtureApp/Sources
               type: group
@@ -44,7 +44,7 @@ targets:
     FixtureAppTests:
         type: bundle.unit-test
         platform: iOS
-        deploymentTarget: '18.0'
+        deploymentTarget: '26.0'
         sources:
             - path: FixtureAppTests
         settings:
