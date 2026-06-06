@@ -16,9 +16,16 @@ jobs:
             - image: cimg/base:current
         steps:
             - checkout
+            - restore_cache:
+                  keys:
+                      - kcov-v43-{{ arch }}
             - run:
                   name: Install bats-core and kcov
                   command: ./scripts/ci/install-script-test-deps.sh
+            - save_cache:
+                  key: kcov-v43-{{ arch }}
+                  paths:
+                      - ~/kcov
             - run:
                   name: Run bats + kcov coverage
                   command: ./scripts/ci/run-script-tests.sh
