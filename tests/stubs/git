@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+echo "git stub: $*" >&2
+echo "git $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+case "$*" in
+    "describe --tags --abbrev=0")
+        echo "v1.2.3"
+        ;;
+    "rev-parse v1.2.4")
+        # Tag does not exist — return non-zero so script proceeds to create it
+        exit 1
+        ;;
+    "rev-parse "*)
+        exit 1
+        ;;
+    "tag -a "*)
+        echo "stub:git tag created"
+        ;;
+    "push origin "*)
+        echo "stub:git push"
+        ;;
+    *)
+        echo "stub:git $*"
+        ;;
+esac

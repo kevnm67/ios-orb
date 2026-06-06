@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo "xcrun stub: $*" >&2
+echo "xcrun $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+# Simulate llvm-cov export writing lcov data to stdout
+if [[ "$*" == *"llvm-cov export"* ]]; then
+    echo "DA:1,1"
+    echo "DA:2,0"
+fi

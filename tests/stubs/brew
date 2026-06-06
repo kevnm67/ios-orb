@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "brew stub: $*" >&2
+echo "brew $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "stub:brew $*"

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "ruby stub: $*" >&2
+echo "ruby $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "ruby 3.2.0 (stub)"
