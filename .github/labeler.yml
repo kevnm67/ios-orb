@@ -1,36 +1,49 @@
 ---
+# actions/labeler v5+ format: each label maps to changed-files matchers.
 dependencies:
-  - Gemfile
-  - Gemfile.lock
-  - Brewfile
+    - changed-files:
+          - any-glob-to-any-file:
+                - Gemfile
+                - Gemfile.lock
+                - Brewfile
 
 enhancement:
-  - src/*
+    - changed-files:
+          - any-glob-to-any-file:
+                - src/**
 
 config-iOS:
-  - orbs/ios/*
-  - orbs/ios-orb/*
+    - changed-files:
+          - any-glob-to-any-file:
+                - orbs/ios/**
+                - orbs/ios-orb/**
 
 configs-ruby:
-  - "*/ruby/*"
+    - changed-files:
+          - any-glob-to-any-file:
+                - '**/ruby/**'
 
 CI/CD:
-  - .circleci/*
-  - .codeclimate.yml
-  - .dependabot
-  - .github/*
-  - .pre-commit-config.yaml
-  - .ruby-version
-  - .swift-version
-  - .yamllint
-  - Dangerfile
-  - fastlane/*
-  - Makefile
-  - scripts/*
+    - changed-files:
+          - any-glob-to-any-file:
+                - .circleci/**
+                - .codeclimate.yml
+                - .dependabot
+                - .github/**
+                - .pre-commit-config.yaml
+                - .ruby-version
+                - .swift-version
+                - .yamllint
+                - Dangerfile
+                - fastlane/**
+                - Makefile
+                - scripts/**
 
 documentation:
-  - CHANGELOG.md
-  - doc/*
-  - Documentation/*
-  - jazzy.yml
-  - README.md
+    - changed-files:
+          - any-glob-to-any-file:
+                - CHANGELOG.md
+                - doc/**
+                - Documentation/**
+                - jazzy.yml
+                - README.md
