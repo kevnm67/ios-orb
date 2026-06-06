@@ -30,6 +30,44 @@ jobs:
             - ios-orb/setup:
                   checkout: false
                   persist_workspace: false
+
+    fixture_test:
+        executor: ios-orb/macos
+        steps:
+            - checkout
+            - ios-orb/install_tools:
+                  tools: xcodegen xcresultparser
+            - run:
+                  name: Generate Xcode project
+                  command: cd tests/fixture && xcodegen generate --quiet
+            - ios-orb/build_xcode:
+                  scheme: FixtureApp
+                  project: tests/fixture/FixtureApp.xcodeproj
+                  destination: platform=iOS Simulator,name=iPhone Air
+                  configuration: Debug
+            - ios-orb/test_xcode:
+                  scheme: FixtureApp
+                  project: tests/fixture/FixtureApp.xcodeproj
+                  destination: platform=iOS Simulator,name=iPhone Air
+                  result_bundle_path: tests/fixture/TestResults.xcresult
+            - ios-orb/export_coverage:
+                  type: xcode
+                  result_bundle: tests/fixture/TestResults.xcresult
+            - run:
+                  name: Check coverage threshold (≥80%)
+                  command: ./scripts/ci/check_coverage_threshold.sh coverage.xml 80
+            - ios-orb/upload_qlty_coverage:
+                  file: coverage.xml
+                  format: cobertura
+                  tag: fixture
+                  skip_errors: true
+            - store_artifacts:
+                  path: tests/fixture/TestResults.xcresult
+                  destination: xcresult
+            - store_artifacts:
+                  path: coverage.xml
+                  destination: coverage.xml
+
 workflows:
     test-deploy:
         jobs:
@@ -37,6 +75,9 @@ workflows:
       # Test your orb's commands in a custom job and test your orb's jobs directly as a part of this workflow.
             - command-test:
                   filters: *filters
+            - fixture_test:
+                  filters: *filters
+                  context: qlty-credentials
             - orb-tools/pack:
                   filters: *release-filters
             - orb-tools/publish:
@@ -46,5 +87,6 @@ workflows:
                   requires:
                       - orb-tools/pack
                       - command-test
+                      - fixture_test
                   context: orb-publishing
                   filters: *release-filters
