@@ -8,8 +8,8 @@ description: >
     XcodeGen-based apps, and standard Xcode projects.
 
     v2 features: Apple Silicon executors (m4pro), XcodeGen integration,
-    SwiftLint command, Fastlane Match signing, SPM caching, Code Climate and
-    Qlty coverage upload, build artifact storage, and automated release tagging.
+    SwiftLint command, Fastlane Match signing, SPM caching, Qlty Cloud
+    coverage upload (successor to the EOL Code Climate test reporter), build artifact storage, and automated release tagging.
 
     Bundled orbs:
       - [circleci/macos](https://circleci.com/developer/orbs/orb/circleci/macos)

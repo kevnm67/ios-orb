@@ -1,0 +1,69 @@
+---
+description: |
+    Run tests and upload coverage to Qlty Cloud.
+    Successor to the removed test_with_code_climate command — Code Climate's
+    test reporter is end-of-life and Qlty (qlty.sh) is its successor platform.
+
+    Runs optional pretest steps, restores the SPM cache, executes either a
+    fastlane lane or custom test steps, exports cobertura XML from the
+    xcresult bundle, and publishes it via the qltysh/qlty-orb.
+parameters:
+    lane:
+        description: Lane to run using fastlane. Only applicable when using fastlane.
+        type: string
+        default: ''
+    pretest_steps:
+        description: Scripts to run before starting the test command.
+        type: steps
+        default: []
+    test_steps:
+        description: Scripts that execute the tests when not using a fastlane lane.
+        type: steps
+        default: []
+    xcode_project:
+        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        type: string
+        default: ''
+    result_bundle_path:
+        description: Path to the xcresult bundle produced by the test run.
+        type: string
+        default: TestResults.xcresult
+    coverage_file:
+        description: Path the exported cobertura XML is written to and uploaded from.
+        type: string
+        default: coverage.xml
+    qlty_tag:
+        description: Optional Qlty coverage tag (e.g. unit, ui).
+        type: string
+        default: ''
+    qlty_skip_errors:
+        description: Whether Qlty upload errors should be non-fatal to the pipeline.
+        type: boolean
+        default: false
+
+steps:
+    - << parameters.pretest_steps >>
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - restore_spm_cache:
+                    xcode_project: << parameters.xcode_project >>
+    - << parameters.test_steps >>
+    - when:
+          condition: << parameters.lane >>
+          steps:
+              - lane:
+                    named: << parameters.lane >>
+    - when:
+          condition: << parameters.xcode_project >>
+          steps:
+              - cache_spm:
+                    xcode_project: << parameters.xcode_project >>
+    - export_coverage:
+          type: xcode
+          result_bundle: << parameters.result_bundle_path >>
+    - upload_qlty_coverage:
+          file: << parameters.coverage_file >>
+          format: cobertura
+          tag: << parameters.qlty_tag >>
+          skip_errors: << parameters.qlty_skip_errors >>

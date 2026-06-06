@@ -14,7 +14,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
 version: 2.1
 
 orbs:
-  ios: kevnm67/ios-orb@2.0.0
+  ios: kevnm67/ios-orb@3.0.0
 
 workflows:
   build-test:
@@ -156,7 +156,7 @@ Run tests with Code Climate coverage (legacy).
 version: 2.1
 
 orbs:
-  ios: kevnm67/ios-orb@2.0.0
+  ios: kevnm67/ios-orb@3.0.0
 
 jobs:
   setup:

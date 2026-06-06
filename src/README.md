@@ -88,7 +88,7 @@ General-purpose job: checkout, attach workspace, run custom scripts, save artifa
 
 ### `test`
 
-Test job with Code Climate coverage integration.
+Test job with Qlty Cloud coverage integration (Code Climate's successor).
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -102,7 +102,9 @@ Test job with Code Climate coverage integration.
 | `logs_path` | string | `~/Library/Logs/scan` | Path to scan logs |
 | `build_logs_path` | string | `~/Library/Logs/DiagnosticReports/` | Path to diagnostic reports |
 | `test_output_path` | string | `./fastlane/test_output` | Path to test output |
-| `cc_prefix` | string | `format-coverage --prefix /Users/distiller/project/` | Code Climate prefix |
+| `result_bundle_path` | string | `TestResults.xcresult` | xcresult bundle from the test run |
+| `coverage_file` | string | `coverage.xml` | Exported cobertura XML uploaded to Qlty |
+| `qlty_tag` | string | `""` | Optional Qlty coverage tag |
 | `pretest_steps` | steps | `[]` | Steps to run before tests |
 | `test_steps` | steps | `[]` | Steps to run during test phase |
 | `lane` | string | `""` | Fastlane lane to execute |
@@ -124,7 +126,7 @@ Test job with Code Climate coverage integration.
 | `cache_spm` | Save SPM package cache | `key`, `xcode_project`, `path` |
 | `restore_spm_cache` | Restore SPM package cache | `key`, `xcode_project` |
 | `save_build_artifacts` | Store build logs and test results | `logs_path`, `build_logs_path`, `test_output_path` |
-| `test_with_code_climate` | Run tests with Code Climate reporter | `lane`, `pretest_steps`, `test_steps`, `cc_prefix`, `xcode_project` |
+| `test_with_qlty` | Run tests and upload coverage to Qlty Cloud | `lane`, `pretest_steps`, `test_steps`, `result_bundle_path`, `coverage_file`, `qlty_tag`, `xcode_project` |
 
 ---
 
