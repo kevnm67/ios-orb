@@ -32,7 +32,7 @@ fi
 
 # Fallback: look for any test executable
 if [[ -z "${TEST_BINARY}" ]]; then
-    TEST_BINARY=$(find "${BUILD_DIR}" -type f -perm +111 -name "*Tests" 2>/dev/null | head -1)
+    TEST_BINARY=$(find "${BUILD_DIR}" -type f -perm -111 -name "*Tests" 2>/dev/null | head -1)
 fi
 
 if [[ -z "${TEST_BINARY}" ]]; then
