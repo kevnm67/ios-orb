@@ -8,9 +8,14 @@ set -euo pipefail
 
 ARGS=()
 
-if [ "${SWIFTLINT_STRICT}" = "true" ]; then
-    ARGS+=("--strict")
-fi
+# Boolean parameters can render as "true" or "1" depending on how the
+# command was invoked — accept both.
+case "${SWIFTLINT_STRICT:-false}" in
+    true | 1)
+        ARGS+=("--strict")
+        ;;
+    *) ;;
+esac
 
 if [ -n "${SWIFTLINT_CONFIG:-}" ]; then
     ARGS+=("--config" "${SWIFTLINT_CONFIG}")
@@ -20,5 +25,7 @@ if [ -n "${SWIFTLINT_REPORTER:-}" ]; then
     ARGS+=("--reporter" "${SWIFTLINT_REPORTER}")
 fi
 
-echo "→ Running: swiftlint ${ARGS[*]}"
-swiftlint "${ARGS[@]}"
+# macOS ships bash 3.2, where expanding an EMPTY array under `set -u`
+# raises "ARGS[*]: unbound variable". Use the ${arr[@]+...} guard.
+echo "→ Running: swiftlint ${ARGS[*]:-}"
+swiftlint ${ARGS[@]+"${ARGS[@]}"}
