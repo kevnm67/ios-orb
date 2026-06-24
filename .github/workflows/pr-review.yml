@@ -22,7 +22,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Review PR with Claude
-              uses: anthropics/claude-code-action@74eedf1a1892082d619c3edb66b9402da6520e7f # v1
+              uses: anthropics/claude-code-action@428971d2ecd6e3a7cb0ee0da2a3a8b33fdb3678d # v1
               with:
                   anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
                   prompt: Review this PR for code quality, security, and completeness. Check for potential issues and suggest improvements.
