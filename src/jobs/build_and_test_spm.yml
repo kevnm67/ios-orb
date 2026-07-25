@@ -72,7 +72,9 @@ steps:
                   - << parameters.coverage >>
                   - << parameters.qlty >>
           steps:
-              - upload_qlty_coverage
+              - upload_qlty_coverage:
+                    file: coverage.lcov
+                    format: lcov
     - save_cache:
           key: spm-v2-{{ arch }}-{{ checksum "Package.resolved" }}
           paths:

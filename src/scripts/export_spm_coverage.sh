@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Export SPM code coverage to cobertura XML.
-# Converts llvm-cov profdata -> lcov -> coverage.xml
+# Export SPM code coverage to lcov (coverage.lcov).
+# Converts llvm-cov profdata -> lcov. The file is uploaded as-is with
+# format=lcov — never renamed to .xml, which would mislabel it as cobertura.
 # Non-fatal: exits 0 even if coverage export fails (CI should not break on coverage)
 
 BUILD_DIR=$(swift build --show-bin-path 2>/dev/null || echo "")
@@ -52,8 +53,7 @@ xcrun llvm-cov export \
     > coverage.lcov 2>/dev/null || true
 
 if [[ -s coverage.lcov ]]; then
-    cp coverage.lcov coverage.xml
-    echo "-> Coverage exported to coverage.xml ($(wc -l < coverage.lcov) lines)"
+    echo "-> Coverage exported to coverage.lcov ($(wc -l < coverage.lcov) lines)"
 else
     echo "⚠ Coverage export produced empty output. Skipping."
     exit 0

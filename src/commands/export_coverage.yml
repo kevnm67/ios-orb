@@ -1,7 +1,9 @@
 ---
 description: |
-    Export code coverage to cobertura-compatible XML.
-    Supports both SPM (llvm-cov) and Xcode (xcresultparser) coverage sources.
+    Export code coverage for upload.
+    SPM (llvm-cov) writes lcov to coverage.lcov — upload it with format "lcov".
+    Xcode (xcresultparser) writes cobertura XML to coverage.xml — upload it
+    with format "cobertura".
 
 parameters:
     type:

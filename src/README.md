@@ -166,7 +166,7 @@ coverage, and optionally uploads to Qlty Cloud.
 | `save_build_artifacts` | Store build logs and test results | `logs_path`, `build_logs_path`, `test_output_path` |
 | `test_with_qlty` | Run tests and upload coverage to Qlty Cloud | `lane`, `pretest_steps`, `test_steps`, `result_bundle_path`, `coverage_file`, `qlty_tag`, `qlty_skip_errors`, `xcode_project` |
 | `upload_qlty_coverage` | Upload a coverage file to Qlty Cloud | `file`, `format`, `tag`, `token`, `skip_errors` |
-| `export_coverage` | Export coverage to cobertura XML | `type` (`spm` or `xcode`), `result_bundle` |
+| `export_coverage` | Export coverage — `spm` → `coverage.lcov` (lcov), `xcode` → `coverage.xml` (cobertura) | `type` (`spm` or `xcode`), `result_bundle` |
 
 ---
 

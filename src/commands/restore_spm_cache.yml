@@ -1,20 +1,29 @@
 ---
 description: |
     Restores SPM cache.
+    The checksum keys on the Xcode project's Package.resolved when
+    xcode_project is set, falling back to the root Package.resolved for pure
+    SPM packages (an empty key file is used when neither exists).
 parameters:
     key:
         description: Cache key (prefixed).  The key is immutable.
         type: string
         default: spm-v1
     xcode_project:
-        description: Name of your xcodeproj for setting the path to the Package.resolved file.
+        description: |
+            Name of your xcodeproj for setting the path to the Package.resolved
+            file. Leave empty for pure SPM packages to key on the root
+            Package.resolved.
         type: string
         default: ''
 steps:
+    - run:
+          name: Resolve SPM cache key
+          environment:
+              XCODE_PROJECT: << parameters.xcode_project >>
+          command: <<include(scripts/resolve_spm_cache_key.sh)>>
     - restore_cache:
           keys:
-              - << parameters.key >>-{{ arch }}-{{ .Branch }}-{{ checksum "<< parameters.xcode_project >>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-                }}
-              - << parameters.key >>-{{ arch }}-{{ checksum "<< parameters.xcode_project >>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-                }}
-              - << parameters.key >>-{{ checksum "<< parameters.xcode_project >>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved" }}
+              - << parameters.key >>-{{ arch }}-{{ .Branch }}-{{ checksum "Package.resolved.cache-key" }}
+              - << parameters.key >>-{{ arch }}-{{ checksum "Package.resolved.cache-key" }}
+              - << parameters.key >>-{{ checksum "Package.resolved.cache-key" }}
