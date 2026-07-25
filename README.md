@@ -161,7 +161,10 @@ Install a Homebrew formula with optional caching.
 
 ### `cache_spm` / `restore_spm_cache`
 
-Cache and restore Swift Package Manager dependencies.
+Cache and restore Swift Package Manager dependencies. The cache checksum keys
+on `<xcode_project>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`
+when `xcode_project` is set, and falls back to the root `Package.resolved` for
+pure SPM packages (leave `xcode_project` empty).
 
 ### `save_build_artifacts`
 
@@ -218,12 +221,13 @@ steps:
 
 ### `export_coverage`
 
-Export code coverage to cobertura-compatible XML. Supports both SPM
-(`llvm-cov`) and Xcode (`xcresultparser`) coverage sources.
+Export code coverage for upload. `type: spm` (`llvm-cov`) writes lcov to
+`coverage.lcov`; `type: xcode` (`xcresultparser`) writes cobertura XML to
+`coverage.xml`. Pass the matching `file`/`format` to `upload_qlty_coverage`.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `type` | enum | — | Coverage source: `spm` or `xcode` |
+| `type` | enum | — | Coverage source: `spm` (→ `coverage.lcov`) or `xcode` (→ `coverage.xml`) |
 | `result_bundle` | string | `TestResults.xcresult` | Path to xcresult bundle (Xcode only) |
 
 ```yaml
@@ -231,6 +235,13 @@ steps:
   - ios/export_coverage:
       type: xcode
       result_bundle: TestResults.xcresult
+
+  # SPM packages export lcov — upload with format: lcov
+  - ios/export_coverage:
+      type: spm
+  - ios/upload_qlty_coverage:
+      file: coverage.lcov
+      format: lcov
 ```
 
 ---

@@ -31,6 +31,33 @@ jobs:
                   checkout: false
                   persist_workspace: false
 
+  # Pure SPM package fixture: exercises the root-Package.resolved cache-key
+  # fallback and the lcov coverage export/upload path end-to-end.
+    spm_fixture_test:
+        executor: ios-orb/macos
+        working_directory: ~/project/tests/fixture-spm
+        steps:
+            - checkout:
+                  path: ~/project
+            - ios-orb/restore_spm_cache
+            - ios-orb/build_spm
+            - ios-orb/test_spm
+            - ios-orb/export_coverage:
+                  type: spm
+            - run:
+                  name: Verify lcov coverage output
+                  command: ~/project/scripts/ci/verify-spm-lcov.sh
+            - ios-orb/upload_qlty_coverage:
+                  file: coverage.lcov
+                  format: lcov
+                  tag: fixture-spm
+                  skip_errors: true
+            - ios-orb/cache_spm:
+                  path: .build
+            - store_artifacts:
+                  path: coverage.lcov
+                  destination: coverage.lcov
+
     fixture_test:
         executor: ios-orb/macos
         steps:
@@ -78,6 +105,9 @@ workflows:
             - fixture_test:
                   filters: *filters
                   context: qlty-credentials
+            - spm_fixture_test:
+                  filters: *filters
+                  context: qlty-credentials
             - orb-tools/pack:
                   filters: *release-filters
             - orb-tools/publish:
@@ -88,5 +118,6 @@ workflows:
                       - orb-tools/pack
                       - command-test
                       - fixture_test
+                      - spm_fixture_test
                   context: orb-publishing
                   filters: *release-filters

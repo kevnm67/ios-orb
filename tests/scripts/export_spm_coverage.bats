@@ -90,5 +90,9 @@ XSTUB
     export PATH="${TMPBIN}:/usr/bin:/bin:/usr/sbin:/sbin"
     run bash "${SCRIPT}"
     [ "${status}" -eq 0 ]
-    [[ "${output}" == *"Coverage exported"* ]]
+    [[ "${output}" == *"Coverage exported to coverage.lcov"* ]]
+    [ -s coverage.lcov ]
+    # Regression: lcov must never be renamed to .xml — qlty would infer
+    # cobertura from the extension and fail to parse the lcov content.
+    [ ! -f coverage.xml ]
 }
