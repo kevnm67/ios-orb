@@ -147,9 +147,9 @@ Everything else is enforced:
 2. Edit `src/…`; put shell in `src/scripts/`, wire via `<< include() >>` + `environment:`.
 3. Tests: `bats tests/scripts` (all green, new script ⇒ new bats file), `shellcheck src/scripts/*.sh scripts/ci/*.sh`.
 4. `cd src && ./pack.sh` (packs + `circleci orb validate`), `circleci config validate .circleci/config.yml`
-      (`test-deploy.yml` always reports "Cannot find a definition for command named ios-orb/…" locally — expected, the orb is injected at runtime).
+        (`test-deploy.yml` always reports "Cannot find a definition for command named ios-orb/…" locally — expected, the orb is injected at runtime).
 5. `pre-commit run --all-files`. README fenced blocks use **4-space** YAML (qlty editorconfig-checker flags 2-space lines).
 6. Update `README.md`, `src/README.md` (tables + "What's new"), `CLAUDE.md`, examples (`@X.Y.Z`), wiki.
 7. PR with Summary / Changes / Test Plan; watch `lint-pack` → `test-deploy`
-      (`command-test`, `fixture-test`, `spm-fixture-test`, `fastlane-fixture-test`), fix every qlty finding, squash-merge.
+        (`command-test`, `fixture-test`, `spm-fixture-test`, `fastlane-fixture-test`), fix every qlty finding, squash-merge.
 8. Release: `git tag vX.Y.Z && git push origin vX.Y.Z` from `main` → CircleCI publishes, GitHub Release auto-creates. Verify `circleci orb info kevnm67/ios-orb | grep Latest`.
