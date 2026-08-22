@@ -1,22 +1,33 @@
 ---
 description: >
-    Single-job CI for an XcodeGen iOS app: generate the project, SwiftLint
-    in strict mode, build and test on the iPhone 17 simulator, export
-    cobertura coverage from the xcresult bundle and upload it to Qlty Cloud.
+    Recommended Fastlane workflow for an XcodeGen iOS app: a setup job
+    generates the project and persists the workspace, then the test job runs
+    the `test` lane (scan handles the simulator, xcresult and JUnit output),
+    exports cobertura coverage and uploads it to Qlty Cloud.
 usage:
     version: 2.1
     orbs:
-        ios-orb: kevnm67/ios-orb@3.1.0
+        ios-orb: kevnm67/ios-orb@3.1.1
     workflows:
         build-test:
             jobs:
-                - ios-orb/build_and_test_xcode:
-                      scheme: MyApp
+                - ios-orb/run_with_setup:
+                      name: setup
                       xcode_version: '26.6'
-                      xcodegen: true
                       xcode_project: MyApp
-                      destination: platform=iOS Simulator,name=iPhone 17
-                      pre_steps:
+                      scripts:
+                          - ios-orb/install_tools:
+                                tools: xcodegen swiftlint
+                          - ios-orb/xcodegen
+                - ios-orb/test:
+                      name: test
+                      xcode_version: '26.6'
+                      xcode_project: MyApp
+                      lane: test
+                      pretest_steps:
                           - ios-orb/swiftlint:
                                 strict: true
+                      qlty_tag: unit
+                      requires:
+                          - setup
                       context: qlty-credentials

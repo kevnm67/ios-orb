@@ -18,7 +18,7 @@ parameters:
         type: boolean
         default: true
     ruby_version:
-        default: '3.4'
+        default: '3.3'
         description: Ruby version to install.
         type: string
     key:
