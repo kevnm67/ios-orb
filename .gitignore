@@ -23,8 +23,9 @@ orb.yml
 .vscode
 /src/ios.yml
 
-# Claude Code
-.claude/
+# Claude Code — commit project agents, keep local settings out
+.claude/*
+!.claude/agents/
 Icon?
 
 # Fastlane fixture (tests/fixture) — CI-only outputs

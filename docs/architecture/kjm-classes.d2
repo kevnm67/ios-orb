@@ -1,0 +1,96 @@
+# design-d2 class library — import with `...@kjm-classes` after copying this file and
+# the generated kjm-vars.d2 next to your diagram (or symlink both).
+#
+# Typography system (see references/REFERENCE.md § Text):
+#   node label        = TITLE only — one line, semibold, 16px, ink on fill
+#   child `.sub`      = subtitle  — shape: text, italic, 13px, secondary ink
+#   child `.meta`     = metadata  — shape: text, mono, 11px, muted ink, ≤ 3 " · "-separated tokens
+#   child `.list`     = |md bullet list for ≥ 2 attributes (never " · " chains inside a node)
+#   container label   = plain title (15px, secondary ink) + child `.note` for the qualifier
+#                       (never a |md label on a container — d2 drops the container box)
+#   edge label        = 13px italic, label ink derived from the stroke hue (AA on canvas)
+...@kjm-vars
+
+vars: {
+  i: {
+    # Icon vars resolve to icons/<name>.svg fetched by scripts/d2-icons-fetch.sh.
+    # Keep this list aligned with assets/icons.txt; never name a var `link`/`layers` (reserved).
+    github: icons/github.svg
+    git: icons/git.svg
+    slack: icons/slack.svg
+    confluence: icons/confluence.svg
+    docker: icons/docker.svg
+    aws: icons/aws.svg
+    lambda: icons/lambda.svg
+    azure: icons/azure.svg
+    swift: icons/swift.svg
+    apple: icons/apple.svg
+    python: icons/python.svg
+    django: icons/django.svg
+    go: icons/go.svg
+    ruby: icons/ruby.svg
+    typescript: icons/typescript.svg
+    node: icons/node.svg
+    react: icons/react.svg
+    dotnet: icons/dotnet.svg
+    postgres: icons/postgres.svg
+    archive: icons/archive.svg
+    folder: icons/folder.svg
+    file: icons/file.svg
+    notepad: icons/notepad.svg
+    key: icons/key.svg
+    warning: icons/warning.svg
+    error: icons/error.svg
+    success: icons/success.svg
+    analytics: icons/analytics.svg
+    chart: icons/chart.svg
+    server: icons/server.svg
+    database: icons/database.svg
+    home: icons/home.svg
+    network: icons/network.svg
+    stack: icons/stack.svg
+    users: icons/users.svg
+    search: icons/search.svg
+    settings: icons/settings.svg
+    idea: icons/idea.svg
+    symlink: icons/symlink.svg
+    web: icons/web.svg
+    music: icons/music.svg
+    backup: icons/backup.svg
+    delete: icons/delete.svg
+    protection: icons/protection.svg
+    laptop: icons/laptop.svg
+    desktop: icons/desktop.svg
+    router: icons/router.svg
+    phone: icons/phone.svg
+  }
+}
+
+classes: {
+  # — node fills (semantic: what should happen to this thing) —
+  keep: {style: {fill: ${c.keepFill}; stroke: ${c.keepStroke}; stroke-width: 2; font-color: ${c.keepInk}; font-size: 16; bold: true; border-radius: 8; shadow: true}}
+  wip: {style: {fill: ${c.wipFill}; stroke: ${c.wipStroke}; stroke-width: 1; font-color: ${c.wipInk}; font-size: 16; bold: true; border-radius: 8}}
+  archive: {style: {fill: ${c.archiveFill}; stroke: ${c.archiveStroke}; stroke-dash: 3; font-color: ${c.archiveInk}; font-size: 16; bold: true; border-radius: 8}}
+  dead: {style: {fill: ${c.deadFill}; stroke: ${c.deadStroke}; stroke-dash: 3; font-color: ${c.deadInk}; font-size: 15; border-radius: 8}}
+  lib: {style: {fill: ${c.libFill}; stroke: ${c.libStroke}; font-color: ${c.libInk}; font-size: 16; bold: true; border-radius: 8}}
+  ext: {style: {fill: ${c.extFill}; stroke: ${c.extStroke}; font-color: ${c.extInk}; font-size: 15; border-radius: 8}}
+  # — containers —
+  cluster: {style: {fill: ${c.surface2}; stroke: ${c.clusterStroke}; font-color: ${c.ink2}; border-radius: 10; font-size: 15}}
+  rootbox: {style: {fill: ${c.surface2}; stroke: ${c.accent}; stroke-width: 2; font-color: ${c.ink1}; border-radius: 10; font-size: 18; bold: true}}
+  # — text children (typography levels) —
+  sub: {shape: text; style: {font-size: 13; italic: true; font-color: ${c.ink2}}}
+  meta: {shape: text; style: {font-size: 11; font: mono; font-color: ${c.ink3Label}}}
+  list: {style: {font-size: 13; font-color: ${c.ink2}}}
+  note: {shape: text; style: {font-size: 12; font-color: ${c.ink3Label}}}
+  # — edges (meaning is in the stroke; label ink is the AA-safe lift of the same hue) —
+  sup: {style: {stroke: ${c.error}; stroke-dash: 4; stroke-width: 2; font-color: ${c.errorLabel}; font-size: 13; italic: true; animated: true}}
+  dup: {style: {stroke: ${c.warning}; stroke-dash: 2; stroke-width: 2; font-color: ${c.warningLabel}; font-size: 13; italic: true; animated: true}}
+  uses: {style: {stroke: ${c.success}; stroke-width: 2; font-color: ${c.successLabel}; font-size: 13; animated: true}}
+  flow: {style: {stroke: ${c.info}; stroke-width: 2; font-color: ${c.infoLabel}; font-size: 13}}
+  faint: {style: {stroke: ${c.border}; stroke-width: 1; font-color: ${c.ink3Label}; font-size: 12}}
+}
+
+# Canvas is transparent so the host page's background shows through; every fill
+# above is chosen for the dark surface (bg token) — keep the page dark or re-run
+# d2-tokens.py against a light token set.
+style.fill: transparent

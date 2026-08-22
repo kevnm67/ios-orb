@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# check_coverage_threshold.sh — verify cobertura line-rate meets minimum threshold.
+# check-coverage-threshold.sh — verify cobertura line-rate meets minimum threshold.
 #
-# Usage: check_coverage_threshold.sh <cobertura.xml> [min_percent]
+# Usage: check-coverage-threshold.sh <cobertura.xml> [min_percent]
 #   cobertura.xml  Path to the cobertura-format XML coverage report.
 #   min_percent    Minimum acceptable coverage percentage (default: 80).
 #

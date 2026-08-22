@@ -33,7 +33,7 @@ jobs:
 
   # Pure SPM package fixture: exercises the root-Package.resolved cache-key
   # fallback and the lcov coverage export/upload path end-to-end.
-    spm_fixture_test:
+    spm-fixture-test:
         executor: ios-orb/macos
         working_directory: ~/project/tests/fixture-spm
         steps:
@@ -61,7 +61,7 @@ jobs:
   # Fastlane fixture: exercises setup (macos/switch-ruby 3.3 + bundle install),
   # asserts the Ruby the image resolved, then runs the scan lane and the same
   # coverage export/upload path consumers use via the `test` job.
-    fastlane_fixture_test:
+    fastlane-fixture-test:
         executor: ios-orb/macos
         working_directory: ~/project/tests/fixture
         steps:
@@ -84,7 +84,7 @@ jobs:
                   result_bundle: TestResults.xcresult
             - run:
                   name: Check coverage threshold (≥80%)
-                  command: ~/project/scripts/ci/check_coverage_threshold.sh coverage.xml 80
+                  command: ~/project/scripts/ci/check-coverage-threshold.sh coverage.xml 80
             - ios-orb/upload_qlty_coverage:
                   file: coverage.xml
                   format: cobertura
@@ -96,7 +96,7 @@ jobs:
                   path: fastlane/test_output
                   destination: fastlane-test-output
 
-    fixture_test:
+    fixture-test:
         executor: ios-orb/macos
         steps:
             - checkout
@@ -120,7 +120,7 @@ jobs:
                   result_bundle: tests/fixture/TestResults.xcresult
             - run:
                   name: Check coverage threshold (≥80%)
-                  command: ./scripts/ci/check_coverage_threshold.sh coverage.xml 80
+                  command: ./scripts/ci/check-coverage-threshold.sh coverage.xml 80
             - ios-orb/upload_qlty_coverage:
                   file: coverage.xml
                   format: cobertura
@@ -140,13 +140,13 @@ workflows:
       # Test your orb's commands in a custom job and test your orb's jobs directly as a part of this workflow.
             - command-test:
                   filters: *filters
-            - fixture_test:
+            - fixture-test:
                   filters: *filters
                   context: qlty-credentials
-            - spm_fixture_test:
+            - spm-fixture-test:
                   filters: *filters
                   context: qlty-credentials
-            - fastlane_fixture_test:
+            - fastlane-fixture-test:
                   filters: *filters
                   context: qlty-credentials
             - orb-tools/pack:
@@ -158,8 +158,8 @@ workflows:
                   requires:
                       - orb-tools/pack
                       - command-test
-                      - fixture_test
-                      - spm_fixture_test
-                      - fastlane_fixture_test
+                      - fixture-test
+                      - spm-fixture-test
+                      - fastlane-fixture-test
                   context: orb-publishing
                   filters: *release-filters

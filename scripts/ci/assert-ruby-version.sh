@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Assert the active Ruby matches the expected major.minor (default 3.3) and
 # print what the CircleCI Xcode image offers via rbenv. Used by the
-# fastlane_fixture_test job to prove the orb's `setup` Ruby default resolves
+# fastlane-fixture-test job to prove the orb's `setup` Ruby default resolves
 # on the current image before fastlane runs.
 #
 # Usage: ./scripts/ci/assert-ruby-version.sh [expected-major.minor]

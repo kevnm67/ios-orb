@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Fastlane fixture for the orb's fastlane_fixture_test job: proves that
+# Fastlane fixture for the orb's fastlane-fixture-test job: proves that
 # `setup` (switch-ruby 3.3 + bundle install) and `lane` work on the
 # current CircleCI Xcode image.
 source 'https://rubygems.org'

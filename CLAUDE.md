@@ -46,11 +46,11 @@ Standard CircleCI unpacked-orb layout — `circleci config pack src` assembles `
 Two layers:
 
 1. **bats unit tests** (`tests/scripts/*.bats`) — one bats file per `src/scripts/*.sh`. External binaries (xcodebuild, swiftlint, brew, bundle, …) are stubbed via `tests/stubs/`, which prepend to `PATH` and append invocations to `$STUB_CALL_LOG`; tests assert on that log. When adding a script, add a matching bats file and any missing stubs. CI runs these under kcov and publishes coverage to Qlty.
-2. **Integration fixtures** in `.circleci/test-deploy.yml` on a real macOS executor: `fixture_test` builds/tests the XcodeGen iOS app in `tests/fixture/` with the raw `build_xcode`/`test_xcode` commands; `fastlane_fixture_test` runs the same app through `setup` (Ruby 3.3 + bundle) and the `scan` lane in `tests/fixture/fastlane/Fastfile` — this is the proof that the orb's Ruby default resolves on the current image (`scripts/ci/assert-ruby-version.sh`); `spm_fixture_test` covers the pure-SPM path (`tests/fixture-spm/`). Both Xcode fixtures enforce an 80% coverage gate (`scripts/ci/check_coverage_threshold.sh`).
+2. **Integration fixtures** in `.circleci/test-deploy.yml` on a real macOS executor: `fixture-test` builds/tests the XcodeGen iOS app in `tests/fixture/` with the raw `build_xcode`/`test_xcode` commands; `fastlane-fixture-test` runs the same app through `setup` (Ruby 3.3 + bundle) and the `scan` lane in `tests/fixture/fastlane/Fastfile` — this is the proof that the orb's Ruby default resolves on the current image (`scripts/ci/assert-ruby-version.sh`); `spm-fixture-test` covers the pure-SPM path (`tests/fixture-spm/`). Both Xcode fixtures enforce an 80% coverage gate (`scripts/ci/check-coverage-threshold.sh`).
 
 ### CI pipeline
 
-Two-stage dynamic config: `.circleci/config.yml` (`setup: true`) runs lint/pack/review/shellcheck/script_tests, then `orb-tools/continue` triggers `.circleci/test-deploy.yml`, which runs `command-test` + `fixture_test` and — on `v*.*.*` tags only — publishes to the orb registry (`orb-publishing` context). `orb-tools/review` excludes RC006–RC009.
+Two-stage dynamic config: `.circleci/config.yml` (`setup: true`) runs lint/pack/review/shellcheck/script-tests, then `orb-tools/continue` triggers `.circleci/test-deploy.yml`, which runs `command-test` + `fixture-test` and — on `v*.*.*` tags only — publishes to the orb registry (`orb-publishing` context). `orb-tools/review` excludes RC006–RC009.
 
 ### Releasing
 
@@ -58,6 +58,9 @@ Merge to `main` with conventional commits, then push a semver tag (`vX.Y.Z`). CI
 
 ## Conventions
 
+- **Naming — kebab-case everywhere CircleCI lets us choose**: repo pipeline jobs/workflows (`script-tests`, `fixture-test`, `lint-pack`), cache-key prefixes, contexts, `scripts/ci/<verb>-<noun>.sh`, agent files. The one exception is mandated by CircleCI itself: orb components and parameters (`src/commands|jobs|executors/*.yml` file names, keys, `parameters:`) are **snake_case** — `orb-tools/review` RC010 fails on a hyphen, and renaming them is a breaking change for consumers.
+- **Orb authoring best practices are enforced by `orb-tools/review`** (RC001–RC012: source/home URL, descriptions on every component/parameter, ≥1 task-named usage example pinned to the current major, named `run` steps, long commands via `<< include() >>`, snake_case components, no `$ENV` defaults used in keys). Use the project agent `.claude/agents/circleci-orb-author.md` for any orb change.
+- **Diagrams**: d2 only, rendered **dark** via the engineering-toolkit `design-d2` skill (`...@kjm-classes`, `d2-render.sh` = elk / theme 200). Never `--theme 0` / light renders.
 - Inline shell in command/job YAML is forbidden beyond trivial one-liners — extract to `src/scripts/` (orb steps) or `scripts/ci/` (repo CI), `set -euo pipefail`, shellcheck-clean (CI runs `shellcheck/check`).
 - YAML: 4-space mappings (yamlfmt), yamllint-clean; pre-commit enforces both.
 - **Ruby: `setup.ruby_version` defaults to `3.3` and must never be `3.4`** — 3.4 breaks Fastlane in the consumer projects (26.x CircleCI images ship rbenv 3.3 / 3.4 / 4.0).
