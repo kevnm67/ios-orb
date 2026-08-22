@@ -24,13 +24,13 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 ```yaml
 version: 2.1
 orbs:
-  ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.0
 workflows:
-  ci:
-    jobs:
-      - ios/build_and_test_spm:
-          xcode_version: "26.6"
-          qlty: true
+    ci:
+        jobs:
+            - ios/build_and_test_spm:
+                xcode_version: "26.6"
+                qlty: true
 ```
 
 ## Quick Start: XcodeGen Project
@@ -38,17 +38,17 @@ workflows:
 ```yaml
 version: 2.1
 orbs:
-  ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.0
 workflows:
-  ci:
-    jobs:
-      - ios/run_with_setup:
-          xcode_version: "26.6"
-          scripts:
-            - ios/install_tools:
-                tools: xcodegen swiftlint
-            - ios/xcodegen
-            - run: bundle exec fastlane test
+    ci:
+        jobs:
+            - ios/run_with_setup:
+                xcode_version: "26.6"
+                scripts:
+                    - ios/install_tools:
+                        tools: xcodegen swiftlint
+                    - ios/xcodegen
+                    - run: bundle exec fastlane test
 ```
 
 ---
@@ -203,32 +203,32 @@ See the [`src/examples/`](examples/) directory for complete workflow examples:
 
 ```yaml
 jobs:
-  test:
-    macos:
-      xcode: "15.4.0"
-    resource_class: macos.m1.medium.gen1
-    steps:
-      - checkout
-      - run: brew install xcodegen swiftlint
-      - run: xcodegen generate
-      - run: bundle install
-      - run: bundle exec fastlane test
+    test:
+        macos:
+            xcode: "15.4.0"
+        resource_class: macos.m1.medium.gen1
+        steps:
+            - checkout
+            - run: brew install xcodegen swiftlint
+            - run: xcodegen generate
+            - run: bundle install
+            - run: bundle exec fastlane test
 ```
 
 ### After (v2 orb)
 
 ```yaml
 orbs:
-  ios: kevnm67/ios-orb@2.0.0
+    ios: kevnm67/ios-orb@2.0.0
 workflows:
-  ci:
-    jobs:
-      - ios/run_with_setup:
-          scripts:
-            - ios/install_tools:
-                tools: xcodegen swiftlint
-            - ios/xcodegen
-            - run: bundle exec fastlane test
+    ci:
+        jobs:
+            - ios/run_with_setup:
+                scripts:
+                    - ios/install_tools:
+                        tools: xcodegen swiftlint
+                    - ios/xcodegen
+                    - run: bundle exec fastlane test
 ```
 
 ### Migration checklist
@@ -259,50 +259,50 @@ workflows:
 
 ```yaml
 orbs:
-  ios: kevnm67/ios-orb@2.0.0
+    ios: kevnm67/ios-orb@2.0.0
 workflows:
-  ci:
-    jobs:
-      - ios/test:
-          xcode_project: MyApp
-          lane: tests
-          cc_prefix: MyApp
+    ci:
+        jobs:
+            - ios/test:
+                xcode_project: MyApp
+                lane: tests
+                cc_prefix: MyApp
 ```
 
 ### After (v3 test job)
 
 ```yaml
 orbs:
-  ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.0
 workflows:
-  ci:
-    jobs:
-      - ios/test:
-          xcode_project: MyApp
-          lane: tests
-          result_bundle_path: TestResults.xcresult
-          coverage_file: coverage.xml
-          qlty_tag: unit
+    ci:
+        jobs:
+            - ios/test:
+                xcode_project: MyApp
+                lane: tests
+                result_bundle_path: TestResults.xcresult
+                coverage_file: coverage.xml
+                qlty_tag: unit
 ```
 
 ### Before (v2 test_with_code_climate command)
 
 ```yaml
 steps:
-  - ios/test_with_code_climate:
-      lane: tests
-      cc_prefix: MyApp
+    - ios/test_with_code_climate:
+        lane: tests
+        cc_prefix: MyApp
 ```
 
 ### After (v3 test_with_qlty command)
 
 ```yaml
 steps:
-  - ios/test_with_qlty:
-      lane: tests
-      result_bundle_path: TestResults.xcresult
-      coverage_file: coverage.xml
-      qlty_tag: unit
+    - ios/test_with_qlty:
+        lane: tests
+        result_bundle_path: TestResults.xcresult
+        coverage_file: coverage.xml
+        qlty_tag: unit
 ```
 
 ### v2 → v3 migration checklist

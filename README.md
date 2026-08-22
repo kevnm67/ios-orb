@@ -52,15 +52,15 @@ and executors for building, testing, and deploying iOS/macOS apps.
 version: 2.1
 
 orbs:
-  ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.0
 
 workflows:
-  build-test:
-    jobs:
-      - ios/run_with_setup:
-          name: test
-          scripts:
-            - run: bundle exec fastlane test
+    build-test:
+        jobs:
+            - ios/run_with_setup:
+                name: test
+                scripts:
+                    - run: bundle exec fastlane test
 ```
 
 ---
@@ -96,10 +96,10 @@ Initialize build environment: checkout, workspace, Ruby/Bundler, SPM cache.
 
 ```yaml
 steps:
-  - ios/setup:
-      checkout: true
-      bundle_install: true
-      persist_workspace: true
+    - ios/setup:
+        checkout: true
+        bundle_install: true
+        persist_workspace: true
 ```
 
 ### `lane`
@@ -108,8 +108,8 @@ Run a Fastlane lane.
 
 ```yaml
 steps:
-  - ios/lane:
-      named: test
+    - ios/lane:
+        named: test
 ```
 
 ### `xcodegen`
@@ -118,9 +118,9 @@ Install XcodeGen and generate the Xcode project.
 
 ```yaml
 steps:
-  - ios/xcodegen:
-      spec: project.yml
-      quiet: true
+    - ios/xcodegen:
+        spec: project.yml
+        quiet: true
 ```
 
 ### `install_tools`
@@ -129,8 +129,8 @@ Install Homebrew tools (only if missing).
 
 ```yaml
 steps:
-  - ios/install_tools:
-      tools: xcodegen swiftlint xcresultparser
+    - ios/install_tools:
+        tools: xcodegen swiftlint xcresultparser
 ```
 
 ### `swiftlint`
@@ -139,8 +139,8 @@ Run SwiftLint with optional strict mode.
 
 ```yaml
 steps:
-  - ios/swiftlint:
-      strict: true
+    - ios/swiftlint:
+        strict: true
 ```
 
 ### `match_signing`
@@ -149,9 +149,9 @@ Sync code signing via Fastlane match. Supports multiple types in a single step.
 
 ```yaml
 steps:
-  - ios/match_signing:
-      type: "adhoc,appstore"
-      readonly: false
+    - ios/match_signing:
+        type: "adhoc,appstore"
+        readonly: false
 ```
 
 | Parameter | Default | Description |
@@ -168,13 +168,13 @@ and stores a JUnit report for CircleCI test insights.
 
 ```yaml
 steps:
-  - ios/build_xcode:
-      scheme: MyApp
-      destination: "platform=iOS Simulator,name=iPhone 17"
-  - ios/test_xcode:
-      scheme: MyApp
-      destination: "platform=iOS Simulator,name=iPhone 17"
-      result_bundle_path: TestResults.xcresult
+    - ios/build_xcode:
+        scheme: MyApp
+        destination: "platform=iOS Simulator,name=iPhone 17"
+    - ios/test_xcode:
+        scheme: MyApp
+        destination: "platform=iOS Simulator,name=iPhone 17"
+        result_bundle_path: TestResults.xcresult
 ```
 
 ### `build_spm` / `test_spm`
@@ -184,11 +184,11 @@ by default and stores a JUnit report from `build/reports`.
 
 ```yaml
 steps:
-  - ios/build_spm:
-      configuration: release
-      build_flags: -Xswiftc -warnings-as-errors
-  - ios/test_spm:
-      filter: MyModuleTests
+    - ios/build_spm:
+        configuration: release
+        build_flags: -Xswiftc -warnings-as-errors
+    - ios/test_spm:
+        filter: MyModuleTests
 ```
 
 ### `create_release_tag`
@@ -198,8 +198,8 @@ Create and push the next `vX.Y.Z` tag — patch-increment of the latest tag
 
 ```yaml
 steps:
-  - ios/create_release_tag:
-      version_source: marketing-version
+    - ios/create_release_tag:
+        version_source: marketing-version
 ```
 
 ### `brew_install`
@@ -235,12 +235,12 @@ Run tests and upload coverage to Qlty Cloud. Successor to the removed
 
 ```yaml
 steps:
-  - ios/test_with_qlty:
-      lane: tests
-      result_bundle_path: TestResults.xcresult
-      coverage_file: coverage.xml
-      qlty_tag: unit
-      qlty_skip_errors: false
+    - ios/test_with_qlty:
+        lane: tests
+        result_bundle_path: TestResults.xcresult
+        coverage_file: coverage.xml
+        qlty_tag: unit
+        qlty_skip_errors: false
 ```
 
 ### `upload_qlty_coverage`
@@ -259,11 +259,11 @@ token from Qlty's settings).
 
 ```yaml
 steps:
-  - ios/upload_qlty_coverage:
-      file: coverage.xml
-      format: cobertura
-      tag: unit
-      skip_errors: false
+    - ios/upload_qlty_coverage:
+        file: coverage.xml
+        format: cobertura
+        tag: unit
+        skip_errors: false
 ```
 
 ### `export_coverage`
@@ -279,16 +279,16 @@ Export code coverage for upload. `type: spm` (`llvm-cov`) writes lcov to
 
 ```yaml
 steps:
-  - ios/export_coverage:
-      type: xcode
-      result_bundle: TestResults.xcresult
+    - ios/export_coverage:
+        type: xcode
+        result_bundle: TestResults.xcresult
 
-  # SPM packages export lcov — upload with format: lcov
-  - ios/export_coverage:
-      type: spm
-  - ios/upload_qlty_coverage:
-      file: coverage.lcov
-      format: lcov
+    # SPM packages export lcov — upload with format: lcov
+    - ios/export_coverage:
+        type: spm
+    - ios/upload_qlty_coverage:
+        file: coverage.lcov
+        format: lcov
 ```
 
 ---
@@ -301,10 +301,10 @@ Generic job: checkout → setup → run your scripts → save artifacts.
 
 ```yaml
 jobs:
-  - ios/run_with_setup:
-      xcode_version: "26.6"
-      scripts:
-        - run: bundle exec fastlane build
+    - ios/run_with_setup:
+        xcode_version: "26.6"
+        scripts:
+            - run: bundle exec fastlane build
 ```
 
 ### `test`
@@ -355,13 +355,13 @@ tests, exports coverage, and uploads to Qlty Cloud.
 
 ```yaml
 jobs:
-  - ios/build_and_test_xcode:
-      scheme: MyApp
-      xcode_version: "26.6"
-      destination: "platform=iOS Simulator,name=iPhone 17"
-      xcodegen: true
-      xcode_project: MyApp
-      qlty: true
+    - ios/build_and_test_xcode:
+        scheme: MyApp
+        xcode_version: "26.6"
+        destination: "platform=iOS Simulator,name=iPhone 17"
+        xcodegen: true
+        xcode_project: MyApp
+        qlty: true
 ```
 
 ### `build_and_test_spm`
@@ -383,9 +383,9 @@ coverage, and optionally uploads to Qlty Cloud.
 
 ```yaml
 jobs:
-  - ios/build_and_test_spm:
-      xcode_version: "26.6"
-      qlty: true
+    - ios/build_and_test_spm:
+        xcode_version: "26.6"
+        qlty: true
 ```
 
 ---
@@ -398,38 +398,38 @@ jobs:
 version: 2.1
 
 orbs:
-  ios-orb: kevnm67/ios-orb@3.1.0
+    ios-orb: kevnm67/ios-orb@3.1.0
 
 workflows:
-  pr:
-    when:
-      not:
-        equal: [main, << pipeline.git.branch >>]
-    jobs:
-      - ios-orb/run_with_setup:
-          name: setup
-          xcode_version: 26.6
-          xcode_project: MyApp
-          scripts:
-            - ios-orb/install_tools:
-                tools: xcodegen swiftlint
-            - ios-orb/xcodegen
-      - ios-orb/run_with_setup:
-          name: lint
-          attach_workspace: true
-          checkout: false
-          scripts:
-            - ios-orb/swiftlint:
-                strict: true
-          requires:
-            - setup
-      - ios-orb/test:
-          name: test
-          xcode_version: 26.6
-          xcode_project: MyApp
-          lane: test
-          requires:
-            - setup
+    pr:
+        when:
+            not:
+                equal: [main, << pipeline.git.branch >>]
+        jobs:
+            - ios-orb/run_with_setup:
+                name: setup
+                xcode_version: 26.6
+                xcode_project: MyApp
+                scripts:
+                    - ios-orb/install_tools:
+                        tools: xcodegen swiftlint
+                    - ios-orb/xcodegen
+            - ios-orb/run_with_setup:
+                name: lint
+                attach_workspace: true
+                checkout: false
+                scripts:
+                    - ios-orb/swiftlint:
+                        strict: true
+                requires:
+                    - setup
+            - ios-orb/test:
+                name: test
+                xcode_version: 26.6
+                xcode_project: MyApp
+                lane: test
+                requires:
+                    - setup
 ```
 
 ---
