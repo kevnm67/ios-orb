@@ -1,57 +1,31 @@
 ---
 description: >
-    Dual-platform CI workflow testing on both iOS and macOS destinations.
-    Uses a matrix-style approach with separate jobs for each platform.
+    Dual-platform CI for an XcodeGen app: one build_and_test_xcode job per
+    destination (iOS Simulator + macOS). Both jobs generate the project,
+    build, test with coverage, store JUnit results and upload tagged
+    coverage to Qlty Cloud so the reports stay separate per platform.
 usage:
     version: 2.1
     orbs:
-        ios-orb: kevnm67/ios-orb@3.0.0
+        ios-orb: kevnm67/ios-orb@3.1.0
     workflows:
         multi-platform:
             jobs:
-                - ios-orb/run_with_setup:
-                      name: setup
-                      xcode_version: 26.3.0
-                      xcode_project: MyApp
-                      scripts:
-                          - ios-orb/install_tools:
-                                tools: xcodegen
-                          - ios-orb/xcodegen
-                - ios-orb/run_with_setup:
+                - ios-orb/build_and_test_xcode:
                       name: test-ios
-                      attach_workspace: true
-                      checkout: false
-                      xcode_version: 26.3.0
-                      scripts:
-                          - run:
-                                name: Test iOS
-                                command: |
-                                    xcodebuild test \
-                                      -project MyApp.xcodeproj \
-                                      -scheme MyApp \
-                                      -destination 'platform=iOS Simulator,name=iPhone 16' \
-                                      -resultBundlePath test-results/ios.xcresult \
-                                      | xcbeautify
-                          - store_test_results:
-                                path: test-results
-                      requires:
-                          - setup
-                - ios-orb/run_with_setup:
+                      scheme: MyApp
+                      xcode_version: '26.6'
+                      xcodegen: true
+                      xcode_project: MyApp
+                      destination: platform=iOS Simulator,name=iPhone 17
+                      result_bundle_path: ios.xcresult
+                      context: qlty-credentials
+                - ios-orb/build_and_test_xcode:
                       name: test-macos
-                      attach_workspace: true
-                      checkout: false
-                      xcode_version: 26.3.0
-                      scripts:
-                          - run:
-                                name: Test macOS
-                                command: |
-                                    xcodebuild test \
-                                      -project MyApp.xcodeproj \
-                                      -scheme MyApp \
-                                      -destination 'platform=macOS' \
-                                      -resultBundlePath test-results/macos.xcresult \
-                                      | xcbeautify
-                          - store_test_results:
-                                path: test-results
-                      requires:
-                          - setup
+                      scheme: MyApp
+                      xcode_version: '26.6'
+                      xcodegen: true
+                      xcode_project: MyApp
+                      destination: platform=macOS
+                      result_bundle_path: macos.xcresult
+                      context: qlty-credentials

@@ -12,7 +12,7 @@ parameters:
     xcode_version:
         description: Xcode version.
         type: string
-        default: 26.3.0
+        default: '26.6'
     resource_class:
         description: macOS resource class.
         type: string
@@ -51,10 +51,8 @@ parallelism: << parameters.parallelism >>
 steps:
     - checkout
     - << parameters.pre_steps >>
-    - restore_cache:
-          keys:
-              - spm-v2-{{ arch }}-{{ checksum "Package.resolved" }}
-              - spm-v2-{{ arch }}-
+    - restore_spm_cache:
+          key: spm-v2
     - build_spm:
           build_flags: << parameters.build_flags >>
           configuration: << parameters.configuration >>
@@ -75,7 +73,6 @@ steps:
               - upload_qlty_coverage:
                     file: coverage.lcov
                     format: lcov
-    - save_cache:
-          key: spm-v2-{{ arch }}-{{ checksum "Package.resolved" }}
-          paths:
-              - .build
+    - cache_spm:
+          key: spm-v2
+          path: .build

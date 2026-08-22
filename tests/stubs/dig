@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Stub for dig — logs invocation and succeeds.
+echo "dig $*" >> "${STUB_CALL_LOG:-/dev/null}"
+
+echo 140.82.112.3
+exit 0

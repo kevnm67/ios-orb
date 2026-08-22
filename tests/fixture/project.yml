@@ -5,7 +5,7 @@ options:
     deploymentTarget:
         iOS: '26.0'
     defaultConfig: Debug
-    xcodeVersion: '16.0'
+    xcodeVersion: '26.6'
     generateEmptyDirectories: true
     groupSortPosition: top
 

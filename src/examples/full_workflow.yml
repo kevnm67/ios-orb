@@ -1,12 +1,12 @@
 ---
 description: >
-    Complete CI/CD workflow with PR checks, main branch testing,
-    and automated release tagging. Demonstrates branch-filtered
-    workflows for pull requests and trunk.
+    Complete Fastlane-based CI/CD workflow with PR checks, main branch
+    testing, and automated release tagging from MARKETING_VERSION.
+    Demonstrates branch-filtered workflows for pull requests and trunk.
 usage:
     version: 2.1
     orbs:
-        ios-orb: kevnm67/ios-orb@3.0.0
+        ios-orb: kevnm67/ios-orb@3.1.0
     workflows:
         pr:
             when:
@@ -15,7 +15,7 @@ usage:
             jobs:
                 - ios-orb/run_with_setup:
                       name: setup
-                      xcode_version: 26.3.0
+                      xcode_version: '26.6'
                       xcode_project: MyApp
                       scripts:
                           - ios-orb/install_tools:
@@ -32,7 +32,7 @@ usage:
                           - setup
                 - ios-orb/test:
                       name: test
-                      xcode_version: 26.3.0
+                      xcode_version: '26.6'
                       xcode_project: MyApp
                       lane: test
                       requires:
@@ -43,7 +43,7 @@ usage:
             jobs:
                 - ios-orb/run_with_setup:
                       name: setup
-                      xcode_version: 26.3.0
+                      xcode_version: '26.6'
                       xcode_project: MyApp
                       scripts:
                           - ios-orb/install_tools:
@@ -51,7 +51,7 @@ usage:
                           - ios-orb/xcodegen
                 - ios-orb/test:
                       name: test
-                      xcode_version: 26.3.0
+                      xcode_version: '26.6'
                       xcode_project: MyApp
                       lane: test
                       requires:
@@ -61,11 +61,7 @@ usage:
                       attach_workspace: true
                       checkout: false
                       scripts:
-                          - run:
-                                name: Create release tag
-                                command: |
-                                    VERSION=$(date +%Y.%m.%d)-${CIRCLE_BUILD_NUM}
-                                    git tag "v${VERSION}"
-                                    git push origin "v${VERSION}"
+                          - ios-orb/create_release_tag:
+                                version_source: marketing-version
                       requires:
                           - test

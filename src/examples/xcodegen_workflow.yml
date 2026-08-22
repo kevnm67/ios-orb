@@ -1,11 +1,13 @@
 ---
 description: >
-    Full workflow with XcodeGen project generation, testing, and deployment.
-    Demonstrates the setup → test → deploy pattern.
+    Two-stage Fastlane workflow using the macos executor directly:
+    a setup job generates the XcodeGen project, installs gems and persists
+    the workspace; a test job attaches it and runs the Fastlane lane.
+    Use this shape when you need full control over executor steps.
 usage:
     version: 2.1
     orbs:
-        ios-orb: kevnm67/ios-orb@3.0.0
+        ios-orb: kevnm67/ios-orb@3.1.0
     jobs:
         setup:
             executor:

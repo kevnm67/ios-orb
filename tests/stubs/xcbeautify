@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Stub for xcbeautify — logs invocation and succeeds.
+echo "xcbeautify $*" >> "${STUB_CALL_LOG:-/dev/null}"
+cat >/dev/null
+
+exit 0

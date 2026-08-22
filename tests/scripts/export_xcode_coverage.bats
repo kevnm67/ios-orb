@@ -62,8 +62,9 @@ setup() {
     # Use a brew stub that installs xcresultparser into TMPBIN so the subsequent
     # call to xcresultparser in the script succeeds. Isolate PATH so the real
     # Homebrew xcresultparser is invisible to `command -v`.
-    TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
-    mkdir -p "${TMPBIN}"
+    # Unique dir: bin_${BATS_TEST_NUMBER} collides with other files' tests
+    # sharing BATS_TMPDIR, leaving a stale xcresultparser that skips brew.
+    TMPBIN="$(mktemp -d "${BATS_TMPDIR}/bin.XXXXXX")"
     XCRESULTPARSER_STUB="${STUBS}/xcresultparser"
     STUB_CALL_LOG_REF="${STUB_CALL_LOG}"
     # brew stub: on `brew install ...`, copy xcresultparser stub into TMPBIN
