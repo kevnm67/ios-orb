@@ -52,7 +52,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
 version: 2.1
 
 orbs:
-    ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.1
 
 workflows:
     build-test:
@@ -162,9 +162,11 @@ steps:
 
 ### `build_xcode` / `test_xcode`
 
-Build and test an Xcode project with `xcodebuild`, piped through
-`xcbeautify`. `test_xcode` enables code coverage, writes the xcresult bundle
-and stores a JUnit report for CircleCI test insights.
+Fallback for projects **without a Fastfile**: build and test with raw
+`xcodebuild`, piped through `xcbeautify`. `test_xcode` enables code coverage,
+writes the xcresult bundle and stores a JUnit report for CircleCI Test
+Insights. Fastlane projects should use [`lane`](#lane) / the [`test`](#test)
+job instead — `scan` produces the xcresult and JUnit output natively.
 
 ```yaml
 steps:
@@ -309,7 +311,8 @@ jobs:
 
 ### `test`
 
-Run tests via a fastlane lane and upload coverage to Qlty Cloud.
+**Preferred job for Fastlane projects.** Runs a lane (typically `scan`),
+exports cobertura from the xcresult bundle and uploads coverage to Qlty Cloud.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -334,8 +337,9 @@ Run tests via a fastlane lane and upload coverage to Qlty Cloud.
 
 ### `build_and_test_xcode`
 
-Complete CI job for Xcode projects. Optionally runs XcodeGen, builds,
-tests, exports coverage, and uploads to Qlty Cloud.
+Complete single-job CI for Xcode projects that **do not use Fastlane**.
+Optionally runs XcodeGen, builds, tests, exports coverage, and uploads to
+Qlty Cloud. Fastlane projects: prefer `run_with_setup` + the `test` job.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -398,7 +402,7 @@ jobs:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.1.0
+    ios-orb: kevnm67/ios-orb@3.1.1
 
 workflows:
     pr:

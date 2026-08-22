@@ -26,3 +26,11 @@ orb.yml
 # Claude Code
 .claude/
 Icon?
+
+# Fastlane fixture (tests/fixture) — CI-only outputs
+tests/fixture/vendor/
+tests/fixture/.bundle/
+tests/fixture/fastlane/test_output/
+tests/fixture/fastlane/report.xml
+tests/fixture/TestResults.xcresult/
+tests/fixture/coverage.xml

@@ -1,0 +1,20 @@
+# frozen_string_literal: true
+
+default_platform(:ios)
+
+platform :ios do
+  desc 'Run FixtureApp unit tests via scan with coverage + JUnit output'
+  lane :test do
+    scan(
+      project: 'FixtureApp.xcodeproj',
+      scheme: 'FixtureApp',
+      device: 'iPhone Air',
+      code_coverage: true,
+      result_bundle: true,
+      result_bundle_path: 'TestResults.xcresult',
+      output_directory: 'fastlane/test_output',
+      output_types: 'junit',
+      clean: false
+    )
+  end
+end

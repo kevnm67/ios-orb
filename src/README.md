@@ -24,7 +24,7 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 ```yaml
 version: 2.1
 orbs:
-    ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.1
 workflows:
     ci:
         jobs:
@@ -38,7 +38,7 @@ workflows:
 ```yaml
 version: 2.1
 orbs:
-    ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.1
 workflows:
     ci:
         jobs:
@@ -181,12 +181,17 @@ See the [`src/examples/`](examples/) directory for complete workflow examples:
 
 | Example | Description |
 |---------|-------------|
-| [`spm_workflow.yml`](examples/spm_workflow.yml) | `build_and_test_spm` — debug test+coverage job plus a release build |
-| [`xcode_workflow.yml`](examples/xcode_workflow.yml) | `build_and_test_xcode` — XcodeGen + SwiftLint + iPhone 17 simulator tests |
-| [`multi_platform.yml`](examples/multi_platform.yml) | `build_and_test_xcode` per destination (iOS Simulator + macOS) |
+| [`xcode_workflow.yml`](examples/xcode_workflow.yml) | **Recommended** — XcodeGen + SwiftLint, then the `test` job runs a Fastlane lane (scan) with Qlty coverage |
 | [`full_workflow.yml`](examples/full_workflow.yml) | Fastlane PR + main workflows with `create_release_tag` |
+| [`multi_platform.yml`](examples/multi_platform.yml) | One `test` job per Fastlane lane (`test_ios`, `test_macos`), shared setup workspace |
 | [`run_tests.yml`](examples/run_tests.yml) | Simple Fastlane test runner |
 | [`xcodegen_workflow.yml`](examples/xcodegen_workflow.yml) | Hand-rolled two-stage Fastlane workflow on the `macos` executor |
+| [`spm_workflow.yml`](examples/spm_workflow.yml) | `build_and_test_spm` for pure Swift packages (no Fastfile) — debug test+coverage plus a release build |
+
+Fastlane is the preferred way to drive Xcode builds: `scan`/`gym` own the
+xcresult bundle, JUnit output and signing, and the `test` job plugs straight
+into `test_with_qlty`. The raw `xcodebuild` commands (`build_xcode`,
+`test_xcode`, `build_and_test_xcode`) exist for projects without a Fastfile.
 
 ---
 
@@ -247,7 +252,7 @@ workflows:
 
 ### Breaking changes in v3
 
-1. **Orb reference**: Update `kevnm67/ios-orb@2.0.0` to `kevnm67/ios-orb@3.1.0`
+1. **Orb reference**: Update `kevnm67/ios-orb@2.0.0` to `kevnm67/ios-orb@3.1.1`
 2. **`test_with_code_climate` removed**: Code Climate's test reporter is end-of-life. Replace all uses with `test_with_qlty`.
 3. **`test` job `cc_prefix` parameter removed**: The `cc_prefix` parameter no longer exists. Remove it from any `test` job invocations.
 4. **`test` job new parameters**: `result_bundle_path`, `coverage_file`, `qlty_tag`, and `qlty_skip_errors` are the new coverage control parameters.
@@ -273,7 +278,7 @@ workflows:
 
 ```yaml
 orbs:
-    ios: kevnm67/ios-orb@3.1.0
+    ios: kevnm67/ios-orb@3.1.1
 workflows:
     ci:
         jobs:
@@ -321,7 +326,7 @@ steps:
 ## What's new in v3.1
 
 - **Xcode 26.6 default** (Swift 6.3.3, iOS 26.5 runtime, macOS 26.5.1) for the executor and every job; the 26.3.0 image remains selectable via `xcode_version`.
-- **`setup` Ruby default is now `3.4`** — the 26.x images ship rbenv Rubies 3.3 / 3.4 / 4.0 only, so the previous `3.2` default no longer resolves. Pin `ruby_version: '3.3'` if your Gemfile needs it.
+- **`setup` Ruby default is now `3.3`** (v3.1.1; v3.1.0 briefly defaulted to 3.4, which breaks Fastlane setups) — the 26.x images ship rbenv Rubies 3.3 / 3.4 / 4.0 only, so the previous `3.2` default no longer resolves.
 - **Bundled orbs bumped** to `circleci/macos@3.0.0`, `circleci/ruby@3.0.0`, `qltysh/qlty-orb@0.1.2`.
 - **`build_and_test_spm` cache key** now goes through `restore_spm_cache` / `cache_spm`, so packages without a `Package.resolved` (no dependencies) no longer fail on `checksum`.
 - **`brew_install` defaults** use the Apple Silicon Homebrew prefix (`/opt/homebrew`).

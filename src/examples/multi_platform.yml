@@ -1,31 +1,41 @@
 ---
 description: >
-    Dual-platform CI for an XcodeGen app: one build_and_test_xcode job per
-    destination (iOS Simulator + macOS). Both jobs generate the project,
-    build, test with coverage, store JUnit results and upload tagged
-    coverage to Qlty Cloud so the reports stay separate per platform.
+    Dual-platform Fastlane CI for an XcodeGen app: setup once, then one
+    `test` job per lane (`test_ios` → iPhone 17 simulator, `test_macos` →
+    macOS) in parallel. Each lane's scan run writes its own xcresult bundle,
+    and coverage is uploaded with a per-platform Qlty tag.
 usage:
     version: 2.1
     orbs:
-        ios-orb: kevnm67/ios-orb@3.1.0
+        ios-orb: kevnm67/ios-orb@3.1.1
     workflows:
         multi-platform:
             jobs:
-                - ios-orb/build_and_test_xcode:
+                - ios-orb/run_with_setup:
+                      name: setup
+                      xcode_version: '26.6'
+                      xcode_project: MyApp
+                      scripts:
+                          - ios-orb/install_tools:
+                                tools: xcodegen
+                          - ios-orb/xcodegen
+                - ios-orb/test:
                       name: test-ios
-                      scheme: MyApp
                       xcode_version: '26.6'
-                      xcodegen: true
                       xcode_project: MyApp
-                      destination: platform=iOS Simulator,name=iPhone 17
+                      lane: test_ios
                       result_bundle_path: ios.xcresult
+                      qlty_tag: ios
+                      requires:
+                          - setup
                       context: qlty-credentials
-                - ios-orb/build_and_test_xcode:
+                - ios-orb/test:
                       name: test-macos
-                      scheme: MyApp
                       xcode_version: '26.6'
-                      xcodegen: true
                       xcode_project: MyApp
-                      destination: platform=macOS
+                      lane: test_macos
                       result_bundle_path: macos.xcresult
+                      qlty_tag: macos
+                      requires:
+                          - setup
                       context: qlty-credentials
