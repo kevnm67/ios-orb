@@ -35,7 +35,7 @@ pre-commit run --all-files
 
 Standard CircleCI unpacked-orb layout — `circleci config pack src` assembles `src/@orb.yml` (header: description, display, bundled orbs `circleci/macos`, `circleci/ruby`, `qltysh/qlty-orb`) with one YAML file per component:
 
-- `src/executors/macos.yml` — the single executor (Apple Silicon, Xcode `26.3.0` / `m4pro.medium` defaults)
+- `src/executors/macos.yml` — the single executor (Apple Silicon, Xcode `26.6` / `m4pro.medium` defaults)
 - `src/commands/*.yml` — one file per command (setup, lane, xcodegen, swiftlint, match_signing, SPM caching, coverage export, Qlty upload, …)
 - `src/jobs/*.yml` — `run_with_setup`, `test`, `build_and_test_xcode`, `build_and_test_spm`
 - `src/examples/*.yml` — usage examples published with the orb

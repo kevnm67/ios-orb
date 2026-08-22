@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Stub for ssh-keyscan — logs invocation and succeeds.
+echo "ssh-keyscan $*" >> "${STUB_CALL_LOG:-/dev/null}"
+
+
+exit 0

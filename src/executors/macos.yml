@@ -1,12 +1,12 @@
 ---
 description: |
     macos xcode executor.
-    Supported xcode versions: https://circleci.com/docs/testing-ios/#supported-xcode-versions
+    Supported xcode versions: https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions-silicon
 parameters:
     xcode_version:
         description: Xcode version.
         type: string
-        default: 26.3.0
+        default: '26.6'
     resource_class:
         description: macOS resource class.
         type: string

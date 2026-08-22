@@ -24,6 +24,9 @@ and executors for building, testing, and deploying iOS/macOS apps.
   - [install\_tools](#install_tools)
   - [swiftlint](#swiftlint)
   - [match\_signing](#match_signing)
+  - [build\_xcode / test\_xcode](#build_xcode--test_xcode)
+  - [build\_spm / test\_spm](#build_spm--test_spm)
+  - [create\_release\_tag](#create_release_tag)
   - [brew\_install](#brew_install)
   - [cache\_spm / restore\_spm\_cache](#cache_spm--restore_spm_cache)
   - [save\_build\_artifacts](#save_build_artifacts)
@@ -49,7 +52,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
 version: 2.1
 
 orbs:
-  ios: kevnm67/ios-orb@3.0.0
+  ios: kevnm67/ios-orb@3.1.0
 
 workflows:
   build-test:
@@ -72,12 +75,14 @@ workflows:
 
 ### `macos`
 
-macOS executor with Xcode and Homebrew pre-configured.
+Apple Silicon macOS executor with Xcode and Homebrew pre-configured. The
+default image is Xcode 26.6 (Swift 6.3, iOS 26.5 simulators, macOS 26.5);
+see CircleCI's [supported Xcode versions](https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions-silicon).
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `xcode_version` | `26.3.0` | Xcode version |
-| `resource_class` | `m4pro.medium` | macOS resource class |
+| `xcode_version` | `26.6` | Xcode version (CircleCI image tag, e.g. `26.6`, `26.5`, `27.0` beta) |
+| `resource_class` | `m4pro.medium` | macOS resource class (`m4pro.medium` or `m4pro.large`) |
 
 Sets `HOMEBREW_NO_AUTO_UPDATE=1` and `HOMEBREW_NO_INSTALL_CLEANUP=1`.
 
@@ -154,6 +159,48 @@ steps:
 | `type` | `appstore` | Comma-separated match types |
 | `readonly` | `false` | Run match in read-only mode |
 | `app_identifier` | `""` | Bundle ID (inferred from Matchfile if empty) |
+
+### `build_xcode` / `test_xcode`
+
+Build and test an Xcode project with `xcodebuild`, piped through
+`xcbeautify`. `test_xcode` enables code coverage, writes the xcresult bundle
+and stores a JUnit report for CircleCI test insights.
+
+```yaml
+steps:
+  - ios/build_xcode:
+      scheme: MyApp
+      destination: "platform=iOS Simulator,name=iPhone 17"
+  - ios/test_xcode:
+      scheme: MyApp
+      destination: "platform=iOS Simulator,name=iPhone 17"
+      result_bundle_path: TestResults.xcresult
+```
+
+### `build_spm` / `test_spm`
+
+Build and test a Swift package. `test_spm` runs with coverage and `--parallel`
+by default and stores a JUnit report from `build/reports`.
+
+```yaml
+steps:
+  - ios/build_spm:
+      configuration: release
+      build_flags: -Xswiftc -warnings-as-errors
+  - ios/test_spm:
+      filter: MyModuleTests
+```
+
+### `create_release_tag`
+
+Create and push the next `vX.Y.Z` tag — patch-increment of the latest tag
+(`git-describe`) or read from the project's `MARKETING_VERSION`.
+
+```yaml
+steps:
+  - ios/create_release_tag:
+      version_source: marketing-version
+```
 
 ### `brew_install`
 
@@ -255,7 +302,7 @@ Generic job: checkout → setup → run your scripts → save artifacts.
 ```yaml
 jobs:
   - ios/run_with_setup:
-      xcode_version: "26.3.0"
+      xcode_version: "26.6"
       scripts:
         - run: bundle exec fastlane build
 ```
@@ -266,7 +313,7 @@ Run tests via a fastlane lane and upload coverage to Qlty Cloud.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `xcode_version` | string | `26.3.0` | Xcode version |
+| `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
 | `checkout` | boolean | `true` | Checkout source code |
 | `attach_workspace` | boolean | `true` | Attach to existing workspace |
@@ -293,7 +340,7 @@ tests, exports coverage, and uploads to Qlty Cloud.
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `scheme` | string | — | Xcode scheme to build and test |
-| `xcode_version` | string | `26.3.0` | Xcode version |
+| `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
 | `xcodegen` | boolean | `false` | Run XcodeGen before building |
 | `project` | string | `""` | Path to `.xcodeproj` (empty = default) |
@@ -310,8 +357,8 @@ tests, exports coverage, and uploads to Qlty Cloud.
 jobs:
   - ios/build_and_test_xcode:
       scheme: MyApp
-      xcode_version: "26.3.0"
-      destination: "platform=iOS Simulator,name=iPhone 16"
+      xcode_version: "26.6"
+      destination: "platform=iOS Simulator,name=iPhone 17"
       xcodegen: true
       xcode_project: MyApp
       qlty: true
@@ -324,7 +371,7 @@ coverage, and optionally uploads to Qlty Cloud.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `xcode_version` | string | `26.3.0` | Xcode version |
+| `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
 | `parallelism` | integer | `1` | CircleCI parallelism level |
 | `coverage` | boolean | `true` | Export code coverage |
@@ -337,7 +384,7 @@ coverage, and optionally uploads to Qlty Cloud.
 ```yaml
 jobs:
   - ios/build_and_test_spm:
-      xcode_version: "26.3.0"
+      xcode_version: "26.6"
       qlty: true
 ```
 
@@ -351,7 +398,7 @@ jobs:
 version: 2.1
 
 orbs:
-  ios-orb: kevnm67/ios-orb@3.0.0
+  ios-orb: kevnm67/ios-orb@3.1.0
 
 workflows:
   pr:
@@ -361,7 +408,7 @@ workflows:
     jobs:
       - ios-orb/run_with_setup:
           name: setup
-          xcode_version: 26.3.0
+          xcode_version: 26.6
           xcode_project: MyApp
           scripts:
             - ios-orb/install_tools:
@@ -378,7 +425,7 @@ workflows:
             - setup
       - ios-orb/test:
           name: test
-          xcode_version: 26.3.0
+          xcode_version: 26.6
           xcode_project: MyApp
           lane: test
           requires:
@@ -389,9 +436,9 @@ workflows:
 
 ## Orb Dependencies
 
-- `circleci/macos@2.5.2`
-- `circleci/ruby@2.6.0`
-- `qltysh/qlty-orb@0.1.1`
+- `circleci/macos@3.0.0`
+- `circleci/ruby@3.0.0`
+- `qltysh/qlty-orb@0.1.2`
 
 ---
 
@@ -409,9 +456,9 @@ workflows:
 ## Publishing
 
 1. Merge to `main` using [Conventional Commits](https://conventionalcommits.org/)
-2. Create a [semver tag](http://semver.org/) release on GitHub (e.g. `v3.0.1`)
-3. The CI pipeline (`release-on-tag` workflow) publishes to the orb registry automatically
-4. A GitHub Release is auto-created from the tag — releases default to **PATCH** version bumps
+2. Push a [semver tag](https://semver.org/) (e.g. `v3.1.0`)
+3. CircleCI (`.circleci/test-deploy.yml`, `orb-publishing` context) publishes to the orb registry
+4. `.github/workflows/release-on-tag.yml` creates the matching GitHub Release with generated notes
 
 [orb_registry]: https://circleci.com/developer/orbs/orb/kevnm67/ios-orb
 [orb_badge]: https://badges.circleci.com/orbs/kevnm67/ios-orb.svg

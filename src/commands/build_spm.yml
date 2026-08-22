@@ -16,17 +16,10 @@ parameters:
 steps:
     - run:
           name: Install xcbeautify
-          command: |
-              if ! command -v xcbeautify &>/dev/null; then
-                  echo "-> Installing xcbeautify..."
-                  brew install xcbeautify
-              else
-                  echo "✓ xcbeautify already installed"
-              fi
+          command: << include(scripts/xcbeautify_install.sh) >>
     - run:
           name: Build SPM package
-          command: |
-              swift build \
-                  -c << parameters.configuration >> \
-                  << parameters.build_flags >> \
-                  2>&1 | xcbeautify
+          environment:
+              CONFIGURATION: << parameters.configuration >>
+              BUILD_FLAGS: << parameters.build_flags >>
+          command: << include(scripts/spm_build.sh) >>

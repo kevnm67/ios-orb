@@ -18,7 +18,7 @@ parameters:
         type: boolean
         default: true
     ruby_version:
-        default: '3.2'
+        default: '3.4'
         description: Ruby version to install.
         type: string
     key:
@@ -58,12 +58,9 @@ steps:
     - when:
           condition: << parameters.with_spm >>
           steps:
-              - run: rm ~/.ssh/id_rsa
-              - run: for ip in $(dig @8.8.8.8 bitbucket.org +short); do ssh-keyscan bitbucket.org,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts
-                    || true
-              - run: for ip in $(dig @8.8.8.8 github.com +short); do ssh-keyscan github.com,$ip; ssh-keyscan $ip; done 2>/dev/null >> ~/.ssh/known_hosts
-                    || true
-
+              - run:
+                    name: Prepare SSH known_hosts for SPM
+                    command: << include(scripts/spm_ssh_setup.sh) >>
     - when:
           condition: << parameters.attach_workspace >>
           steps:

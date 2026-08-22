@@ -1,7 +1,7 @@
 ---
 description: |
     Run tests for a Swift Package Manager project with optional code coverage.
-    Pipes output through xcbeautify for readable results.
+    Pipes output through xcbeautify for readable results and a JUnit report.
 
 parameters:
     filter:
@@ -16,31 +16,22 @@ parameters:
         description: Whether to enable code coverage collection.
         type: boolean
         default: true
+    report_path:
+        description: Directory the JUnit report is written to and stored from.
+        type: string
+        default: build/reports
 
 steps:
     - run:
           name: Install xcbeautify
-          command: |
-              if ! command -v xcbeautify &>/dev/null; then
-                  echo "-> Installing xcbeautify..."
-                  brew install xcbeautify
-              else
-                  echo "✓ xcbeautify already installed"
-              fi
+          command: << include(scripts/xcbeautify_install.sh) >>
     - run:
           name: Run SPM tests
-          command: |
-              FLAGS=""
-              if [ "<< parameters.coverage >>" = "true" ]; then
-                  FLAGS="${FLAGS} --enable-code-coverage"
-              fi
-              if [ "<< parameters.parallel >>" = "true" ]; then
-                  FLAGS="${FLAGS} --parallel"
-              fi
-              if [ -n "<< parameters.filter >>" ]; then
-                  FLAGS="${FLAGS} --filter << parameters.filter >>"
-              fi
-
-              swift test ${FLAGS} 2>&1 | xcbeautify --report junit --report-path build/reports
+          environment:
+              FILTER: << parameters.filter >>
+              PARALLEL: << parameters.parallel >>
+              COVERAGE: << parameters.coverage >>
+              REPORT_PATH: << parameters.report_path >>
+          command: << include(scripts/spm_test.sh) >>
     - store_test_results:
-          path: build/reports
+          path: << parameters.report_path >>

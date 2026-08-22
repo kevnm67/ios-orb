@@ -9,11 +9,11 @@ parameters:
     brew_dir:
         description: Local homebrew directory.
         type: string
-        default: /usr/local/Homebrew
+        default: /opt/homebrew
     cellar_dir:
         description: Local cellar directory for brew casks.
         type: string
-        default: /usr/local/Cellar
+        default: /opt/homebrew/Cellar
     formula:
         description: Homebrew formula to install if needed.
         type: string

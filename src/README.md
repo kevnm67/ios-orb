@@ -24,12 +24,12 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 ```yaml
 version: 2.1
 orbs:
-  ios: kevnm67/ios-orb@3.0.0
+  ios: kevnm67/ios-orb@3.1.0
 workflows:
   ci:
     jobs:
       - ios/build_and_test_spm:
-          xcode_version: "26.3.0"
+          xcode_version: "26.6"
           qlty: true
 ```
 
@@ -38,12 +38,12 @@ workflows:
 ```yaml
 version: 2.1
 orbs:
-  ios: kevnm67/ios-orb@3.0.0
+  ios: kevnm67/ios-orb@3.1.0
 workflows:
   ci:
     jobs:
       - ios/run_with_setup:
-          xcode_version: "26.3.0"
+          xcode_version: "26.6"
           scripts:
             - ios/install_tools:
                 tools: xcodegen swiftlint
@@ -61,7 +61,7 @@ Apple Silicon macOS executor with Xcode pre-installed.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `xcode_version` | string | `26.3.0` | Xcode version to use. See [supported versions](https://circleci.com/docs/testing-ios/#supported-xcode-versions). |
+| `xcode_version` | string | `26.6` | Xcode image tag (Xcode 26.6 / Swift 6.3 / iOS 26.5 simulators). See [supported versions](https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions-silicon). |
 | `resource_class` | string | `m4pro.medium` | macOS resource class. |
 
 ---
@@ -74,7 +74,7 @@ General-purpose job: checkout, attach workspace, run custom scripts, save artifa
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `xcode_version` | string | `26.3.0` | Xcode version |
+| `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
 | `checkout` | boolean | `true` | Checkout source code |
 | `attach_workspace` | boolean | `true` | Attach to existing workspace |
@@ -91,7 +91,7 @@ Run tests via a fastlane lane and upload coverage to Qlty Cloud.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `xcode_version` | string | `26.3.0` | Xcode version |
+| `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
 | `checkout` | boolean | `true` | Checkout source code |
 | `attach_workspace` | boolean | `true` | Attach to existing workspace |
@@ -118,7 +118,7 @@ tests, exports coverage, and uploads to Qlty Cloud.
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `scheme` | string | — | Xcode scheme to build and test |
-| `xcode_version` | string | `26.3.0` | Xcode version |
+| `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
 | `xcodegen` | boolean | `false` | Run XcodeGen before building |
 | `project` | string | `""` | Path to `.xcodeproj` (empty = default) |
@@ -138,7 +138,7 @@ coverage, and optionally uploads to Qlty Cloud.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `xcode_version` | string | `26.3.0` | Xcode version |
+| `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
 | `parallelism` | integer | `1` | CircleCI parallelism level |
 | `coverage` | boolean | `true` | Export code coverage |
@@ -160,6 +160,11 @@ coverage, and optionally uploads to Qlty Cloud.
 | `swiftlint` | Install and run SwiftLint | `strict`, `config`, `reporter` |
 | `lane` | Run a Fastlane lane | `named` |
 | `match_signing` | Sync code signing via Fastlane Match | `type` (default: `appstore`), `readonly`, `app_identifier` |
+| `build_xcode` | `xcodebuild build` piped through xcbeautify | `scheme`, `project`, `destination`, `configuration` |
+| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` |
+| `build_spm` | `swift build` piped through xcbeautify | `configuration`, `build_flags` |
+| `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` |
+| `create_release_tag` | Tag and push the next `vX.Y.Z` release | `version_source` (`git-describe` or `marketing-version`) |
 | `brew_install` | Install a Homebrew formula with caching | `formula`, `reinstall`, `with_cache` |
 | `cache_spm` | Save SPM package cache | `key`, `xcode_project`, `path` |
 | `restore_spm_cache` | Restore SPM package cache | `key`, `xcode_project` |
@@ -176,12 +181,12 @@ See the [`src/examples/`](examples/) directory for complete workflow examples:
 
 | Example | Description |
 |---------|-------------|
-| [`spm_workflow.yml`](examples/spm_workflow.yml) | Minimal SPM package build + test + coverage |
-| [`xcode_workflow.yml`](examples/xcode_workflow.yml) | XcodeGen project build + test + coverage |
-| [`full_workflow.yml`](examples/full_workflow.yml) | PR + main workflows with release tagging |
-| [`multi_platform.yml`](examples/multi_platform.yml) | iOS + macOS dual-platform testing |
+| [`spm_workflow.yml`](examples/spm_workflow.yml) | `build_and_test_spm` — debug test+coverage job plus a release build |
+| [`xcode_workflow.yml`](examples/xcode_workflow.yml) | `build_and_test_xcode` — XcodeGen + SwiftLint + iPhone 17 simulator tests |
+| [`multi_platform.yml`](examples/multi_platform.yml) | `build_and_test_xcode` per destination (iOS Simulator + macOS) |
+| [`full_workflow.yml`](examples/full_workflow.yml) | Fastlane PR + main workflows with `create_release_tag` |
 | [`run_tests.yml`](examples/run_tests.yml) | Simple Fastlane test runner |
-| [`xcodegen_workflow.yml`](examples/xcodegen_workflow.yml) | Full XcodeGen + test + deploy |
+| [`xcodegen_workflow.yml`](examples/xcodegen_workflow.yml) | Hand-rolled two-stage Fastlane workflow on the `macos` executor |
 
 ---
 
@@ -190,7 +195,7 @@ See the [`src/examples/`](examples/) directory for complete workflow examples:
 ### Key changes in v2
 
 1. **Orb reference**: Update `kevnm67/ios-orb@1.x.x` to `kevnm67/ios-orb@2.0.0`
-2. **Executor defaults**: Xcode defaults to `26.3.0`, resource class to `m4pro.medium` (Apple Silicon)
+2. **Executor defaults**: Xcode defaults to `26.6`, resource class to `m4pro.medium` (Apple Silicon)
 3. **New commands**: `install_tools`, `xcodegen`, `swiftlint`, `match_signing` replace inline shell scripts
 4. **SPM caching built-in**: The `setup` command auto-restores SPM caches when `xcode_project` is set
 
@@ -242,7 +247,7 @@ workflows:
 
 ### Breaking changes in v3
 
-1. **Orb reference**: Update `kevnm67/ios-orb@2.0.0` to `kevnm67/ios-orb@3.0.0`
+1. **Orb reference**: Update `kevnm67/ios-orb@2.0.0` to `kevnm67/ios-orb@3.1.0`
 2. **`test_with_code_climate` removed**: Code Climate's test reporter is end-of-life. Replace all uses with `test_with_qlty`.
 3. **`test` job `cc_prefix` parameter removed**: The `cc_prefix` parameter no longer exists. Remove it from any `test` job invocations.
 4. **`test` job new parameters**: `result_bundle_path`, `coverage_file`, `qlty_tag`, and `qlty_skip_errors` are the new coverage control parameters.
@@ -268,7 +273,7 @@ workflows:
 
 ```yaml
 orbs:
-  ios: kevnm67/ios-orb@3.0.0
+  ios: kevnm67/ios-orb@3.1.0
 workflows:
   ci:
     jobs:
@@ -310,3 +315,15 @@ steps:
 - [ ] Remove `CC_TEST_REPORTER_ID` from CircleCI contexts/env vars
 - [ ] For single-job Xcode pipelines consider switching to `build_and_test_xcode`
 - [ ] For SPM packages consider switching to `build_and_test_spm`
+
+---
+
+## What's new in v3.1
+
+- **Xcode 26.6 default** (Swift 6.3.3, iOS 26.5 runtime, macOS 26.5.1) for the executor and every job; the 26.3.0 image remains selectable via `xcode_version`.
+- **`setup` Ruby default is now `3.4`** — the 26.x images ship rbenv Rubies 3.3 / 3.4 / 4.0 only, so the previous `3.2` default no longer resolves. Pin `ruby_version: '3.3'` if your Gemfile needs it.
+- **Bundled orbs bumped** to `circleci/macos@3.0.0`, `circleci/ruby@3.0.0`, `qltysh/qlty-orb@0.1.2`.
+- **`build_and_test_spm` cache key** now goes through `restore_spm_cache` / `cache_spm`, so packages without a `Package.resolved` (no dependencies) no longer fail on `checksum`.
+- **`brew_install` defaults** use the Apple Silicon Homebrew prefix (`/opt/homebrew`).
+- **New parameters**: `test_xcode.junit_report`, `test_spm.report_path`.
+- All `xcodebuild` / `swift build` / `swift test` logic moved from inline YAML into unit-tested `src/scripts/*.sh` (behaviour unchanged; `pipefail` now fails the step when the underlying build fails instead of being masked by `xcbeautify`).
