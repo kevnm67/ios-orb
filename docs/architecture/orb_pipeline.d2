@@ -4,131 +4,131 @@
 direction: right
 
 title: |md
-  ### kevnm67/ios-orb — how a consumer pipeline flows through the orb
-  Fastlane lanes are the preferred path; raw xcodebuild jobs are the no-Fastfile fallback
+    ### kevnm67/ios-orb — how a consumer pipeline flows through the orb
+    Fastlane lanes are the preferred path; raw xcodebuild jobs are the no-Fastfile fallback
 | {near: top-center; style.font-color: ${c.ink2}}
 
 consumer: "Consumer .circleci/config.yml" {
-  class: ext
-  icon: ${i.settings}
-  sub: "kevnm67/ios-orb@3.1.x" {class: sub}
+    class: ext
+    icon: ${i.settings}
+    sub: "kevnm67/ios-orb@3.1.x" {class: sub}
 }
 
 orb: "ios-orb" {
-  class: cluster
-  note: "src/ — packed by orb-tools, published on vX.Y.Z tags" {class: note}
-
-  jobs: "Jobs" {
     class: cluster
-    grid-columns: 2
-    grid-gap: 24
-    test: "test" {
-      class: keep
-      icon: ${i.ruby}
-      sub: "Fastlane lane + Qlty coverage" {class: sub}
-      meta: "preferred · scan owns xcresult" {class: meta}
-    }
-    rws: "run_with_setup" {
-      class: keep
-      icon: ${i.settings}
-      sub: "setup → your steps → artifacts" {class: sub}
-    }
-    batx: "build_and_test_xcode" {
-      class: wip
-      icon: ${i.apple}
-      sub: "xcodegen → build → test → coverage" {class: sub}
-      meta: "fallback · no Fastfile" {class: meta}
-    }
-    bats: "build_and_test_spm" {
-      class: wip
-      icon: ${i.swift}
-      sub: "swift build/test → lcov" {class: sub}
-    }
-  }
+    note: "src/ — packed by orb-tools, published on vX.Y.Z tags" {class: note}
 
-  commands: "Commands" {
-    class: cluster
-    grid-columns: 3
-    grid-gap: 24
-    setup: "setup" {
-      class: lib
-      icon: ${i.ruby}
-      sub: "switch-ruby 3.3 · bundle install" {class: sub}
+    jobs: "Jobs" {
+        class: cluster
+        grid-columns: 2
+        grid-gap: 24
+        test: "test" {
+            class: keep
+            icon: ${i.ruby}
+            sub: "Fastlane lane + Qlty coverage" {class: sub}
+            meta: "preferred · scan owns xcresult" {class: meta}
+        }
+        rws: "run_with_setup" {
+            class: keep
+            icon: ${i.settings}
+            sub: "setup → your steps → artifacts" {class: sub}
+        }
+        batx: "build_and_test_xcode" {
+            class: wip
+            icon: ${i.apple}
+            sub: "xcodegen → build → test → coverage" {class: sub}
+            meta: "fallback · no Fastfile" {class: meta}
+        }
+        bats: "build_and_test_spm" {
+            class: wip
+            icon: ${i.swift}
+            sub: "swift build/test → lcov" {class: sub}
+        }
     }
-    lane: "lane" {
-      class: lib
-      sub: "bundle exec fastlane <lane>" {class: sub}
-    }
-    twq: "test_with_qlty" {
-      class: lib
-      sub: "lane → export → upload" {class: sub}
-    }
-    xcb: "build_xcode / test_xcode" {
-      class: lib
-      icon: ${i.apple}
-      sub: "xcodebuild | xcbeautify → JUnit" {class: sub}
-    }
-    spm: "build_spm / test_spm" {
-      class: lib
-      icon: ${i.swift}
-      sub: "swift build/test | xcbeautify" {class: sub}
-    }
-    exportcov: "export_coverage" {
-      class: lib
-      icon: ${i.chart}
-      sub: "xcresult → cobertura · llvm-cov → lcov" {class: sub}
-    }
-    upload: "upload_qlty_coverage" {
-      class: lib
-      icon: ${i.analytics}
-    }
-    signing: "match_signing" {
-      class: lib
-      icon: ${i.key}
-    }
-    cache: "cache_spm / restore_spm_cache" {
-      class: lib
-      icon: ${i.archive}
-    }
-  }
 
-  executor: "macos executor" {
-    class: keep
-    icon: ${i.apple}
-    sub: "Xcode 26.6 · Swift 6.3 · m4pro.medium" {class: sub}
-    meta: "Ruby 3.3 · iOS 26.5 sims" {class: meta}
-  }
+    commands: "Commands" {
+        class: cluster
+        grid-columns: 3
+        grid-gap: 24
+        setup: "setup" {
+            class: lib
+            icon: ${i.ruby}
+            sub: "switch-ruby 3.3 · bundle install" {class: sub}
+        }
+        lane: "lane" {
+            class: lib
+            sub: "bundle exec fastlane <lane>" {class: sub}
+        }
+        twq: "test_with_qlty" {
+            class: lib
+            sub: "lane → export → upload" {class: sub}
+        }
+        xcb: "build_xcode / test_xcode" {
+            class: lib
+            icon: ${i.apple}
+            sub: "xcodebuild | xcbeautify → JUnit" {class: sub}
+        }
+        spm: "build_spm / test_spm" {
+            class: lib
+            icon: ${i.swift}
+            sub: "swift build/test | xcbeautify" {class: sub}
+        }
+        exportcov: "export_coverage" {
+            class: lib
+            icon: ${i.chart}
+            sub: "xcresult → cobertura · llvm-cov → lcov" {class: sub}
+        }
+        upload: "upload_qlty_coverage" {
+            class: lib
+            icon: ${i.analytics}
+        }
+        signing: "match_signing" {
+            class: lib
+            icon: ${i.key}
+        }
+        cache: "cache_spm / restore_spm_cache" {
+            class: lib
+            icon: ${i.archive}
+        }
+    }
+
+    executor: "macos executor" {
+        class: keep
+        icon: ${i.apple}
+        sub: "Xcode 26.6 · Swift 6.3 · m4pro.medium" {class: sub}
+        meta: "Ruby 3.3 · iOS 26.5 sims" {class: meta}
+    }
 }
 
 qlty: "Qlty Cloud" {
-  class: ext
-  icon: ${i.analytics}
-  sub: "coverage + maintainability" {class: sub}
-  meta: "QLTY_COVERAGE_TOKEN" {class: meta}
+    class: ext
+    icon: ${i.analytics}
+    sub: "coverage + maintainability" {class: sub}
+    meta: "QLTY_COVERAGE_TOKEN" {class: meta}
 }
 
 bundled: "Bundled orbs" {
-  class: cluster
-  grid-columns: 3
-  grid-gap: 16
-  macos: "circleci/macos@3.0.0" {class: ext; icon: ${i.apple}}
-  ruby: "circleci/ruby@3.0.0" {class: ext; icon: ${i.ruby}}
-  qorb: "qltysh/qlty-orb@0.1.2" {class: ext; icon: ${i.analytics}}
+    class: cluster
+    grid-columns: 3
+    grid-gap: 16
+    macos: "circleci/macos@3.0.0" {class: ext; icon: ${i.apple}}
+    ruby: "circleci/ruby@3.0.0" {class: ext; icon: ${i.ruby}}
+    qorb: "qltysh/qlty-orb@0.1.2" {class: ext; icon: ${i.analytics}}
 }
 
 release: "Release pipeline" {
-  class: cluster
-  note: "tag vX.Y.Z on main" {class: note}
-  tag: "git tag vX.Y.Z" {class: keep; icon: ${i.git}}
-  cci: "CircleCI test-deploy" {
-    class: keep
-    icon: ${i.settings}
-    sub: "fixture-test · spm-fixture-test · fastlane-fixture-test" {class: sub}
-    meta: "orb-tools/publish" {class: meta}
-  }
-  gh: "GitHub Release" {class: keep; icon: ${i.github}; sub: "release-on-tag workflow" {class: sub}}
-  tag -> cci: "publishes orb" {class: flow}
-  tag -> gh: "creates release" {class: flow}
+    class: cluster
+    note: "tag vX.Y.Z on main" {class: note}
+    tag: "git tag vX.Y.Z" {class: keep; icon: ${i.git}}
+    cci: "CircleCI test-deploy" {
+        class: keep
+        icon: ${i.settings}
+        sub: "fixture-test · spm-fixture-test · fastlane-fixture-test" {class: sub}
+        meta: "orb-tools/publish" {class: meta}
+    }
+    gh: "GitHub Release" {class: keep; icon: ${i.github}; sub: "release-on-tag workflow" {class: sub}}
+    tag -> cci: "publishes orb" {class: flow}
+    tag -> gh: "creates release" {class: flow}
 }
 
 consumer -> orb.jobs.test: "lane: test" {class: uses}
