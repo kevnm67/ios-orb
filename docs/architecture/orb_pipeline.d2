@@ -1,67 +1,147 @@
-# ios-orb v3 — component architecture and coverage flow
-direction: down
+# ios-orb v3.1 — component architecture, coverage flow and release pipeline.
+# Render: the engineering-toolkit design-d2 skill's d2-render.sh (elk, dark theme 200).
+...@kjm-classes
+direction: right
 
-consumer: "Consumer config\n(e.g. TrailSync)" {
-  shape: rectangle
-  style.fill: "#E8F0FE"
+title: |md
+    ### kevnm67/ios-orb — how a consumer pipeline flows through the orb
+    Fastlane lanes are the preferred path; raw xcodebuild jobs are the no-Fastfile fallback
+| {near: top-center; style.font-color: ${c.ink2}}
+
+consumer: "Consumer .circleci/config.yml" {
+    class: ext
+    icon: ${i.settings}
+    sub: "kevnm67/ios-orb@3.1.x" {class: sub}
 }
 
-orb: "kevnm67/ios-orb@3.x" {
-  style.fill: "#FFF8E1"
-  direction: right
+orb: "ios-orb" {
+    class: cluster
+    note: "src/ — packed by orb-tools, published on vX.Y.Z tags" {class: note}
 
-  jobs: "Jobs" {
-    batx: "build_and_test_xcode\n(xcodegen → build → test →\ncoverage → qlty)"
-    bats: "build_and_test_spm"
-    test: "test\n(fastlane lane + qlty)"
-    rws: "run_with_setup"
-  }
+    jobs: "Jobs" {
+        class: cluster
+        grid-columns: 2
+        grid-gap: 24
+        test: "test" {
+            class: keep
+            icon: ${i.ruby}
+            sub: "Fastlane lane + Qlty coverage" {class: sub}
+            meta: "preferred · scan owns xcresult" {class: meta}
+        }
+        rws: "run_with_setup" {
+            class: keep
+            icon: ${i.settings}
+            sub: "setup → your steps → artifacts" {class: sub}
+        }
+        batx: "build_and_test_xcode" {
+            class: wip
+            icon: ${i.apple}
+            sub: "xcodegen → build → test → coverage" {class: sub}
+            meta: "fallback · no Fastfile" {class: meta}
+        }
+        bats: "build_and_test_spm" {
+            class: wip
+            icon: ${i.swift}
+            sub: "swift build/test → lcov" {class: sub}
+        }
+    }
 
-  commands: "Commands" {
-    swiftlint: "swiftlint"
-    twq: "test_with_qlty"
-    exportcov: "export_coverage\n(xcresult → cobertura)"
-    upload: "upload_qlty_coverage"
-    match: "match_signing"
-    spmcache: "cache_spm /\nrestore_spm_cache"
-  }
+    commands: "Commands" {
+        class: cluster
+        grid-columns: 3
+        grid-gap: 24
+        setup: "setup" {
+            class: lib
+            icon: ${i.ruby}
+            sub: "switch-ruby 3.3 · bundle install" {class: sub}
+        }
+        lane: "lane" {
+            class: lib
+            sub: "bundle exec fastlane <lane>" {class: sub}
+        }
+        twq: "test_with_qlty" {
+            class: lib
+            sub: "lane → export → upload" {class: sub}
+        }
+        xcb: "build_xcode / test_xcode" {
+            class: lib
+            icon: ${i.apple}
+            sub: "xcodebuild | xcbeautify → JUnit" {class: sub}
+        }
+        spm: "build_spm / test_spm" {
+            class: lib
+            icon: ${i.swift}
+            sub: "swift build/test | xcbeautify" {class: sub}
+        }
+        exportcov: "export_coverage" {
+            class: lib
+            icon: ${i.chart}
+            sub: "xcresult → cobertura · llvm-cov → lcov" {class: sub}
+        }
+        upload: "upload_qlty_coverage" {
+            class: lib
+            icon: ${i.analytics}
+        }
+        signing: "match_signing" {
+            class: lib
+            icon: ${i.key}
+        }
+        cache: "cache_spm / restore_spm_cache" {
+            class: lib
+            icon: ${i.archive}
+        }
+    }
 
-  executor: "macos executor\nXcode 26.6 / m4pro" {
-    shape: rectangle
-  }
+    executor: "macos executor" {
+        class: keep
+        icon: ${i.apple}
+        sub: "Xcode 26.6 · Swift 6.3 · m4pro.medium" {class: sub}
+        meta: "Ruby 3.3 · iOS 26.5 sims" {class: meta}
+    }
 }
 
-coverage: "Coverage publishing" {
-  style.fill: "#E6F4EA"
-  direction: right
-
-  qlty_orb: "qltysh/qlty-orb\ncoverage_publish"
-  cloud: "Qlty Cloud\n(coverage + maintainability)" {
-    shape: cylinder
-  }
-  qlty_orb -> cloud: "QLTY_COVERAGE_TOKEN"
+qlty: "Qlty Cloud" {
+    class: ext
+    icon: ${i.analytics}
+    sub: "coverage + maintainability" {class: sub}
+    meta: "QLTY_COVERAGE_TOKEN" {class: meta}
 }
 
-bundled: "Other bundled orbs" {
-  style.fill: "#E6F4EA"
-  direction: right
-  macos: "circleci/macos"
-  ruby: "circleci/ruby"
+bundled: "Bundled orbs" {
+    class: cluster
+    grid-columns: 3
+    grid-gap: 16
+    macos: "circleci/macos@3.0.0" {class: ext; icon: ${i.apple}}
+    ruby: "circleci/ruby@3.0.0" {class: ext; icon: ${i.ruby}}
+    qorb: "qltysh/qlty-orb@0.1.2" {class: ext; icon: ${i.analytics}}
 }
 
 release: "Release pipeline" {
-  style.fill: "#FCE8E6"
-  direction: right
-  tag: "git tag vX.Y.Z"
-  publish: "orb-tools publish\n(CircleCI registry)"
-  ghrel: "GitHub Release\n(release-on-tag workflow)"
-  tag -> publish
-  tag -> ghrel: "kept in lockstep"
+    class: cluster
+    note: "tag vX.Y.Z on main" {class: note}
+    tag: "git tag vX.Y.Z" {class: keep; icon: ${i.git}}
+    cci: "CircleCI test-deploy" {
+        class: keep
+        icon: ${i.settings}
+        sub: "fixture-test · spm-fixture-test · fastlane-fixture-test" {class: sub}
+        meta: "orb-tools/publish" {class: meta}
+    }
+    gh: "GitHub Release" {class: keep; icon: ${i.github}; sub: "release-on-tag workflow" {class: sub}}
+    tag -> cci: "publishes orb" {class: flow}
+    tag -> gh: "creates release" {class: flow}
 }
 
-consumer -> orb.jobs.batx: "qlty: true"
-orb.jobs.batx -> orb.commands.exportcov
-orb.jobs.test -> orb.commands.twq
-orb.commands.twq -> orb.commands.exportcov
-orb.commands.exportcov -> orb.commands.upload
-orb.commands.upload -> coverage.qlty_orb
+consumer -> orb.jobs.test: "lane: test" {class: uses}
+consumer -> orb.jobs.batx: "no Fastfile" {class: faint}
+orb.jobs.test -> orb.commands.twq {class: flow}
+orb.commands.twq -> orb.commands.lane {class: flow}
+orb.commands.twq -> orb.commands.exportcov {class: flow}
+orb.jobs.batx -> orb.commands.xcb {class: flow}
+orb.jobs.batx -> orb.commands.exportcov {class: flow}
+orb.jobs.bats -> orb.commands.spm {class: flow}
+orb.jobs.bats -> orb.commands.exportcov {class: flow}
+orb.commands.exportcov -> orb.commands.upload {class: flow}
+orb.commands.upload -> qlty: "coverage_publish" {class: uses}
+orb.commands.setup -> bundled.macos: "switch-ruby" {class: faint}
+orb.commands.setup -> bundled.ruby: "install-deps" {class: faint}
+orb.commands.upload -> bundled.qorb {class: faint}

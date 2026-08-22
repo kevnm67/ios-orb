@@ -11,7 +11,7 @@ filters: &filters
         only: /.*/
 
 jobs:
-    script_tests:
+    script-tests:
         docker:
             - image: cimg/base:current
         steps:
@@ -46,12 +46,12 @@ workflows:
                   filters: *filters
             - shellcheck/check:
                   filters: *filters
-            - script_tests:
+            - script-tests:
                   context: qlty-credentials
                   filters: *filters
             - orb-tools/continue:
                   pipeline_number: << pipeline.number >>
                   vcs_type: << pipeline.project.type >>
                   orb_name: ios-orb
-                  requires: [orb-tools/lint, orb-tools/pack, orb-tools/review, shellcheck/check, script_tests]
+                  requires: [orb-tools/lint, orb-tools/pack, orb-tools/review, shellcheck/check, script-tests]
                   filters: *filters
