@@ -7,10 +7,6 @@ on:
 jobs:
     review:
         runs-on: ubuntu-latest
-        # Advisory only: claude-code-action intermittently dies with
-        # "Internal error: directory mismatch" on large diffs (2026-08-23,
-        # both 24dcd50 and c81e3bc). A broken reviewer must not block PRs.
-        continue-on-error: true
         permissions:
             contents: read
             pull-requests: write
@@ -26,6 +22,12 @@ jobs:
                   fetch-depth: 0
 
             - name: Review PR with Claude
+              # Advisory only: claude-code-action intermittently dies with
+              # "Internal error: directory mismatch" on large diffs
+              # (2026-08-23, digests 24dcd50 and c81e3bc alike). Step-level
+              # continue-on-error keeps the job (and the PR check) green —
+              # job-level only greens the run while the check stays red.
+              continue-on-error: true
               uses: anthropics/claude-code-action@24dcd50c0568f0fc9e9211213a4fd2d9eb15c4e0 # v1 (c81e3bc fails: "directory mismatch" internal error 2026-08-23 - hold until fixed upstream)
               with:
                   anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
