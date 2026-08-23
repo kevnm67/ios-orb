@@ -5,13 +5,14 @@ direction: right
 
 title: |md
     ### kevnm67/ios-orb — how a consumer pipeline flows through the orb
-    Fastlane lanes are the preferred path; raw xcodebuild jobs are the no-Fastfile fallback
+    Fastlane lanes are the preferred path; raw xcodebuild jobs are the no-Fastfile fallback.
+  v3.4 adds test splitting, DerivedData caching, lint and deploy commands.
 | {near: top-center; style.font-color: ${c.ink2}}
 
 consumer: "Consumer .circleci/config.yml" {
     class: ext
     icon: ${i.settings}
-    sub: "kevnm67/ios-orb@3.1.x" {class: sub}
+    sub: "kevnm67/ios-orb@3.4.x" {class: sub}
 }
 
 orb: "ios-orb" {
@@ -100,6 +101,25 @@ orb: "ios-orb" {
     }
 }
 
+tools: "Lint & deploy commands" {
+  class: cluster
+  grid-columns: 3
+  grid-gap: 16
+  lint: "swiftformat · periphery_scan" {
+    class: wip
+    sub: "style + unused-code scans" {class: sub}
+  }
+  crash: "upload_dsyms · notarize_macos" {
+    class: wip
+    icon: ${i.key}
+    sub: "Sentry symbols · notarytool" {class: sub}
+  }
+  ship: "deploy_testflight · notify_slack" {
+    class: wip
+    sub: "fastlane pilot · webhooks" {class: sub}
+  }
+}
+
 qlty: "Qlty Cloud" {
     class: ext
     icon: ${i.analytics}
@@ -132,6 +152,7 @@ release: "Release pipeline" {
 }
 
 consumer -> orb.jobs.test: "lane: test" {class: uses}
+orb.jobs.test -> tools.ship: "after green" {class: faint}
 consumer -> orb.jobs.batx: "no Fastfile" {class: faint}
 orb.jobs.test -> orb.commands.twq {class: flow}
 orb.commands.twq -> orb.commands.lane {class: flow}
