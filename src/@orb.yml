@@ -1,26 +1,18 @@
 ---
 version: 2.1
 description: >
-    iOS and macOS CI/CD orb for CircleCI (v3).
-
-    Reusable jobs, commands, and executors for building, testing, linting, and
-    deploying Swift projects on Apple Silicon runners. Supports SPM packages,
-    XcodeGen-based apps, and standard Xcode projects.
-
-    Features: Apple Silicon executors (m4pro, Xcode 26.6 / Swift 6.3 default),
-    single-job build_and_test_xcode / build_and_test_spm pipelines, XcodeGen
+    iOS and macOS CI/CD orb for CircleCI (v3) providing reusable jobs,
+    commands, and executors for building, testing, linting, and deploying
+    Swift projects on Apple Silicon runners, covering SPM packages,
+    XcodeGen-based apps, and standard Xcode projects. Includes Apple Silicon
+    executors (m4pro, Xcode 26.6 / Swift 6.3 default), single-job
+    build_and_test_xcode / build_and_test_spm pipelines, XcodeGen
     integration, SwiftLint, Fastlane Match signing, SPM caching, xcbeautify
     JUnit reports, Qlty Cloud coverage upload (successor to the EOL Code
-    Climate test reporter), build artifact storage, and automated release tagging.
-
-    Bundled orbs:
-      - [circleci/macos](https://circleci.com/developer/orbs/orb/circleci/macos)
-      - [circleci/ruby](https://circleci.com/developer/orbs/orb/circleci/ruby)
-      - [qltysh/qlty-orb](https://circleci.com/developer/orbs/orb/qltysh/qlty-orb)
-
-    ## References
-      - [Supported Xcode versions](https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions-silicon)
-      - [Orb Registry](https://circleci.com/developer/orbs/orb/kevnm67/ios-orb)
+    Climate test reporter), build artifact storage, and automated release
+    tagging. Bundles circleci/macos, circleci/ruby, and qltysh/qlty-orb.
+    See the orb registry page and CircleCI's supported Xcode versions guide
+    for image details.
 
 display:
     home_url: https://github.com/kevnm67/ios-orb

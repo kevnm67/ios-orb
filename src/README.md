@@ -1,6 +1,9 @@
 # ios-orb
 
-[![CircleCI Orb](https://img.shields.io/badge/CircleCI-ios--orb-blue.svg)](https://circleci.com/developer/orbs/orb/kevnm67/ios-orb)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/kevnm67/ios-orb/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kevnm67/ios-orb/tree/main)
+[![CircleCI Orb Version](https://badges.circleci.com/orbs/kevnm67/ios-orb.svg)](https://circleci.com/developer/orbs/orb/kevnm67/ios-orb)
+[![Maintainability](https://qlty.sh/badges/f5e5400a-92d0-4f83-82e8-640bd86fb9ee/maintainability.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
+[![Code Coverage](https://qlty.sh/badges/f5e5400a-92d0-4f83-82e8-640bd86fb9ee/coverage.svg)](https://qlty.sh/gh/kevnm67/projects/ios-orb)
 
 A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and executors for building, testing, linting, and deploying Swift projects — SPM packages, XcodeGen-based apps, and standard Xcode projects.
 
@@ -16,6 +19,7 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 - [Examples](#examples)
 - [Migration from v1](#migration-from-v1)
 - [Migration from v2 to v3](#migration-from-v2-to-v3)
+- [What's new in v3.1](#whats-new-in-v31)
 
 ---
 
@@ -161,11 +165,12 @@ coverage, and optionally uploads to Qlty Cloud.
 | `lane` | Run a Fastlane lane | `named` |
 | `match_signing` | Sync code signing via Fastlane Match | `type` (default: `appstore`), `readonly`, `app_identifier` |
 | `build_xcode` | `xcodebuild build` piped through xcbeautify | `scheme`, `project`, `destination`, `configuration` |
-| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` |
+| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` (default: `test-results.xml`) |
 | `build_spm` | `swift build` piped through xcbeautify | `configuration`, `build_flags` |
-| `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` |
+| `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` (default: `build/reports`) |
 | `create_release_tag` | Tag and push the next `vX.Y.Z` release | `version_source` (`git-describe` or `marketing-version`) |
-| `brew_install` | Install a Homebrew formula with caching | `formula`, `reinstall`, `with_cache` |
+| `brew_install` | Install a Homebrew formula with caching | `formula`, `reinstall`, `with_cache`, `brew_cache_key`, `brew_dir`, `cellar_dir`, `post_steps` |
+| `restore_brew` | Restore the Homebrew cache written by `brew_install` | `brew_cache_key` (default: `brew-v1`) |
 | `cache_spm` | Save SPM package cache | `key`, `xcode_project`, `path` |
 | `restore_spm_cache` | Restore SPM package cache | `key`, `xcode_project` |
 | `save_build_artifacts` | Store build logs and test results | `logs_path`, `build_logs_path`, `test_output_path` |
@@ -187,6 +192,10 @@ See the [`src/examples/`](examples/) directory for complete workflow examples:
 | [`run_tests.yml`](examples/run_tests.yml) | Simple Fastlane test runner |
 | [`xcodegen_workflow.yml`](examples/xcodegen_workflow.yml) | Hand-rolled two-stage Fastlane workflow on the `macos` executor |
 | [`spm_workflow.yml`](examples/spm_workflow.yml) | `build_and_test_spm` for pure Swift packages (no Fastfile) — debug test+coverage plus a release build |
+| [`xcode_single_job_workflow.yml`](examples/xcode_single_job_workflow.yml) | `build_and_test_xcode` no-Fastfile path — XcodeGen + raw `xcodebuild` in one job |
+| [`deploy_match_signing.yml`](examples/deploy_match_signing.yml) | Main-only deploy workflow: `match_signing` (read-only App Store profiles) then a Fastlane `beta` lane |
+| [`pipeline_parameters_workflow.yml`](examples/pipeline_parameters_workflow.yml) | Threads a top-level pipeline parameter into `xcode_version` |
+| [`matrix_destinations_workflow.yml`](examples/matrix_destinations_workflow.yml) | `matrix` build of `build_and_test_xcode` across macOS and iPhone 17 simulator destinations |
 
 Fastlane is the preferred way to drive Xcode builds: `scan`/`gym` own the
 xcresult bundle, JUnit output and signing, and the `test` job plugs straight
