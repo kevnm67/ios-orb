@@ -67,7 +67,9 @@ if [[ ! -f "${MARKER}" ]]; then
     deny "src/ or tests/ changed vs origin/main but no verification marker (${MARKER}) exists yet. Edit a file under src/{commands,jobs,executors,examples}/ or src/@orb.yml to trigger the pack-validate hook, or run 'cd src && ./pack.sh' and 'touch \"${MARKER}\"' manually before pushing."
 fi
 
-MARKER_MTIME="$(stat -f %m "${MARKER}" 2>/dev/null || stat -c %Y "${MARKER}" 2>/dev/null || echo 0)"
+# GNU stat first: on Linux `stat -f %m` is filesystem mode (prints the mount
+# point and SUCCEEDS), so BSD-first ordering silently returns garbage there.
+MARKER_MTIME="$(stat -c %Y "${MARKER}" 2>/dev/null || stat -f %m "${MARKER}" 2>/dev/null || echo 0)"
 LATEST_COMMIT_TS="$(git log -1 --format=%ct "${BASE_REF}"...HEAD -- src tests 2>/dev/null || echo 0)"
 LATEST_COMMIT_TS="${LATEST_COMMIT_TS:-0}"
 
