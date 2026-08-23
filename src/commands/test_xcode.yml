@@ -23,6 +23,14 @@ parameters:
         description: Path of the JUnit XML report written by xcbeautify and stored as test results.
         type: string
         default: test-results.xml
+    retry_on_failure:
+        description: Whether to retry only the tests that failed (xcodebuild -retry-tests-on-failure).
+        type: boolean
+        default: false
+    test_iterations:
+        description: Maximum iterations per test when retry_on_failure is enabled (xcodebuild -test-iterations).
+        type: integer
+        default: 3
 
 steps:
     - run:
@@ -36,6 +44,8 @@ steps:
               DESTINATION: << parameters.destination >>
               RESULT_BUNDLE_PATH: << parameters.result_bundle_path >>
               JUNIT_REPORT: << parameters.junit_report >>
+              RETRY_ON_FAILURE: << parameters.retry_on_failure >>
+              TEST_ITERATIONS: << parameters.test_iterations >>
           command: << include(scripts/xcodebuild_test.sh) >>
     - store_test_results:
           path: << parameters.junit_report >>

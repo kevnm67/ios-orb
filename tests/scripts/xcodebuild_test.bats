@@ -34,6 +34,32 @@ setup() {
     grep -q -- "--junit-report-filename out/j.xml" "${STUB_CALL_LOG}"
 }
 
+@test "does not add retry flags by default" {
+    export SCHEME=MyApp DESTINATION="platform=macOS" RESULT_BUNDLE_PATH="${BATS_TMPDIR}/r2_${BATS_TEST_NUMBER}.xcresult"
+    unset RETRY_ON_FAILURE TEST_ITERATIONS
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    result=$(grep "^xcodebuild" "${STUB_CALL_LOG}")
+    [[ "${result}" != *"-retry-tests-on-failure"* ]]
+}
+
+@test "adds retry flags when RETRY_ON_FAILURE is true" {
+    export SCHEME=MyApp DESTINATION="platform=macOS" RESULT_BUNDLE_PATH="${BATS_TMPDIR}/r3_${BATS_TEST_NUMBER}.xcresult"
+    export RETRY_ON_FAILURE=true TEST_ITERATIONS=5
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q -- "-retry-tests-on-failure -test-iterations 5" "${STUB_CALL_LOG}"
+}
+
+@test "adds retry flags with default iterations when RETRY_ON_FAILURE=1" {
+    export SCHEME=MyApp DESTINATION="platform=macOS" RESULT_BUNDLE_PATH="${BATS_TMPDIR}/r4_${BATS_TEST_NUMBER}.xcresult"
+    export RETRY_ON_FAILURE=1
+    unset TEST_ITERATIONS
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q -- "-retry-tests-on-failure -test-iterations 3" "${STUB_CALL_LOG}"
+}
+
 @test "fails when xcodebuild fails (pipefail)" {
     TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
     mkdir -p "${TMPBIN}"
