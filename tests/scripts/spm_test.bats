@@ -92,6 +92,46 @@ setup() {
     [[ "${output}" == *"framework: xctest"* ]]
 }
 
+@test "TEST_SPLITS_FILE adds one --filter flag per line" {
+    export TEST_FRAMEWORK=xctest
+    SPLITS_FILE="${BATS_TMPDIR}/splits_${BATS_TEST_NUMBER}.txt"
+    printf 'FooTests\nBarTests\n' > "${SPLITS_FILE}"
+    export TEST_SPLITS_FILE="${SPLITS_FILE}"
+    unset FILTER
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q -- "--filter FooTests --filter BarTests" "${STUB_CALL_LOG}"
+}
+
+@test "TEST_SPLITS_FILE combines with an explicit FILTER" {
+    export TEST_FRAMEWORK=xctest FILTER=MyTests/testFoo
+    SPLITS_FILE="${BATS_TMPDIR}/splits_${BATS_TEST_NUMBER}.txt"
+    printf 'FooTests\n' > "${SPLITS_FILE}"
+    export TEST_SPLITS_FILE="${SPLITS_FILE}"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q -- "--filter MyTests/testFoo --filter FooTests" "${STUB_CALL_LOG}"
+}
+
+@test "empty TEST_SPLITS_FILE adds no extra --filter flags" {
+    export TEST_FRAMEWORK=xctest
+    SPLITS_FILE="${BATS_TMPDIR}/empty_${BATS_TEST_NUMBER}.txt"
+    : > "${SPLITS_FILE}"
+    export TEST_SPLITS_FILE="${SPLITS_FILE}"
+    unset FILTER
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q "^swift test --enable-code-coverage --parallel$" "${STUB_CALL_LOG}"
+}
+
+@test "unset TEST_SPLITS_FILE adds no extra --filter flags" {
+    export TEST_FRAMEWORK=xctest
+    unset TEST_SPLITS_FILE FILTER
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q "^swift test --enable-code-coverage --parallel$" "${STUB_CALL_LOG}"
+}
+
 @test "fails when swift test fails (pipefail)" {
     TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
     mkdir -p "${TMPBIN}"

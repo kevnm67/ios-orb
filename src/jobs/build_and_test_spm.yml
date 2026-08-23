@@ -67,6 +67,13 @@ parameters:
         description: Whether to allow a beta/build-string xcode_version (e.g. "27A5228h") instead of failing fast.
         type: boolean
         default: false
+    split_tests:
+        description: |
+            Whether to discover Tests/ target subdirectories and split them
+            across parallel test nodes via `circleci tests split` before
+            running tests. Only useful with `parallelism` greater than 1.
+        type: boolean
+        default: false
 
 parallelism: << parameters.parallelism >>
 
@@ -81,6 +88,11 @@ steps:
     - build_spm:
           build_flags: << parameters.build_flags >>
           configuration: << parameters.configuration >>
+    - when:
+          condition: << parameters.split_tests >>
+          steps:
+              - resolve_test_splits:
+                    split_kind: spm
     - test_spm:
           filter: << parameters.filter >>
           coverage: << parameters.coverage >>

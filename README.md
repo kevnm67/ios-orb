@@ -21,6 +21,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [setup](#setup)
     - [lane](#lane)
     - [xcodegen](#xcodegen)
+    - [tuist\_generate](#tuist_generate)
     - [install\_tools](#install_tools)
     - [swiftlint](#swiftlint)
     - [swiftformat](#swiftformat)
@@ -32,6 +33,8 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [brew\_install](#brew_install)
     - [restore\_brew](#restore_brew)
     - [cache\_spm / restore\_spm\_cache](#cache_spm--restore_spm_cache)
+    - [cache\_derived\_data / restore\_derived\_data](#cache_derived_data--restore_derived_data)
+    - [resolve\_test\_splits](#resolve_test_splits)
     - [save\_build\_artifacts](#save_build_artifacts)
     - [test\_with\_qlty](#test_with_qlty)
     - [upload\_qlty\_coverage](#upload_qlty_coverage)
@@ -153,6 +156,21 @@ steps:
 | `spec` | string | `project.yml` | Path to the XcodeGen spec file |
 | `quiet` | boolean | `true` | Whether to suppress XcodeGen output |
 
+### `tuist_generate`
+
+Install Tuist (Homebrew cask) and generate the Xcode workspace with
+`--no-open`, so CI never tries to launch Xcode.
+
+```yaml
+steps:
+    - ios/tuist_generate:
+        path: ''
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `path` | string | `""` | Path to the directory or subdirectory of the Tuist project. Leave empty to use the current directory |
+
 ### `install_tools`
 
 Install Homebrew tools (only if missing).
@@ -245,6 +263,10 @@ Fallback for projects **without a Fastfile**: build and test with raw
 writes the xcresult bundle and stores a JUnit report for CircleCI Test
 Insights. Fastlane projects should use [`lane`](#lane) / the [`test`](#test)
 job instead — `scan` produces the xcresult and JUnit output natively.
+`test_xcode` automatically narrows to `-only-testing:` flags when
+[`resolve_test_splits`](#resolve_test_splits) has exported `TEST_SPLITS_FILE`
+earlier in the job (wired automatically by `build_and_test_xcode`'s
+`split_tests` parameter).
 
 ```yaml
 steps:
@@ -277,11 +299,17 @@ steps:
 | `junit_report` | string | `test-results.xml` | Path of the JUnit XML report written by xcbeautify and stored as test results |
 | `retry_on_failure` | boolean | `false` | Whether to retry only the tests that failed (`xcodebuild -retry-tests-on-failure`) |
 | `test_iterations` | integer | `3` | Maximum iterations per test when `retry_on_failure` is enabled (`xcodebuild -test-iterations`) |
+| `test_target` | string | `""` | Test target name used to scope `-only-testing` filters when a test-splits file is present on `TEST_SPLITS_FILE` (see [`resolve_test_splits`](#resolve_test_splits)). Leave empty to default to the scheme name |
+| `junit_source` | enum | `xcbeautify` | How to produce the JUnit report: `xcbeautify` (default) uses xcbeautify's own JUnit reporter; `xcresultparser` runs plain xcodebuild through xcbeautify (no report) and separately converts the xcresult bundle to JUnit XML with xcresultparser, installing it via Homebrew if missing |
 
 ### `build_spm` / `test_spm`
 
 Build and test a Swift package. `test_spm` runs with coverage and `--parallel`
-by default and stores a JUnit report from `build/reports`.
+by default and stores a JUnit report from `build/reports`. `test_spm`
+automatically adds `--filter` flags per line when
+[`resolve_test_splits`](#resolve_test_splits) has exported `TEST_SPLITS_FILE`
+earlier in the job (wired automatically by `build_and_test_spm`'s
+`split_tests` parameter).
 
 ```yaml
 steps:
@@ -379,6 +407,59 @@ pure SPM packages (leave `xcode_project` empty).
 |-----------|------|---------|-------------|
 | `key` | string | `spm-v1` | Cache key (prefixed). The key is immutable |
 | `xcode_project` | string | `""` | Name of your xcodeproj for setting the path to the `Package.resolved` file. Leave empty for pure SPM packages to key on the root `Package.resolved` |
+
+### `cache_derived_data` / `restore_derived_data`
+
+Cache and restore a **best-effort** Xcode DerivedData cache. The checksum
+keys on `project.yml` (XcodeGen) when present, falling back to
+`<xcode_project>.xcodeproj/project.pbxproj`, and an empty key when neither
+exists. This only approximates "did the project structure change" — Xcode's
+own incremental-build staleness heuristics still decide whether a cached
+build product is actually reusable, so a cache hit is a possible speedup,
+not a correctness guarantee.
+
+```yaml
+steps:
+    - ios/restore_derived_data:
+        xcode_project: MyApp
+    # ... build_xcode / test_xcode ...
+    - ios/cache_derived_data:
+        xcode_project: MyApp
+```
+
+**`restore_derived_data` / `cache_derived_data` parameters** (identical)
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `xcode_project` | string | `""` | Name of your xcodeproj (without extension) to key on its `project.pbxproj` when `project.yml` is absent. Leave empty for XcodeGen-only projects |
+| `scheme` | string | `""` | Xcode scheme (reserved for a future scheme-scoped cache key; currently unused in the key itself) |
+| `key` | string | `dd-v1` | Cache key prefix (immutable) |
+| `path` | string | `~/Library/Developer/Xcode/DerivedData` | DerivedData path to restore/save |
+
+### `resolve_test_splits`
+
+Discover test unit names — SPM `Tests/` target subdirectories, or Xcode
+`*Tests.swift` class files — and split them across CircleCI parallel test
+nodes via `circleci tests split`, writing the assigned slice to
+`test-splits.txt` and exporting `TEST_SPLITS_FILE` for `test_xcode` /
+`test_spm` to consume automatically. Falls back to the full unit list (with
+a warning) when the `circleci` CLI is absent, so local runs still work. Only
+useful when the job's `parallelism` parameter is greater than 1 — normally
+wired automatically via the `split_tests` parameter on `build_and_test_xcode`
+/ `build_and_test_spm` rather than called directly.
+
+```yaml
+steps:
+    - ios/resolve_test_splits:
+        split_kind: xcode
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `split_kind` | enum | — | Which project type to discover test units for: `xcode` or `spm` |
+| `test_targets_dir` | string | `Tests` | (spm) Directory whose immediate subdirectories are treated as test target names |
+| `test_classes_dir` | string | `.` | (xcode) Directory searched recursively for `*Tests.swift` files |
+| `split_by` | string | `name` | Value passed to `circleci tests split --split-by` |
 
 ### `save_build_artifacts`
 
@@ -602,7 +683,8 @@ Qlty Cloud. Fastlane projects: prefer `run_with_setup` + the `test` job.
 | `scheme` | string | — | Xcode scheme to build and test |
 | `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
-| `xcodegen` | boolean | `false` | Run XcodeGen before building |
+| `xcodegen` | boolean | `false` | Run XcodeGen before building. Deprecated: prefer `project_generator: xcodegen`, which this is equivalent to |
+| `project_generator` | enum | `none` | Which project generator to run before building: `none`, `xcodegen`, or `tuist`. Prefer this over the deprecated `xcodegen` boolean parameter |
 | `project` | string | `""` | Path to `.xcodeproj` (empty = default) |
 | `destination` | string | `platform=macOS` | Build and test destination |
 | `configuration` | string | `Debug` | Build configuration |
@@ -616,6 +698,10 @@ Qlty Cloud. Fastlane projects: prefer `run_with_setup` + the `test` job.
 | `retry_on_failure` | boolean | `false` | Whether to retry only the tests that failed (`xcodebuild -retry-tests-on-failure`) |
 | `test_iterations` | integer | `3` | Maximum iterations per test when `retry_on_failure` is enabled |
 | `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
+| `split_tests` | boolean | `false` | Discover `*Tests.swift` classes and split them across parallel test nodes via `circleci tests split` before testing. Only useful with `parallelism` greater than 1 |
+| `test_target` | string | `""` | Test target name used to scope `-only-testing` filters when `split_tests` is enabled. Leave empty to default to the scheme name |
+| `derived_data_cache` | boolean | `false` | Restore/save a best-effort DerivedData cache keyed on `project.yml`/`project.pbxproj` before building and after testing |
+| `junit_source` | enum | `xcbeautify` | How to produce the JUnit report: `xcbeautify` (default) or `xcresultparser` |
 
 ```yaml
 jobs:
@@ -646,6 +732,7 @@ coverage, and optionally uploads to Qlty Cloud.
 | `pre_steps` | steps | `[]` | Steps to run before build |
 | `test_framework` | enum | `auto` | Which test framework to run: `auto`, `xctest`, or `swift-testing` |
 | `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
+| `split_tests` | boolean | `false` | Discover `Tests/` target subdirectories and split them across parallel test nodes via `circleci tests split` before testing. Only useful with `parallelism` greater than 1 |
 
 ```yaml
 jobs:

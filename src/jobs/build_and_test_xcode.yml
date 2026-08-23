@@ -21,9 +21,20 @@ parameters:
         type: string
         default: m4pro.medium
     xcodegen:
-        description: Whether to generate the Xcode project with XcodeGen before building.
+        description: |
+            Whether to generate the Xcode project with XcodeGen before
+            building. Deprecated: prefer `project_generator: xcodegen`,
+            which this is equivalent to; kept for backwards compatibility.
         type: boolean
         default: false
+    project_generator:
+        description: |
+            Which project generator to run before building: "none"
+            (default), "xcodegen", or "tuist". Prefer this over the
+            deprecated `xcodegen` boolean parameter.
+        type: enum
+        enum: [none, xcodegen, tuist]
+        default: none
     project:
         description: Path to the .xcodeproj file. Leave empty to use the default project.
         type: string
@@ -80,6 +91,36 @@ parameters:
         description: Whether to allow a beta/build-string xcode_version (e.g. "27A5228h") instead of failing fast.
         type: boolean
         default: false
+    split_tests:
+        description: |
+            Whether to discover *Tests.swift classes and split them across
+            parallel test nodes via `circleci tests split` before running
+            tests. Only useful with `parallelism` greater than 1.
+        type: boolean
+        default: false
+    test_target:
+        description: |
+            Test target name used to scope "-only-testing" filters when
+            split_tests is enabled. Leave empty to default to the scheme
+            name.
+        type: string
+        default: ''
+    derived_data_cache:
+        description: |
+            Whether to restore/save a best-effort DerivedData cache keyed
+            on project.yml/project.pbxproj before building and after
+            testing. Speeds up incremental Xcode builds; not a correctness
+            guarantee, since Xcode's own staleness heuristics still apply.
+        type: boolean
+        default: false
+    junit_source:
+        description: |
+            How to produce the JUnit report: "xcbeautify" (default) uses
+            xcbeautify's own JUnit reporter. "xcresultparser" converts the
+            xcresult bundle to JUnit XML with xcresultparser instead.
+        type: enum
+        enum: [xcbeautify, xcresultparser]
+        default: xcbeautify
 
 parallelism: << parameters.parallelism >>
 
@@ -90,16 +131,30 @@ steps:
     - checkout
     - << parameters.pre_steps >>
     - when:
-          condition: << parameters.xcodegen >>
+          condition:
+              or:
+                  - << parameters.xcodegen >>
+                  - equal: [xcodegen, << parameters.project_generator >>]
           steps:
               - install_tools:
                     tools: xcodegen
               - xcodegen
     - when:
+          condition:
+              equal: [tuist, << parameters.project_generator >>]
+          steps:
+              - tuist_generate
+    - when:
           condition: << parameters.xcode_project >>
           steps:
               - restore_spm_cache:
                     xcode_project: << parameters.xcode_project >>
+    - when:
+          condition: << parameters.derived_data_cache >>
+          steps:
+              - restore_derived_data:
+                    xcode_project: << parameters.xcode_project >>
+                    scheme: << parameters.scheme >>
     - when:
           condition: << parameters.preboot_simulator >>
           steps:
@@ -110,6 +165,11 @@ steps:
           project: << parameters.project >>
           destination: << parameters.destination >>
           configuration: << parameters.configuration >>
+    - when:
+          condition: << parameters.split_tests >>
+          steps:
+              - resolve_test_splits:
+                    split_kind: xcode
     - test_xcode:
           scheme: << parameters.scheme >>
           project: << parameters.project >>
@@ -118,6 +178,14 @@ steps:
           junit_report: << parameters.junit_report >>
           retry_on_failure: << parameters.retry_on_failure >>
           test_iterations: << parameters.test_iterations >>
+          test_target: << parameters.test_target >>
+          junit_source: << parameters.junit_source >>
+    - when:
+          condition: << parameters.derived_data_cache >>
+          steps:
+              - cache_derived_data:
+                    xcode_project: << parameters.xcode_project >>
+                    scheme: << parameters.scheme >>
     - when:
           condition: << parameters.coverage >>
           steps:

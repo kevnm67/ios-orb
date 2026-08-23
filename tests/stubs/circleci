@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Deterministic stub for the `circleci` CLI's `tests split` subcommand: reads
+# newline-delimited test unit names from stdin and echoes them straight back
+# to stdout, so bats tests can assert on resolve_test_splits.sh's own
+# discovery output without depending on the real CircleCI test-splitting
+# algorithm (which requires a live CIRCLE_* environment to be deterministic).
+echo "circleci stub: $*" >&2
+echo "circleci $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+if [[ "$*" == "tests split --split-by="* ]]; then
+    cat
+    exit 0
+fi
+echo "stub:circleci $*"

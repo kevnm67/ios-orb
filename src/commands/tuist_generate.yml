@@ -1,0 +1,20 @@
+---
+description: |
+    Install Tuist (if missing) and generate the Xcode workspace with
+    --no-open, so CI never tries to launch Xcode.
+
+parameters:
+    path:
+        description: Path to the directory or subdirectory of the Tuist project. Leave empty to use the current directory.
+        type: string
+        default: ''
+
+steps:
+    - run:
+          name: Install Tuist
+          command: << include(scripts/tuist_install.sh) >>
+    - run:
+          name: Generate Xcode workspace with Tuist
+          environment:
+              TUIST_PATH: << parameters.path >>
+          command: << include(scripts/tuist_generate.sh) >>

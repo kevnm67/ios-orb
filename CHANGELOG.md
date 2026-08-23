@@ -44,6 +44,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `tests/stubs/swiftformat`, `tests/stubs/periphery`,
     `tests/stubs/sentry-cli`, `tests/stubs/ditto`, plus a controlled-failure
     hook added to `tests/stubs/xcrun` for notarization failure test cases.
+- New `resolve_test_splits` command + script — discovers test unit names
+    (SPM `Tests/` target subdirectories, or Xcode `*Tests.swift` class
+    files) and splits them across parallel CircleCI test nodes via
+    `circleci tests split`, falling back to the full unit list (with a
+    warning) when the `circleci` CLI is absent. `test_xcode` / `test_spm`
+    consume the resulting `TEST_SPLITS_FILE` automatically
+    (`-only-testing:` / `--filter` flags, respectively). Wired into
+    `build_and_test_xcode` and `build_and_test_spm` via the new
+    `split_tests` job parameter (only useful with `parallelism` > 1);
+    `build_and_test_xcode` also gets a `test_target` parameter to scope the
+    `-only-testing` filter when the scheme name isn't the test target name.
+- New `restore_derived_data` / `cache_derived_data` commands + shared
+    `resolve_derived_data_key.sh` script — a best-effort Xcode DerivedData
+    cache keyed on `project.yml` (XcodeGen) or
+    `<xcode_project>.xcodeproj/project.pbxproj`, falling back to an empty
+    key when neither exists. Wired into `build_and_test_xcode` via the new
+    `derived_data_cache` job parameter (restore before build, save after
+    test). DerivedData caching only approximates "did the project structure
+    change" — Xcode's own incremental-build staleness heuristics still
+    decide whether a cached build product is reusable.
+- `test_xcode` / `build_and_test_xcode`: `junit_source` parameter
+    (`xcbeautify` default, or `xcresultparser`) — verified 2026-08-23
+    against Xcode 26 (`xcresulttool` tool version 24757) that neither
+    `xcresulttool get test-results` (summary/tests/test-details/
+    activities/insights/metrics only) nor `xcresulttool export`
+    (object/diagnostics/coverage/attachments/metrics only) has a JUnit
+    output, so the `xcresultparser` alternative converts the xcresult
+    bundle to JUnit XML with `xcresultparser` (already bundled by this orb
+    for cobertura export), installing it via Homebrew if missing.
+- New `tuist_generate` command + `tuist_install.sh` / `tuist_generate.sh`
+    scripts, mirroring `xcodegen` — installs Tuist (a Homebrew cask, not a
+    core formula) and runs `tuist generate --no-open` so CI never tries to
+    launch Xcode. `build_and_test_xcode` gets a `project_generator`
+    parameter (`none`, `xcodegen`, or `tuist`); the existing `xcodegen`
+    boolean parameter is deprecated in favor of
+    `project_generator: xcodegen` but keeps working unchanged.
+- `tests/stubs/circleci`, `tests/stubs/tuist`.
 
 ## [3.2.0] - 2026-08-23
 

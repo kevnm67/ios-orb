@@ -12,6 +12,9 @@
 #                    "${REPORT_PATH}/junit.xml" via `swift test --xunit-output`
 #                    instead of xcbeautify's own `--report junit`, to avoid
 #                    emitting two JUnit reports.
+#   TEST_SPLITS_FILE - optional path to a newline-delimited file of test
+#                    target names (written by resolve_test_splits.sh); each
+#                    line adds a "--filter <name>" flag.
 set -euo pipefail
 
 REPORT_PATH="${REPORT_PATH:-build/reports}"
@@ -56,6 +59,13 @@ fi
 
 if [ -n "${FILTER:-}" ]; then
     ARGS+=("--filter" "${FILTER}")
+fi
+
+if [ -n "${TEST_SPLITS_FILE:-}" ] && [ -s "${TEST_SPLITS_FILE}" ]; then
+    while IFS= read -r UNIT; do
+        [ -z "${UNIT}" ] && continue
+        ARGS+=("--filter" "${UNIT}")
+    done < "${TEST_SPLITS_FILE}"
 fi
 
 echo "→ Running: swift ${ARGS[*]} (framework: ${FRAMEWORK})"

@@ -1,0 +1,41 @@
+---
+description: |
+    Restores a best-effort DerivedData cache keyed on project.yml
+    (XcodeGen) or <xcode_project>.xcodeproj/project.pbxproj, falling back to
+    an empty key when neither exists. DerivedData caching only approximates
+    "did the project structure change" — Xcode's own incremental-build
+    staleness heuristics still decide whether a cached build product is
+    reusable, so treat a cache hit as a possible speedup, not a guarantee.
+
+parameters:
+    xcode_project:
+        description: |
+            Name of your xcodeproj (without extension) to key on its
+            project.pbxproj when project.yml is absent. Leave empty for
+            XcodeGen-only projects.
+        type: string
+        default: ''
+    scheme:
+        description: Xcode scheme (reserved for a future scheme-scoped cache key; currently unused in the key itself).
+        type: string
+        default: ''
+    key:
+        description: Cache key prefix (immutable).
+        type: string
+        default: dd-v1
+    path:
+        description: DerivedData path to restore.
+        type: string
+        default: ~/Library/Developer/Xcode/DerivedData
+
+steps:
+    - run:
+          name: Resolve DerivedData cache key
+          environment:
+              XCODE_PROJECT: << parameters.xcode_project >>
+              SCHEME: << parameters.scheme >>
+          command: << include(scripts/resolve_derived_data_key.sh) >>
+    - restore_cache:
+          keys:
+              - << parameters.key >>-{{ arch }}-{{ checksum "DerivedData.cache-key" }}
+              - << parameters.key >>-{{ arch }}-
