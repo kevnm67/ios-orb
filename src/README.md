@@ -21,6 +21,7 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 - [Migration from v1](#migration-from-v1)
 - [Migration from v2 to v3](#migration-from-v2-to-v3)
 - [What's new in v3.1](#whats-new-in-v31)
+- [What's new in v3.3](#whats-new-in-v33)
 
 ---
 
@@ -142,6 +143,10 @@ tests, exports coverage, and uploads to Qlty Cloud.
 | `xcode_project` | string | `""` | Project name for SPM cache key |
 | `pre_steps` | steps | `[]` | Steps to run before build |
 | `junit_report` | string | `test-results.xml` | Path of the JUnit XML report written by xcbeautify and stored as test results |
+| `preboot_simulator` | boolean | `false` | Preboot the Simulator device parsed from `destination` before building (no-op for non-simulator destinations) |
+| `retry_on_failure` | boolean | `false` | Whether to retry only the tests that failed (`xcodebuild -retry-tests-on-failure`) |
+| `test_iterations` | integer | `3` | Maximum iterations per test when `retry_on_failure` is enabled |
+| `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
 
 ### `build_and_test_spm`
 
@@ -161,6 +166,8 @@ coverage, and optionally uploads to Qlty Cloud.
 | `pre_steps` | steps | `[]` | Steps to run before build |
 | `parallel` | boolean | `true` | Whether to run tests in parallel |
 | `report_path` | string | `build/reports` | Directory the JUnit report is written to and stored from |
+| `test_framework` | enum | `auto` | Which test framework to run: `auto`, `xctest`, or `swift-testing` |
+| `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
 
 ---
 
@@ -179,9 +186,9 @@ coverage, and optionally uploads to Qlty Cloud.
 | `lane` | Run a Fastlane lane | `named` |
 | `match_signing` | Sync code signing via Fastlane Match | `type` (default: `appstore`), `readonly`, `app_identifier` |
 | `build_xcode` | `xcodebuild build` piped through xcbeautify | `scheme`, `project`, `destination`, `configuration` |
-| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` (default: `test-results.xml`) |
+| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` (default: `test-results.xml`), `retry_on_failure`, `test_iterations` (default: `3`) |
 | `build_spm` | `swift build` piped through xcbeautify | `configuration`, `build_flags` |
-| `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` (default: `build/reports`) |
+| `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` (default: `build/reports`), `test_framework` (`auto`, `xctest`, or `swift-testing`) |
 | `create_release_tag` | Tag and push the next `vX.Y.Z` release | `version_source` (`git-describe` or `marketing-version`) |
 | `brew_install` | Install a Homebrew formula with caching | `formula`, `reinstall`, `with_cache`, `brew_cache_key`, `brew_dir`, `cellar_dir`, `post_steps` |
 | `restore_brew` | Restore the Homebrew cache written by `brew_install` | `brew_cache_key` (default: `brew-v1`) |
@@ -191,6 +198,8 @@ coverage, and optionally uploads to Qlty Cloud.
 | `test_with_qlty` | Run tests and upload coverage to Qlty Cloud | `lane`, `pretest_steps`, `test_steps`, `result_bundle_path`, `coverage_file`, `qlty_tag`, `qlty_skip_errors`, `xcode_project` |
 | `upload_qlty_coverage` | Upload a coverage file to Qlty Cloud | `file`, `format`, `tag`, `token`, `skip_errors` |
 | `export_coverage` | Export coverage — `spm` → `coverage.lcov` (lcov), `xcode` → `coverage.xml` (cobertura) | `type` (`spm` or `xcode`), `result_bundle` |
+| `preboot_simulator` | Preboot the Simulator device parsed from a `destination` string (no-op for non-simulator destinations) | `destination` |
+| `assert_xcode_channel` | Fail fast if `xcode_version` looks like a beta/build-string image | `xcode_version`, `allow_beta` (default: `false`) |
 
 ### Command Parameter Reference
 
@@ -209,6 +218,9 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `create_release_tag` | `version_source` | string | `git-describe` | How to determine the version number: `git-describe` increments patch from the latest tag, `marketing-version` reads `MARKETING_VERSION` from the Xcode project |
 | `export_coverage` | `type` | enum | — | Coverage source: `spm` (→ `coverage.lcov`) or `xcode` (→ `coverage.xml`) |
 | `export_coverage` | `result_bundle` | string | `TestResults.xcresult` | Path to the xcresult bundle (only used when `type` is `xcode`) |
+| `preboot_simulator` | `destination` | string | — | Build/test destination string to parse for a simulator device name |
+| `assert_xcode_channel` | `xcode_version` | string | — | Xcode version to validate (e.g. `26.6`) |
+| `assert_xcode_channel` | `allow_beta` | boolean | `false` | Whether to allow a beta/build-string Xcode version instead of failing |
 | `install_tools` | `tools` | string | `xcodegen swiftlint` | Space-separated list of Homebrew formulas to install |
 | `match_signing` | `type` | string | `appstore` | Comma-separated match types: development, adhoc, appstore, enterprise |
 | `match_signing` | `readonly` | boolean | `false` | Whether to run match in read-only mode |
@@ -407,3 +419,11 @@ steps:
 - **`brew_install` defaults** use the Apple Silicon Homebrew prefix (`/opt/homebrew`).
 - **New parameters**: `test_xcode.junit_report`, `test_spm.report_path`.
 - All `xcodebuild` / `swift build` / `swift test` logic moved from inline YAML into unit-tested `src/scripts/*.sh` (behaviour unchanged; `pipefail` now fails the step when the underlying build fails instead of being masked by `xcbeautify`).
+
+## What's new in v3.3
+
+- **`build_and_test_xcode`: `preboot_simulator`** — preboots the Simulator device parsed from `destination` before building. No-ops for non-simulator destinations.
+- **`test_spm` / `build_and_test_spm`: `test_framework`** (`auto`, `xctest`, or `swift-testing`) — `auto` detects Swift Testing via `import Testing` in `Tests/`. `swift-testing` forces `--parallel` and writes an xunit report via `swift test --xunit-output` instead of xcbeautify's JUnit reporter.
+- **`test_xcode` / `build_and_test_xcode`: `retry_on_failure` + `test_iterations`** — retries only failed tests via `xcodebuild -retry-tests-on-failure -test-iterations`, for flaky-test resilience.
+- **New `assert_xcode_channel` command**, wired as the first step of `build_and_test_xcode` and `build_and_test_spm` (`allow_beta_xcode` parameter) — fails fast if `xcode_version` looks like a beta/build-string image (e.g. `27A5228h`) instead of a stable dotted release.
+- **New `preboot_simulator` command** — reusable outside the flagship jobs via raw `steps:` composition.

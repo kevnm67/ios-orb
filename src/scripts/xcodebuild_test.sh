@@ -7,6 +7,8 @@
 #   DESTINATION        - xcodebuild -destination value
 #   RESULT_BUNDLE_PATH - where to write the .xcresult bundle
 #   JUNIT_REPORT       - JUnit XML output path (default test-results.xml)
+#   RETRY_ON_FAILURE   - "true"/"1" to retry only the tests that failed
+#   TEST_ITERATIONS    - max iterations per test when retrying (default 3)
 set -euo pipefail
 
 JUNIT_REPORT="${JUNIT_REPORT:-test-results.xml}"
@@ -25,6 +27,11 @@ ARGS+=(
     "-enableCodeCoverage" "YES"
     "-resultBundlePath" "${RESULT_BUNDLE_PATH}"
 )
+
+case "${RETRY_ON_FAILURE:-false}" in
+    true | 1) ARGS+=("-retry-tests-on-failure" "-test-iterations" "${TEST_ITERATIONS:-3}") ;;
+    *) ;;
+esac
 
 echo "→ Running: xcodebuild ${ARGS[*]}"
 set -o pipefail

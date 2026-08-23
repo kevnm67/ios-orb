@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `build_and_test_xcode`: `preboot_simulator` parameter — preboots the
+    Simulator device parsed from `destination` before building via the new
+    `preboot_simulator` command (`src/scripts/parse_simulator_destination.sh`
+    + `src/scripts/preboot_simulator.sh`); no-ops for non-simulator
+    destinations.
+- `test_spm` / `build_and_test_spm`: `test_framework` parameter (`auto`,
+    `xctest`, `swift-testing`) — `auto` detects Swift Testing via
+    `import Testing` in `Tests/`; `swift-testing` forces `--parallel` and
+    writes an xunit report via `swift test --xunit-output` instead of
+    xcbeautify's JUnit reporter.
+- `test_xcode` / `build_and_test_xcode`: `retry_on_failure` and
+    `test_iterations` parameters — retries only failed tests via
+    `xcodebuild -retry-tests-on-failure -test-iterations` for flaky-test
+    resilience.
+- New `assert_xcode_channel` command + script, wired as the first step of
+    `build_and_test_xcode` and `build_and_test_spm` via the new
+    `allow_beta_xcode` job parameter — fails fast if `xcode_version` looks
+    like a beta/build-string image (e.g. `27A5228h`) instead of a stable
+    dotted release.
 - `swiftformat` command — installs SwiftFormat via Homebrew and runs it in
     check-only `--lint` mode by default (`lint`, `config`, `paths`
     parameters), matching the `swiftlint` command's shape.

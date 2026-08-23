@@ -20,6 +20,16 @@ parameters:
         description: Directory the JUnit report is written to and stored from.
         type: string
         default: build/reports
+    test_framework:
+        description: |
+            Which test framework to run: "auto" detects Swift Testing by
+            grepping Tests/ for "import Testing" (falling back to xctest),
+            "xctest" and "swift-testing" force a framework. swift-testing
+            forces --parallel and writes an xunit report via `swift test
+            --xunit-output` instead of xcbeautify's JUnit reporter.
+        type: enum
+        enum: [auto, xctest, swift-testing]
+        default: auto
 
 steps:
     - run:
@@ -32,6 +42,7 @@ steps:
               PARALLEL: << parameters.parallel >>
               COVERAGE: << parameters.coverage >>
               REPORT_PATH: << parameters.report_path >>
+              TEST_FRAMEWORK: << parameters.test_framework >>
           command: << include(scripts/spm_test.sh) >>
     - store_test_results:
           path: << parameters.report_path >>

@@ -1,0 +1,23 @@
+---
+description: |
+    Fails fast if the given Xcode version looks like a beta/build-string image
+    (e.g. "27A5228h") rather than a stable dotted release (e.g. "26.6"), so CI
+    does not silently pin to an unstable Xcode channel. Set allow_beta true to
+    permit an intentional beta pin.
+
+parameters:
+    xcode_version:
+        description: Xcode version to validate (e.g. "26.6").
+        type: string
+    allow_beta:
+        description: Whether to allow a beta/build-string Xcode version instead of failing.
+        type: boolean
+        default: false
+
+steps:
+    - run:
+          name: Assert stable Xcode channel
+          environment:
+              XCODE_VERSION: << parameters.xcode_version >>
+              ALLOW_BETA_XCODE: << parameters.allow_beta >>
+          command: << include(scripts/assert_xcode_channel.sh) >>
