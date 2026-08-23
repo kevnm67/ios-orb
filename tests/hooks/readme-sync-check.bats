@@ -4,12 +4,15 @@
 SCRIPT="${BATS_TEST_DIRNAME}/../../.claude/hooks/readme-sync-check.sh"
 
 setup() {
-    ORIGIN="$(mktemp -d "${BATS_TMPDIR}/rsc_origin.XXXXXX")"
     WORK="$(mktemp -d "${BATS_TMPDIR}/rsc_work.XXXXXX")"
-    rmdir "${WORK}"
+    ORIGIN="$(mktemp -d "${BATS_TMPDIR}/rsc_origin.XXXXXX")"
+    rmdir "${ORIGIN}"
 
-    git init -q --bare "${ORIGIN}"
-    git clone -q "${ORIGIN}" "${WORK}"
+    # Build WORK (with an explicit -b main) and commit BEFORE creating
+    # ORIGIN as a bare clone of it — cloning an empty bare repo triggers
+    # git's "You appear to have cloned an empty repository" warning and was
+    # flaky on CI.
+    git init -q -b main "${WORK}"
     git -C "${WORK}" config user.email "test@test.com"
     git -C "${WORK}" config user.name "test"
 
@@ -19,7 +22,9 @@ setup() {
     echo "params: {}" > "${WORK}/src/commands/swiftlint.yml"
     git -C "${WORK}" add -A
     git -C "${WORK}" commit -q -m "init"
-    git -C "${WORK}" branch -M main
+
+    git clone -q --bare "${WORK}" "${ORIGIN}"
+    git -C "${WORK}" remote add origin "${ORIGIN}"
     git -C "${WORK}" push -q -u origin main
 
     export CLAUDE_PROJECT_DIR="${WORK}"

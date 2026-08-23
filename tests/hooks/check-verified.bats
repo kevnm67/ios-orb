@@ -4,12 +4,16 @@
 SCRIPT="${BATS_TEST_DIRNAME}/../../.claude/hooks/check-verified.sh"
 
 setup() {
-    ORIGIN="$(mktemp -d "${BATS_TMPDIR}/cv_origin.XXXXXX")"
     WORK="$(mktemp -d "${BATS_TMPDIR}/cv_work.XXXXXX")"
-    rmdir "${WORK}"
+    ORIGIN="$(mktemp -d "${BATS_TMPDIR}/cv_origin.XXXXXX")"
+    rmdir "${ORIGIN}"
 
-    git init -q --bare "${ORIGIN}"
-    git clone -q "${ORIGIN}" "${WORK}"
+    # Build WORK first (with an explicit -b main so this is deterministic
+    # regardless of the runner's init.defaultBranch), commit, THEN create
+    # ORIGIN as a bare clone of that non-empty repo. Cloning an empty bare
+    # repo (init --bare, then commit, then push) triggers git's "You appear
+    # to have cloned an empty repository" warning and was flaky on CI.
+    git init -q -b main "${WORK}"
     git -C "${WORK}" config user.email "test@test.com"
     git -C "${WORK}" config user.name "test"
 
@@ -17,7 +21,9 @@ setup() {
     echo "readme" > "${WORK}/README.md"
     git -C "${WORK}" add -A
     git -C "${WORK}" commit -q -m "init"
-    git -C "${WORK}" branch -M main
+
+    git clone -q --bare "${WORK}" "${ORIGIN}"
+    git -C "${WORK}" remote add origin "${ORIGIN}"
     git -C "${WORK}" push -q -u origin main
 
     export CLAUDE_PROJECT_DIR="${WORK}"
@@ -85,8 +91,18 @@ teardown() {
 }
 
 @test "allows when there is no origin/main baseline" {
-    rm -rf "${WORK}/.git/refs/remotes"
     git -C "${WORK}" remote remove origin
+
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    [[ "${output}" == *'"permissionDecision": "allow"'* ]]
+}
+
+@test "allows when origin exists but origin/main was never fetched" {
+    # A remote configured but with no matching remote-tracking ref at all
+    # (e.g. origin/main was pruned, or the remote's default branch differs).
+    git -C "${WORK}" remote remove origin
+    git -C "${WORK}" remote add origin "${ORIGIN}"
 
     run bash "${SCRIPT}"
     [ "${status}" -eq 0 ]

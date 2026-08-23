@@ -4,22 +4,37 @@
 SCRIPT="${BATS_TEST_DIRNAME}/../../.claude/hooks/pack-validate.sh"
 
 setup() {
+    # bats sources test functions in-process, so a PATH change inside a test
+    # body persists into bats-exec-test's own post-test housekeeping (e.g.
+    # its own `rm` of scratch files) — save the inherited PATH so teardown
+    # can restore it before removing any directory a test's PATH pointed at.
+    ORIGINAL_PATH="${PATH}"
+
     export CLAUDE_PROJECT_DIR
     CLAUDE_PROJECT_DIR="$(mktemp -d "${BATS_TMPDIR}/pv_project.XXXXXX")"
     mkdir -p "${CLAUDE_PROJECT_DIR}/src/commands"
-    git init -q "${CLAUDE_PROJECT_DIR}"
+    git init -q -b main "${CLAUDE_PROJECT_DIR}"
     git -C "${CLAUDE_PROJECT_DIR}" config user.email "test@test.com"
     git -C "${CLAUDE_PROJECT_DIR}" config user.name "test"
 
     STUBBIN="$(mktemp -d "${BATS_TMPDIR}/pv_stubbin.XXXXXX")"
-    # jq lives under Homebrew on macOS (not /usr/bin) — symlink it in so the
-    # "circleci missing" test can drop Homebrew from PATH without losing jq.
-    ln -sf "$(command -v jq)" "${STUBBIN}/jq"
     export PATH="${STUBBIN}:${PATH}"
+
+    # A fully isolated PATH containing ONLY symlinks to the specific
+    # binaries pack-validate.sh needs (bash for the pack.sh/circleci-stub
+    # shebangs, plus the coreutils/git/jq it shells out to directly). Some
+    # CI images (cimg/base) ship a real `circleci` CLI under /usr/bin, so
+    # appending the inherited PATH — or even a generic /usr/bin:/bin — is
+    # not safe for the "circleci missing" test; build an allowlist instead.
+    ISOLATED_BIN="$(mktemp -d "${BATS_TMPDIR}/pv_isolated.XXXXXX")"
+    for bin in bash jq git mktemp cat rm touch mkdir chmod; do
+        ln -sf "$(command -v "${bin}")" "${ISOLATED_BIN}/${bin}"
+    done
 }
 
 teardown() {
-    rm -rf "${CLAUDE_PROJECT_DIR}" "${STUBBIN}"
+    export PATH="${ORIGINAL_PATH}"
+    rm -rf "${CLAUDE_PROJECT_DIR}" "${STUBBIN}" "${ISOLATED_BIN}"
 }
 
 fake_circleci() {
@@ -43,9 +58,9 @@ EOF
 }
 
 @test "exits 0 with a systemMessage when circleci CLI is missing" {
-    # No circleci stub on PATH; keep system dirs for jq/rm/etc but drop
-    # Homebrew (where a real circleci CLI may be installed on this machine).
-    export PATH="${STUBBIN}:/usr/bin:/bin:/usr/sbin:/sbin"
+    # Fully isolated PATH — no circleci stub here, and no inherited system
+    # dirs that might carry a real circleci CLI on this CI image.
+    export PATH="${ISOLATED_BIN}"
     run bash "${SCRIPT}" <<< "{\"tool_input\": {\"file_path\": \"${CLAUDE_PROJECT_DIR}/src/commands/swiftlint.yml\"}}"
     [ "${status}" -eq 0 ]
     [[ "${output}" == *"circleci CLI not found"* ]]

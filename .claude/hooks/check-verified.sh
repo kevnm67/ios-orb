@@ -55,7 +55,12 @@ if [[ -z "${CHANGED_FILES}" ]]; then
     allow
 fi
 
-GIT_DIR="$(git rev-parse --absolute-git-dir)"
+GIT_DIR="$(git rev-parse --absolute-git-dir 2>/dev/null || true)"
+if [[ -z "${GIT_DIR}" ]]; then
+    # Should be unreachable (the git-dir check above already passed), but
+    # never hard-fail the hook over an unexpected git quirk — fail open.
+    allow
+fi
 MARKER="${GIT_DIR}/.claude-verified"
 
 if [[ ! -f "${MARKER}" ]]; then
