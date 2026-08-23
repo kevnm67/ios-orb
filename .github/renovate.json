@@ -1,20 +1,27 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
-  "packageRules": [
-    {
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "pin",
-        "digest"
-      ],
-      "matchCurrentVersion": "!/^0/",
-      "automerge": true,
-      "automergeType": "pr",
-      "automergeStrategy": "squash"
-    }
-  ]
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended"
+    ],
+    "packageRules": [
+        {
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
+                "pin",
+                "digest"
+            ],
+            "matchCurrentVersion": "!/^0/",
+            "automerge": true,
+            "automergeType": "pr",
+            "automergeStrategy": "squash"
+        },
+        {
+            "description": "claude-code-action digests on hold: internal 'directory mismatch' failures on large-diff PRs (2026-08-23); pinned to 24dcd50 in #121",
+            "matchPackageNames": [
+                "anthropics/claude-code-action"
+            ],
+            "enabled": false
+        }
+    ]
 }
