@@ -1,0 +1,5 @@
+# Research: quality audit (2026-08-23)
+
+high: Q-1 test job never passes with_spm/scripts to setup; Q-2 Dangerfile @dependency_files malformed; Q-3 Dangerfile @ci_files '.config.yml'; Q-4 build_and_test_xcode/spm lack junit_report / parallel / report_path pass-through
+med: Q-5 setup gates restore_spm_cache on xcode_project (pure SPM never cached); Q-6 run_with_setup/test lack bundle_install/ruby_version/key pass-through; Q-7 .editorconfig [*.yml]=2 vs yamlfmt 4; Q-8 export_spm_coverage.sh no set -euo pipefail; Q-9 verify_rbenv final fallback untested; Q-10 create_release_tag no-tags + non-numeric patch; Q-11 export_spm_coverage .xctest branch untested; Q-12 renovate not tracking src/@orb.yml orb pins; Q-13 renovate pre-commit manager
+low: Q-14 boolean true/1 idiom inconsistent; Q-15 brew_install inline shell → script+bats; Q-16 kcov v43 key duplicated; Q-17 spm-v1 default vs spm-v2 in jobs; Q-18 cache_spm path footgun for pure SPM; Q-19 install_tools TOOLS unset; Q-20 check-coverage-threshold no bats; Q-21 verify-spm-lcov/assert-ruby-version no bats; Q-22 save_build_artifacts gym path hardcoded; Q-23 install-script-test-deps sudo guard

@@ -1,0 +1,5 @@
+# Research: docs & examples (2026-08-23)
+
+high: D-13 FEATURE_REQUEST.yml links to unrelated repo; D-18 dark SVG unreadable on GitHub light (use <picture> dark/light); D-19 no example for build_and_test_xcode; D-9 CLAUDE.md xcode default (verify — may already be fixed)
+med: D-1 setup param table; D-2 brew_install table; D-3 restore_brew undocumented everywhere; D-7 run_with_setup table in README; D-8 build_xcode/test_xcode/build_spm/test_spm tables (junit_report/report_path); D-10 CLAUDE.md fixtures (verify); D-11 LICENSE <organization> placeholder; D-12 BUG.yml placeholders; D-15 release_drafter.yml orphaned; D-16 CHANGELOG.md; D-17 CONTRIBUTING.md; D-20 example deploy_match_signing; D-21 examples use orb-internal context name qlty-credentials → consumer-neutral
+low: D-4 cache_spm table; D-5 save_build_artifacts table; D-6 lane/xcodegen/install_tools/swiftlint tables; D-14 labeler config-iOS dead paths; D-22 src/README badges; D-23 env vars section; D-24 @orb.yml description plain text; D-25 ToC count 19

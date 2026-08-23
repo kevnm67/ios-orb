@@ -455,7 +455,9 @@ workflows:
 ## Contributing
 
 [Issues](https://github.com/kevnm67/ios-orb/issues) and
-[pull requests](https://github.com/kevnm67/ios-orb/pulls) welcome.
+[pull requests](https://github.com/kevnm67/ios-orb/pulls) welcome — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for the dev workflow and
+[CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Publishing
 
