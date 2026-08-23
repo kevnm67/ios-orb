@@ -30,4 +30,4 @@ usage:
                       qlty_tag: unit
                       requires:
                           - setup
-                      context: qlty-credentials
+                      context: ios_auth  # your context holding QLTY_COVERAGE_TOKEN
