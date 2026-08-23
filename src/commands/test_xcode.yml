@@ -31,6 +31,24 @@ parameters:
         description: Maximum iterations per test when retry_on_failure is enabled (xcodebuild -test-iterations).
         type: integer
         default: 3
+    test_target:
+        description: |
+            Test target name used to scope "-only-testing" filters when a
+            test-splits file is present on TEST_SPLITS_FILE (see the
+            build_and_test_xcode job's split_tests parameter). Leave empty
+            to default to the scheme name.
+        type: string
+        default: ''
+    junit_source:
+        description: |
+            How to produce the JUnit report: "xcbeautify" (default) uses
+            xcbeautify's own JUnit reporter. "xcresultparser" runs plain
+            xcodebuild through xcbeautify (no report) and separately
+            converts the xcresult bundle to JUnit XML with xcresultparser,
+            installing it via Homebrew if missing.
+        type: enum
+        enum: [xcbeautify, xcresultparser]
+        default: xcbeautify
 
 steps:
     - run:
@@ -46,6 +64,8 @@ steps:
               JUNIT_REPORT: << parameters.junit_report >>
               RETRY_ON_FAILURE: << parameters.retry_on_failure >>
               TEST_ITERATIONS: << parameters.test_iterations >>
+              TEST_TARGET: << parameters.test_target >>
+              JUNIT_SOURCE: << parameters.junit_source >>
           command: << include(scripts/xcodebuild_test.sh) >>
     - store_test_results:
           path: << parameters.junit_report >>

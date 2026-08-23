@@ -1,0 +1,37 @@
+---
+description: |
+    Discover test unit names (SPM target subdirectories, or Xcode
+    "*Tests.swift" class files) and split them across CircleCI parallel test
+    nodes via `circleci tests split`, writing the assigned slice to
+    test-splits.txt and exporting TEST_SPLITS_FILE via $BASH_ENV for
+    test_xcode / test_spm to consume. Falls back to the full unit list (with
+    a warning) when the circleci CLI is absent, so local runs still work.
+    Only useful when the job's parallelism parameter is greater than 1.
+
+parameters:
+    split_kind:
+        description: Which project type to discover test units for.
+        type: enum
+        enum: [xcode, spm]
+    test_targets_dir:
+        description: (spm) Directory whose immediate subdirectories are treated as test target names.
+        type: string
+        default: Tests
+    test_classes_dir:
+        description: (xcode) Directory searched recursively for "*Tests.swift" files.
+        type: string
+        default: .
+    split_by:
+        description: Value passed to "circleci tests split --split-by".
+        type: string
+        default: name
+
+steps:
+    - run:
+          name: Resolve test splits
+          environment:
+              SPLIT_KIND: << parameters.split_kind >>
+              TEST_TARGETS_DIR: << parameters.test_targets_dir >>
+              TEST_CLASSES_DIR: << parameters.test_classes_dir >>
+              SPLIT_BY: << parameters.split_by >>
+          command: << include(scripts/resolve_test_splits.sh) >>

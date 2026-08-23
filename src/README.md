@@ -132,7 +132,8 @@ tests, exports coverage, and uploads to Qlty Cloud.
 | `scheme` | string | — | Xcode scheme to build and test |
 | `xcode_version` | string | `26.6` | Xcode version |
 | `resource_class` | string | `m4pro.medium` | macOS resource class |
-| `xcodegen` | boolean | `false` | Run XcodeGen before building |
+| `xcodegen` | boolean | `false` | Run XcodeGen before building. Deprecated: prefer `project_generator: xcodegen` |
+| `project_generator` | enum | `none` | Which project generator to run before building: `none`, `xcodegen`, or `tuist` |
 | `project` | string | `""` | Path to `.xcodeproj` (empty = default) |
 | `destination` | string | `platform=macOS` | Build and test destination |
 | `configuration` | string | `Debug` | Build configuration |
@@ -147,6 +148,10 @@ tests, exports coverage, and uploads to Qlty Cloud.
 | `retry_on_failure` | boolean | `false` | Whether to retry only the tests that failed (`xcodebuild -retry-tests-on-failure`) |
 | `test_iterations` | integer | `3` | Maximum iterations per test when `retry_on_failure` is enabled |
 | `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
+| `split_tests` | boolean | `false` | Discover `*Tests.swift` classes and split them across parallel test nodes via `circleci tests split` before testing |
+| `test_target` | string | `""` | Test target name used to scope `-only-testing` filters when `split_tests` is enabled (defaults to the scheme name) |
+| `derived_data_cache` | boolean | `false` | Restore/save a best-effort DerivedData cache keyed on `project.yml`/`project.pbxproj` before building and after testing |
+| `junit_source` | enum | `xcbeautify` | How to produce the JUnit report: `xcbeautify` or `xcresultparser` |
 
 ### `build_and_test_spm`
 
@@ -168,6 +173,7 @@ coverage, and optionally uploads to Qlty Cloud.
 | `report_path` | string | `build/reports` | Directory the JUnit report is written to and stored from |
 | `test_framework` | enum | `auto` | Which test framework to run: `auto`, `xctest`, or `swift-testing` |
 | `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
+| `split_tests` | boolean | `false` | Discover `Tests/` target subdirectories and split them across parallel test nodes via `circleci tests split` before testing |
 
 ---
 
@@ -178,6 +184,7 @@ coverage, and optionally uploads to Qlty Cloud.
 | `setup` | Checkout, attach workspace, install Ruby gems, restore caches | `checkout`, `attach_workspace`, `bundle_install`, `ruby_version`, `key`, `persist_workspace`, `xcode_project`, `with_spm`, `scripts`, `workspace_root` |
 | `install_tools` | Install Homebrew formulas (skips already-installed) | `tools` (space-separated, default: `xcodegen swiftlint`) |
 | `xcodegen` | Install XcodeGen and generate the Xcode project | `spec` (default: `project.yml`), `quiet` |
+| `tuist_generate` | Install Tuist (Homebrew cask) and generate the Xcode workspace with `--no-open` | `path` |
 | `swiftlint` | Install and run SwiftLint | `strict`, `config`, `reporter` |
 | `swiftformat` | Install and run SwiftFormat (check-only lint mode by default) | `lint` (default: `true`), `config`, `paths` (default: `.`) |
 | `periphery_scan` | Install Periphery and scan for unused Swift code | `config`, `strict`, `extra_args` |
@@ -186,7 +193,7 @@ coverage, and optionally uploads to Qlty Cloud.
 | `lane` | Run a Fastlane lane | `named` |
 | `match_signing` | Sync code signing via Fastlane Match | `type` (default: `appstore`), `readonly`, `app_identifier` |
 | `build_xcode` | `xcodebuild build` piped through xcbeautify | `scheme`, `project`, `destination`, `configuration` |
-| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` (default: `test-results.xml`), `retry_on_failure`, `test_iterations` (default: `3`) |
+| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` (default: `test-results.xml`), `retry_on_failure`, `test_iterations` (default: `3`), `test_target`, `junit_source` (`xcbeautify` or `xcresultparser`) |
 | `build_spm` | `swift build` piped through xcbeautify | `configuration`, `build_flags` |
 | `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` (default: `build/reports`), `test_framework` (`auto`, `xctest`, or `swift-testing`) |
 | `create_release_tag` | Tag and push the next `vX.Y.Z` release | `version_source` (`git-describe` or `marketing-version`) |
@@ -194,6 +201,9 @@ coverage, and optionally uploads to Qlty Cloud.
 | `restore_brew` | Restore the Homebrew cache written by `brew_install` | `brew_cache_key` (default: `brew-v1`) |
 | `cache_spm` | Save SPM package cache | `key`, `xcode_project`, `path` |
 | `restore_spm_cache` | Restore SPM package cache | `key`, `xcode_project` |
+| `cache_derived_data` | Save a best-effort Xcode DerivedData cache | `xcode_project`, `scheme`, `key` (default: `dd-v1`), `path` |
+| `restore_derived_data` | Restore a best-effort Xcode DerivedData cache | `xcode_project`, `scheme`, `key` (default: `dd-v1`), `path` |
+| `resolve_test_splits` | Discover test units and split them via `circleci tests split` | `split_kind` (`xcode` or `spm`), `test_targets_dir`, `test_classes_dir`, `split_by` (default: `name`) |
 | `save_build_artifacts` | Store build logs and test results | `logs_path`, `build_logs_path`, `test_output_path`, `gym_logs_path` |
 | `test_with_qlty` | Run tests and upload coverage to Qlty Cloud | `lane`, `pretest_steps`, `test_steps`, `result_bundle_path`, `coverage_file`, `qlty_tag`, `qlty_skip_errors`, `xcode_project` |
 | `upload_qlty_coverage` | Upload a coverage file to Qlty Cloud | `file`, `format`, `tag`, `token`, `skip_errors` |
@@ -217,6 +227,10 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `brew_install` | `with_cache` | boolean | `true` | Whether to restore and save cache between brew commands |
 | `brew_install` | `post_steps` | steps | `[]` | Additional steps to run after brew install |
 | `cache_spm` | `path` | string | `.build_output/SourcePackages` | Path where swift packages to be cached are located. Defaults to the Xcode-managed SourcePackages path; pure SPM packages must pass `path: .build` |
+| `cache_derived_data` / `restore_derived_data` | `xcode_project` | string | `""` | Name of your xcodeproj (without extension) to key on its `project.pbxproj` when `project.yml` is absent |
+| `cache_derived_data` / `restore_derived_data` | `scheme` | string | `""` | Xcode scheme (reserved for a future scheme-scoped cache key; currently unused in the key itself) |
+| `cache_derived_data` / `restore_derived_data` | `key` | string | `dd-v1` | Cache key prefix (immutable) |
+| `cache_derived_data` / `restore_derived_data` | `path` | string | `~/Library/Developer/Xcode/DerivedData` | DerivedData path to restore/save |
 | `create_release_tag` | `version_source` | string | `git-describe` | How to determine the version number: `git-describe` increments patch from the latest tag, `marketing-version` reads `MARKETING_VERSION` from the Xcode project |
 | `deploy_testflight` | `lane` | string | `""` | Fastlane lane to run instead of the built-in `upload_to_testflight` invocation. When set, every other parameter is ignored |
 | `deploy_testflight` | `ipa_path` | string | `""` | Path to the `.ipa` to upload. Empty lets `upload_to_testflight` infer it from the most recent Gym/Fastlane build |
@@ -228,6 +242,10 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `export_coverage` | `type` | enum | — | Coverage source: `spm` (→ `coverage.lcov`) or `xcode` (→ `coverage.xml`) |
 | `export_coverage` | `result_bundle` | string | `TestResults.xcresult` | Path to the xcresult bundle (only used when `type` is `xcode`) |
 | `preboot_simulator` | `destination` | string | — | Build/test destination string to parse for a simulator device name |
+| `resolve_test_splits` | `split_kind` | enum | — | Which project type to discover test units for: `xcode` or `spm` |
+| `resolve_test_splits` | `test_targets_dir` | string | `Tests` | (spm) Directory whose immediate subdirectories are treated as test target names |
+| `resolve_test_splits` | `test_classes_dir` | string | `.` | (xcode) Directory searched recursively for `*Tests.swift` files |
+| `resolve_test_splits` | `split_by` | string | `name` | Value passed to `circleci tests split --split-by` |
 | `assert_xcode_channel` | `xcode_version` | string | — | Xcode version to validate (e.g. `26.6`) |
 | `assert_xcode_channel` | `allow_beta` | boolean | `false` | Whether to allow a beta/build-string Xcode version instead of failing |
 | `install_tools` | `tools` | string | `xcodegen swiftlint` | Space-separated list of Homebrew formulas to install |
@@ -267,6 +285,7 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `upload_qlty_coverage` | `skip_errors` | boolean | `false` | Whether upload errors should be non-fatal to the pipeline |
 | `xcodegen` | `spec` | string | `project.yml` | Path to the XcodeGen spec file |
 | `xcodegen` | `quiet` | boolean | `true` | Whether to suppress XcodeGen output |
+| `tuist_generate` | `path` | string | `""` | Path to the directory or subdirectory of the Tuist project. Leave empty to use the current directory |
 
 ---
 

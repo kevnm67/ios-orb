@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo "tuist stub: $*" >&2
+echo "tuist $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+if [[ "$*" == "version" ]]; then
+    echo "4.203.1"
+    exit 0
+fi
+echo "stub:tuist $*"
