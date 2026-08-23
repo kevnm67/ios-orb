@@ -10,6 +10,7 @@ help:
 	@echo "  pack       Pack src/ into src/ios.yml and validate it"
 	@echo "  validate   Validate the packed orb and .circleci configs"
 	@echo "  test       Run bats tests for src/scripts (no kcov needed locally)"
+	@echo "  hooks-test Run bats tests for .claude/hooks"
 	@echo "  coverage   Run bats tests under kcov -> coverage/cobertura.xml"
 	@echo "  lint       Run pre-commit hooks (yamllint, yamlfmt, hygiene) on all files"
 	@echo "  shellcheck Run shellcheck on all shell scripts"
@@ -28,6 +29,10 @@ validate: pack
 test:
 	bats tests/scripts
 
+.PHONY: hooks-test
+hooks-test:
+	bats tests/hooks
+
 .PHONY: coverage
 coverage:
 	./scripts/ci/run-script-tests.sh
@@ -38,7 +43,7 @@ lint:
 
 .PHONY: shellcheck
 shellcheck:
-	shellcheck src/scripts/*.sh scripts/ci/*.sh src/pack.sh scripts/variables.sh
+	shellcheck src/scripts/*.sh scripts/ci/*.sh src/pack.sh scripts/variables.sh .claude/hooks/*.sh
 
 .PHONY: setup
 setup:
