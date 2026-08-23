@@ -71,7 +71,9 @@ MARKER_MTIME="$(stat -f %m "${MARKER}" 2>/dev/null || stat -c %Y "${MARKER}" 2>/
 LATEST_COMMIT_TS="$(git log -1 --format=%ct "${BASE_REF}"...HEAD -- src tests 2>/dev/null || echo 0)"
 LATEST_COMMIT_TS="${LATEST_COMMIT_TS:-0}"
 
-if (( MARKER_MTIME > LATEST_COMMIT_TS )); then
+# POSIX test instead of (( )): a false arithmetic command trips `set -e`
+# (GNU bash 5 on cimg/base) and killed the deny path with exit 1.
+if [ "${MARKER_MTIME}" -gt "${LATEST_COMMIT_TS}" ]; then
     allow
 fi
 
