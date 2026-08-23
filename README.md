@@ -34,6 +34,8 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [test\_with\_qlty](#test_with_qlty)
     - [upload\_qlty\_coverage](#upload_qlty_coverage)
     - [export\_coverage](#export_coverage)
+    - [preboot\_simulator](#preboot_simulator)
+    - [assert\_xcode\_channel](#assert_xcode_channel)
 - [Jobs](#jobs)
     - [run\_with\_setup](#run_with_setup)
     - [test](#test)
@@ -231,6 +233,8 @@ steps:
 | `destination` | string | `platform=macOS` | Test destination (e.g. `platform=macOS` or `platform=iOS Simulator,name=iPhone 17`) |
 | `result_bundle_path` | string | `TestResults.xcresult` | Path to store the xcresult bundle |
 | `junit_report` | string | `test-results.xml` | Path of the JUnit XML report written by xcbeautify and stored as test results |
+| `retry_on_failure` | boolean | `false` | Whether to retry only the tests that failed (`xcodebuild -retry-tests-on-failure`) |
+| `test_iterations` | integer | `3` | Maximum iterations per test when `retry_on_failure` is enabled (`xcodebuild -test-iterations`) |
 
 ### `build_spm` / `test_spm`
 
@@ -261,6 +265,7 @@ steps:
 | `parallel` | boolean | `true` | Whether to run tests in parallel |
 | `coverage` | boolean | `true` | Whether to enable code coverage collection |
 | `report_path` | string | `build/reports` | Directory the JUnit report is written to and stored from |
+| `test_framework` | enum | `auto` | Which test framework to run: `auto` detects Swift Testing via `import Testing` in `Tests/` (else xctest), or force `xctest` / `swift-testing`. `swift-testing` forces `--parallel` and writes an xunit report via `swift test --xunit-output` |
 
 ### `create_release_tag`
 
@@ -418,6 +423,41 @@ steps:
         format: lcov
 ```
 
+### `preboot_simulator`
+
+Pre-boots the Simulator device parsed from an xcodebuild `destination` string
+before building, so the simulator is already warm when tests start. No-ops
+safely for a non-simulator destination (e.g. `platform=macOS`) — the no-op is
+implemented in the script itself, since a CircleCI `when:` step condition
+cannot inspect a destination string's runtime content.
+
+```yaml
+steps:
+    - ios/preboot_simulator:
+        destination: "platform=iOS Simulator,name=iPhone 17"
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `destination` | string | — | Build/test destination string to parse for a simulator device name |
+
+### `assert_xcode_channel`
+
+Fails fast if the given Xcode version looks like a beta/build-string image
+(e.g. `27A5228h`) rather than a stable dotted release (e.g. `26.6`), so CI
+does not silently pin to an unstable Xcode channel.
+
+```yaml
+steps:
+    - ios/assert_xcode_channel:
+        xcode_version: "26.6"
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `xcode_version` | string | — | Xcode version to validate (e.g. `26.6`) |
+| `allow_beta` | boolean | `false` | Whether to allow a beta/build-string Xcode version instead of failing |
+
 ---
 
 ## Jobs
@@ -494,6 +534,10 @@ Qlty Cloud. Fastlane projects: prefer `run_with_setup` + the `test` job.
 | `qlty` | boolean | `true` | Upload coverage to Qlty Cloud |
 | `xcode_project` | string | `""` | Project name for SPM cache key |
 | `pre_steps` | steps | `[]` | Steps to run before build |
+| `preboot_simulator` | boolean | `false` | Preboot the Simulator device parsed from `destination` before building (no-op for non-simulator destinations) |
+| `retry_on_failure` | boolean | `false` | Whether to retry only the tests that failed (`xcodebuild -retry-tests-on-failure`) |
+| `test_iterations` | integer | `3` | Maximum iterations per test when `retry_on_failure` is enabled |
+| `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
 
 ```yaml
 jobs:
@@ -522,6 +566,8 @@ coverage, and optionally uploads to Qlty Cloud.
 | `configuration` | string | `debug` | Build configuration (`debug` or `release`) |
 | `filter` | string | `""` | Test filter pattern |
 | `pre_steps` | steps | `[]` | Steps to run before build |
+| `test_framework` | enum | `auto` | Which test framework to run: `auto`, `xctest`, or `swift-testing` |
+| `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
 
 ```yaml
 jobs:
