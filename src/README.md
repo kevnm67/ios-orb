@@ -30,7 +30,7 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 ```yaml
 version: 2.1
 orbs:
-    ios: kevnm67/ios-orb@3.2.0
+    ios: kevnm67/ios-orb@3.4.0
 workflows:
     ci:
         jobs:
@@ -44,7 +44,7 @@ workflows:
 ```yaml
 version: 2.1
 orbs:
-    ios: kevnm67/ios-orb@3.2.0
+    ios: kevnm67/ios-orb@3.4.0
 workflows:
     ci:
         jobs:
