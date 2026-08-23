@@ -53,6 +53,18 @@ parameters:
             Designed for installing dependencies.
         type: steps
         default: []
+    bundle_install:
+        description: Whether to run 'bundle install' during setup.
+        type: boolean
+        default: true
+    ruby_version:
+        description: Ruby version to install during setup.
+        type: string
+        default: '3.3'
+    key:
+        description: The cache key to use for the gems cache during setup. The key is immutable.
+        type: string
+        default: gems-v2
 
 environment:
     HOMEBREW_NO_AUTO_UPDATE: << parameters.homebrew_no_auto_update >>
@@ -63,6 +75,9 @@ steps:
           attach_workspace: << parameters.attach_workspace >>
           scripts: << parameters.scripts >>
           xcode_project: << parameters.xcode_project >>
+          bundle_install: << parameters.bundle_install >>
+          ruby_version: << parameters.ruby_version >>
+          key: << parameters.key >>
     - when:
           condition:
               or: [<< parameters.logs_path >>, << parameters.build_logs_path >>, << parameters.test_output_path >>]

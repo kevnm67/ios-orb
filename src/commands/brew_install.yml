@@ -36,18 +36,12 @@ steps:
           steps:
               - restore_brew:
                     brew_cache_key: << parameters.brew_cache_key >>
-    - when:
-          condition: << parameters.reinstall >>
-          steps:
-              - run:
-                    command: >
-                        brew reinstall << parameters.formula >>
-    - unless:
-          condition: << parameters.reinstall >>
-          steps:
-              - run:
-                    command: >
-                        brew list << parameters.formula >> || brew install << parameters.formula >>
+    - run:
+          name: Install brew formula
+          environment:
+              BREW_FORMULA: << parameters.formula >>
+              BREW_REINSTALL: << parameters.reinstall >>
+          command: << include(scripts/brew_install.sh) >>
     - << parameters.post_steps >>
     - when:
           condition: << parameters.with_cache >>

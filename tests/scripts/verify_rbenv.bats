@@ -50,3 +50,52 @@ RUBYSTUB
     [ "${status}" -eq 0 ]
     grep -q "^rbenv" "${STUB_CALL_LOG}"
 }
+
+@test "falls back to rbenv global when versions --bare is empty" {
+    # rbenv has no installed versions at all: `rbenv versions --bare` prints
+    # nothing, so `rbenv local ""` must fail, forcing the final
+    # `rbenv local "$(rbenv global)"` fallback.
+    TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
+    mkdir -p "${TMPBIN}"
+    cat > "${TMPBIN}/rbenv" << 'RBENVSTUB'
+#!/usr/bin/env bash
+echo "rbenv $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+case "$*" in
+    "versions --bare")
+        # no installed versions
+        ;;
+    "local ")
+        # rbenv local with an empty version argument: invalid, fails
+        exit 1
+        ;;
+    global)
+        echo "3.2.0"
+        ;;
+    "local 3.2.0")
+        echo "stub:rbenv local set"
+        ;;
+    *)
+        echo "stub:rbenv $*"
+        ;;
+esac
+RBENVSTUB
+    chmod +x "${TMPBIN}/rbenv"
+    CALL_COUNT_FILE="${BATS_TMPDIR}/ruby_calls_${BATS_TEST_NUMBER}"
+    echo "0" > "${CALL_COUNT_FILE}"
+    cat > "${TMPBIN}/ruby" << RUBYSTUB
+#!/usr/bin/env bash
+COUNT=\$(cat "${CALL_COUNT_FILE}")
+COUNT=\$((COUNT+1))
+echo "\$COUNT" > "${CALL_COUNT_FILE}"
+if [ "\$COUNT" -eq 1 ]; then
+    exit 1
+fi
+echo "ruby 3.2.0 (stub)"
+RUBYSTUB
+    chmod +x "${TMPBIN}/ruby"
+    export PATH="${TMPBIN}:${PATH}"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q "^rbenv global$" "${STUB_CALL_LOG}"
+    grep -q "^rbenv local 3.2.0$" "${STUB_CALL_LOG}"
+}

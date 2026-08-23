@@ -3,6 +3,8 @@
 # Env: TOOLS - space-separated list of formulas
 set -euo pipefail
 
+TOOLS="${TOOLS:-}"
+
 for tool in ${TOOLS}; do
     if command -v "$tool" &>/dev/null; then
         echo "✓ ${tool} already installed"

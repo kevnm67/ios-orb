@@ -25,6 +25,13 @@ setup() {
     grep -q "^xcodegen generate --spec project.yml --quiet$" "${STUB_CALL_LOG}"
 }
 
+@test "adds --quiet when XCODEGEN_QUIET=1" {
+    export XCODEGEN_QUIET=1
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q "^xcodegen generate --spec project.yml --quiet$" "${STUB_CALL_LOG}"
+}
+
 @test "does not add --quiet when XCODEGEN_QUIET=false" {
     export XCODEGEN_QUIET=false
     run bash "${SCRIPT}"

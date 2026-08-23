@@ -16,6 +16,13 @@ case "${VERSION_SOURCE}" in
 
         # Split into major.minor.patch
         IFS='.' read -r MAJOR MINOR PATCH <<< "${VERSION}"
+
+        NUMERIC_RE='^[0-9]+$'
+        if [[ ! "${MAJOR}" =~ ${NUMERIC_RE} || ! "${MINOR}" =~ ${NUMERIC_RE} || ! "${PATCH}" =~ ${NUMERIC_RE} ]]; then
+            echo "Error: Latest tag '${LATEST_TAG}' is not valid semver (major.minor.patch must all be numeric)." >&2
+            exit 1
+        fi
+
         PATCH=$((PATCH + 1))
 
         NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"

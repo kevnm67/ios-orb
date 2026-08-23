@@ -83,6 +83,18 @@ parameters:
         description: Scripts to run when setting up the workspace.
         type: steps
         default: []
+    bundle_install:
+        description: Whether to run 'bundle install' during setup.
+        type: boolean
+        default: true
+    ruby_version:
+        description: Ruby version to install during setup.
+        type: string
+        default: '3.3'
+    key:
+        description: The cache key to use for the gems cache during setup. The key is immutable.
+        type: string
+        default: gems-v2
 
 environment:
     HOMEBREW_NO_AUTO_UPDATE: << parameters.homebrew_no_auto_update >>
@@ -92,6 +104,11 @@ steps:
           checkout: << parameters.checkout >>
           attach_workspace: << parameters.attach_workspace >>
           xcode_project: << parameters.xcode_project >>
+          with_spm: << parameters.with_spm >>
+          scripts: << parameters.scripts >>
+          bundle_install: << parameters.bundle_install >>
+          ruby_version: << parameters.ruby_version >>
+          key: << parameters.key >>
     - test_with_qlty:
           pretest_steps: << parameters.pretest_steps >>
           test_steps: << parameters.test_steps >>
