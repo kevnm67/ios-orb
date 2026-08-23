@@ -6,6 +6,7 @@ STUBS="${BATS_TEST_DIRNAME}/../stubs"
 SYSTEM_PATH="/usr/bin:/bin:/usr/sbin:/sbin"
 
 setup() {
+    ORIG_PATH="${PATH}"
     export STUB_CALL_LOG="${BATS_TMPDIR}/calls_${BATS_TEST_NUMBER}.log"
     rm -f "${STUB_CALL_LOG}"
     export PATH="${STUBS}:${SYSTEM_PATH}"
@@ -14,6 +15,12 @@ setup() {
     WORK_DIR="${BATS_TMPDIR}/splits_${BATS_TEST_NUMBER}"
     mkdir -p "${WORK_DIR}"
     cd "${WORK_DIR}"
+}
+
+teardown() {
+    # The CLI-absent test replaces PATH with an isolated dir; restore it so
+    # bats' own post-test cleanup (rm) still resolves.
+    export PATH="${ORIG_PATH}"
 }
 
 @test "spm mode discovers Tests/ subdirectory names and splits via circleci CLI" {
