@@ -1,0 +1,22 @@
+---
+description: >
+    No-Fastfile single-job pipeline for an XcodeGen iOS app: generates the
+    project, then builds and tests with raw xcodebuild via
+    build_and_test_xcode, exporting cobertura coverage to Qlty Cloud.
+    Use this shape when the project has no Fastlane setup at all.
+usage:
+    version: 2.1
+    orbs:
+        ios-orb: kevnm67/ios-orb@3.1.1
+    workflows:
+        ci:
+            jobs:
+                - ios-orb/build_and_test_xcode:
+                      name: build-and-test
+                      xcode_version: '26.6'
+                      scheme: MyApp
+                      xcodegen: true
+                      xcode_project: MyApp
+                      destination: platform=iOS Simulator,name=iPhone 17
+                      qlty: true
+                      context: ios_auth  # your context holding QLTY_COVERAGE_TOKEN
