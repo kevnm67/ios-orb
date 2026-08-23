@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "swiftformat stub: $*" >&2
+echo "swiftformat $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "stub:swiftformat $*"

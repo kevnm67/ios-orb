@@ -23,6 +23,8 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [xcodegen](#xcodegen)
     - [install\_tools](#install_tools)
     - [swiftlint](#swiftlint)
+    - [swiftformat](#swiftformat)
+    - [periphery\_scan](#periphery_scan)
     - [match\_signing](#match_signing)
     - [build\_xcode / test\_xcode](#build_xcode--test_xcode)
     - [build\_spm / test\_spm](#build_spm--test_spm)
@@ -34,6 +36,8 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [test\_with\_qlty](#test_with_qlty)
     - [upload\_qlty\_coverage](#upload_qlty_coverage)
     - [export\_coverage](#export_coverage)
+    - [upload\_dsyms](#upload_dsyms)
+    - [notarize\_macos](#notarize_macos)
 - [Jobs](#jobs)
     - [run\_with\_setup](#run_with_setup)
     - [test](#test)
@@ -176,6 +180,44 @@ steps:
 | `strict` | boolean | `false` | Whether to use strict mode (warnings become errors) |
 | `config` | string | `""` | Path to SwiftLint configuration file |
 | `reporter` | string | `""` | Reporter type (`xcode`, `json`, `csv`, `emoji`, etc.) |
+
+### `swiftformat`
+
+Run SwiftFormat in check-only lint mode by default. Installs via Homebrew if
+not already available. No-Fastfile path — Fastlane users can keep it in a
+lane instead.
+
+```yaml
+steps:
+    - ios/swiftformat:
+        lint: true
+        paths: Sources Tests
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `lint` | boolean | `true` | Whether to run in check-only mode (`--lint`, fails on unformatted files without changing them). Set to `false` to format in place |
+| `config` | string | `""` | Path to a SwiftFormat configuration file |
+| `paths` | string | `.` | Space-separated paths to format or lint |
+
+### `periphery_scan`
+
+Scan for unused Swift code with Periphery. Installs via Homebrew if not
+already available. No-Fastfile path — Fastlane users can keep it in a lane
+instead.
+
+```yaml
+steps:
+    - ios/periphery_scan:
+        config: .periphery.yml
+        strict: true
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `config` | string | `""` | Path to a Periphery configuration file |
+| `strict` | boolean | `false` | Whether to fail the scan on any result (`--strict`) |
+| `extra_args` | string | `""` | Additional space-separated flags to pass to `periphery scan` |
 
 ### `match_signing`
 
@@ -417,6 +459,51 @@ steps:
         file: coverage.lcov
         format: lcov
 ```
+
+### `upload_dsyms`
+
+Upload dSYM debug symbol files to Sentry for crash symbolication. Installs
+`sentry-cli` via Homebrew if not already available. No-Fastfile path —
+Fastlane users can wrap this in a lane, or use the `sentry-fastlane` plugin
+instead.
+
+```yaml
+steps:
+    - ios/upload_dsyms:
+        dsym_path: build/dSYMs
+        sentry_org: my-org
+        sentry_project: my-project
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `dsym_path` | string | `.` | Directory searched for `.dSYM` files to upload |
+| `sentry_org` | string | — | Sentry organization slug |
+| `sentry_project` | string | — | Sentry project slug |
+| `auth_token` | env_var_name | `SENTRY_AUTH_TOKEN` | Env var name holding the Sentry auth token |
+| `skip_errors` | boolean | `false` | Whether an upload failure should be non-fatal to the pipeline |
+
+### `notarize_macos`
+
+Notarize a macOS `.app` bundle with Apple's `notarytool` and staple the
+ticket. Requires App Store Connect API key credentials — each parameter
+names the env var holding the credential, so the values themselves never
+appear in orb parameters.
+
+```yaml
+steps:
+    - ios/notarize_macos:
+        app_path: build/MyApp.app
+        staple: true
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `app_path` | string | — | Path to the `.app` bundle to notarize |
+| `api_key_path` | env_var_name | `ASC_KEY_PATH` | Env var name holding the path to the App Store Connect API key (`.p8`) |
+| `api_key_id` | env_var_name | `ASC_KEY_ID` | Env var name holding the App Store Connect API key ID |
+| `api_issuer_id` | env_var_name | `ASC_ISSUER_ID` | Env var name holding the App Store Connect API issuer ID |
+| `staple` | boolean | `true` | Whether to staple the notarization ticket to the app after a successful submission |
 
 ---
 
