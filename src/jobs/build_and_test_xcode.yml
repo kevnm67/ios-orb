@@ -64,10 +64,29 @@ parameters:
         description: Path of the JUnit XML report written by xcbeautify and stored as test results.
         type: string
         default: test-results.xml
+    preboot_simulator:
+        description: Whether to preboot the Simulator device parsed from destination before building (no-op for non-simulator destinations).
+        type: boolean
+        default: false
+    retry_on_failure:
+        description: Whether to retry only the tests that failed (xcodebuild -retry-tests-on-failure).
+        type: boolean
+        default: false
+    test_iterations:
+        description: Maximum iterations per test when retry_on_failure is enabled (xcodebuild -test-iterations).
+        type: integer
+        default: 3
+    allow_beta_xcode:
+        description: Whether to allow a beta/build-string xcode_version (e.g. "27A5228h") instead of failing fast.
+        type: boolean
+        default: false
 
 parallelism: << parameters.parallelism >>
 
 steps:
+    - assert_xcode_channel:
+          xcode_version: << parameters.xcode_version >>
+          allow_beta: << parameters.allow_beta_xcode >>
     - checkout
     - << parameters.pre_steps >>
     - when:
@@ -81,6 +100,11 @@ steps:
           steps:
               - restore_spm_cache:
                     xcode_project: << parameters.xcode_project >>
+    - when:
+          condition: << parameters.preboot_simulator >>
+          steps:
+              - preboot_simulator:
+                    destination: << parameters.destination >>
     - build_xcode:
           scheme: << parameters.scheme >>
           project: << parameters.project >>
@@ -92,6 +116,8 @@ steps:
           destination: << parameters.destination >>
           result_bundle_path: << parameters.result_bundle_path >>
           junit_report: << parameters.junit_report >>
+          retry_on_failure: << parameters.retry_on_failure >>
+          test_iterations: << parameters.test_iterations >>
     - when:
           condition: << parameters.coverage >>
           steps:

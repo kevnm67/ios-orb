@@ -53,10 +53,27 @@ parameters:
         description: Directory the JUnit report is written to and stored from.
         type: string
         default: build/reports
+    test_framework:
+        description: |
+            Which test framework to run: "auto" detects Swift Testing by
+            grepping Tests/ for "import Testing" (falling back to xctest),
+            "xctest" and "swift-testing" force a framework. swift-testing
+            forces --parallel and writes an xunit report instead of
+            xcbeautify's JUnit reporter.
+        type: enum
+        enum: [auto, xctest, swift-testing]
+        default: auto
+    allow_beta_xcode:
+        description: Whether to allow a beta/build-string xcode_version (e.g. "27A5228h") instead of failing fast.
+        type: boolean
+        default: false
 
 parallelism: << parameters.parallelism >>
 
 steps:
+    - assert_xcode_channel:
+          xcode_version: << parameters.xcode_version >>
+          allow_beta: << parameters.allow_beta_xcode >>
     - checkout
     - << parameters.pre_steps >>
     - restore_spm_cache:
@@ -69,6 +86,7 @@ steps:
           coverage: << parameters.coverage >>
           parallel: << parameters.parallel >>
           report_path: << parameters.report_path >>
+          test_framework: << parameters.test_framework >>
     - when:
           condition: << parameters.coverage >>
           steps:
