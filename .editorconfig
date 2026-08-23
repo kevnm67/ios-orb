@@ -9,6 +9,7 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 [*.yml]
+# yamlfmt --mapping 4 still emits 6/10-space sequence bodies; 2 accepts every even indent
 indent_size = 2
 
 # d2 sources are formatted by `d2 fmt` / the design-d2 skill generators (2-space)

@@ -8,7 +8,7 @@ parameters:
     key:
         description: Cache key (prefixed).  The key is immutable.
         type: string
-        default: spm-v1
+        default: spm-v2
     xcode_project:
         description: |
             Name of your xcodeproj for setting the path to the Package.resolved
@@ -17,7 +17,10 @@ parameters:
         type: string
         default: ''
     path:
-        description: Path where swift packages to be cached are located.
+        description: |
+            Path where swift packages to be cached are located. Defaults to
+            the Xcode-managed SourcePackages path; pure SPM packages must
+            pass path: .build (or wherever `swift build` writes .build).
         type: string
         default: .build_output/SourcePackages
 steps:
@@ -26,6 +29,11 @@ steps:
           environment:
               XCODE_PROJECT: << parameters.xcode_project >>
           command: <<include(scripts/resolve_spm_cache_key.sh)>>
+    - run:
+          name: Check SPM cache path
+          environment:
+              CACHE_PATH: << parameters.path >>
+          command: <<include(scripts/check_cache_path.sh)>>
     - save_cache:
           key: << parameters.key >>-{{ arch }}-{{ .Branch }}-{{ checksum "Package.resolved.cache-key" }}
           paths:

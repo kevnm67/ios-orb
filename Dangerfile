@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # set the files to watch and warn about if there are changes made
-@ci_files = ['.config.yml', 'Dangerfile', '.yamllint']
+@ci_files = ['.circleci/config.yml', 'Dangerfile', '.yamllint']
 
 # set the files to watch and warn about if there are
-@dependency_files = ['Gemfile, Gemfile.lock']
+@dependency_files = ['Gemfile', 'Gemfile.lock']
 
 # determine if any of the files were modified
 def did_modify(files_array)

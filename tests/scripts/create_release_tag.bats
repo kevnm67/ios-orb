@@ -70,6 +70,65 @@ GITSTUB
     [[ "${output}" == *"already exists"* ]]
 }
 
+@test "no existing tags falls back to 0.0.0 and creates v0.0.1" {
+    TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
+    mkdir -p "${TMPBIN}"
+    cat > "${TMPBIN}/git" << 'GITSTUB'
+#!/usr/bin/env bash
+echo "git stub: $*" >&2
+echo "git $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+case "$*" in
+    "describe --tags --abbrev=0")
+        # No tags in the repo yet.
+        exit 128
+        ;;
+    "rev-parse v0.0.1")
+        exit 1
+        ;;
+    "tag -a "*)
+        echo "stub:git tag created"
+        ;;
+    "push origin "*)
+        echo "stub:git push"
+        ;;
+    *)
+        echo "stub:git $*"
+        ;;
+esac
+GITSTUB
+    chmod +x "${TMPBIN}/git"
+    export PATH="${TMPBIN}:${PATH}"
+    export VERSION_SOURCE="git-describe"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    [[ "${output}" == *"Latest tag: 0.0.0"* ]]
+    [[ "${output}" == *"Creating tag: v0.0.1"* ]]
+    grep -q "^git tag -a v0.0.1" "${STUB_CALL_LOG}"
+}
+
+@test "non-numeric latest tag exits with a clear error" {
+    TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
+    mkdir -p "${TMPBIN}"
+    cat > "${TMPBIN}/git" << 'GITSTUB'
+#!/usr/bin/env bash
+echo "git $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+case "$*" in
+    "describe --tags --abbrev=0")
+        echo "vbeta.1.0"
+        ;;
+    *)
+        exit 1
+        ;;
+esac
+GITSTUB
+    chmod +x "${TMPBIN}/git"
+    export PATH="${TMPBIN}:${PATH}"
+    export VERSION_SOURCE="git-describe"
+    run bash "${SCRIPT}"
+    [ "${status}" -ne 0 ]
+    [[ "${output}" == *"not valid semver"* ]]
+}
+
 @test "marketing-version exits non-zero when MARKETING_VERSION empty" {
     export VERSION_SOURCE="marketing-version"
     # Override xcodebuild to return no MARKETING_VERSION line.

@@ -27,6 +27,14 @@ setup() {
     grep -q "^bundle exec fastlane match appstore --readonly$" "${STUB_CALL_LOG}"
 }
 
+@test "adds --readonly when MATCH_READONLY=1" {
+    export MATCH_TYPES="appstore"
+    export MATCH_READONLY="1"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q "^bundle exec fastlane match appstore --readonly$" "${STUB_CALL_LOG}"
+}
+
 @test "does not add --readonly when MATCH_READONLY=false" {
     export MATCH_TYPES="development"
     export MATCH_READONLY="false"

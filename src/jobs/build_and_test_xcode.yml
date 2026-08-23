@@ -60,6 +60,10 @@ parameters:
         description: Steps to run before build.
         type: steps
         default: []
+    junit_report:
+        description: Path of the JUnit XML report written by xcbeautify and stored as test results.
+        type: string
+        default: test-results.xml
 
 parallelism: << parameters.parallelism >>
 
@@ -87,6 +91,7 @@ steps:
           project: << parameters.project >>
           destination: << parameters.destination >>
           result_bundle_path: << parameters.result_bundle_path >>
+          junit_report: << parameters.junit_report >>
     - when:
           condition: << parameters.coverage >>
           steps:

@@ -45,6 +45,14 @@ setup() {
     grep -q "^brew install missing_tool_abc" "${STUB_CALL_LOG}"
 }
 
+@test "unset TOOLS prints nothing and exits 0" {
+    export PATH="${STUBS}:${SYSTEM_PATH}"
+    unset TOOLS
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    [ -z "${output}" ]
+}
+
 @test "TOOLS with a single tool that is present" {
     export PATH="${STUBS}:${SYSTEM_PATH}"
     export TOOLS="brew"

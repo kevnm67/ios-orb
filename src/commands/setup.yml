@@ -69,11 +69,8 @@ steps:
     - run:
           name: Verify Ruby version
           command: <<include(scripts/verify_rbenv.sh)>>
-    - when:
-          condition: << parameters.xcode_project >>
-          steps:
-              - restore_spm_cache:
-                    xcode_project: << parameters.xcode_project >>
+    - restore_spm_cache:
+          xcode_project: << parameters.xcode_project >>
     - when:
           condition: << parameters.bundle_install >>
           steps:

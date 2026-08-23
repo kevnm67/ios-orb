@@ -96,3 +96,38 @@ XSTUB
     # cobertura from the extension and fail to parse the lcov content.
     [ ! -f coverage.xml ]
 }
+
+@test "prefers the .xctest/Contents/MacOS/<name> binary when present" {
+    TMPBIN="${TEST_ROOT}/bin"
+    BUILD_DIR="${TEST_ROOT}/build"
+    mkdir -p "${TMPBIN}" "${BUILD_DIR}"
+    touch "${BUILD_DIR}/../default.profdata"
+    # Create an .xctest bundle with the macOS executable at the expected path.
+    XCTEST_BUNDLE="${BUILD_DIR}/MyPackageTests.xctest"
+    mkdir -p "${XCTEST_BUNDLE}/Contents/MacOS"
+    XCTEST_BIN="${XCTEST_BUNDLE}/Contents/MacOS/MyPackageTests"
+    touch "${XCTEST_BIN}"
+    chmod +x "${XCTEST_BIN}"
+    # Also create a decoy loose "*Tests" binary — the .xctest bundle path
+    # must be preferred over the fallback find.
+    DECOY_BIN="${BUILD_DIR}/DecoyTests"
+    touch "${DECOY_BIN}"
+    chmod +x "${DECOY_BIN}"
+    cat > "${TMPBIN}/swift" << SWIFTSTUB
+#!/usr/bin/env bash
+echo "${BUILD_DIR}"
+SWIFTSTUB
+    chmod +x "${TMPBIN}/swift"
+    cat > "${TMPBIN}/xcrun" << 'XSTUB'
+#!/usr/bin/env bash
+echo "xcrun $*" >> "${STUB_CALL_LOG:-/tmp/xcrun_stub.log}"
+echo "DA:1,1"
+echo "DA:2,0"
+XSTUB
+    chmod +x "${TMPBIN}/xcrun"
+    export PATH="${TMPBIN}:/usr/bin:/bin:/usr/sbin:/sbin"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    [[ "${output}" == *"Using binary: ${XCTEST_BIN}"* ]]
+    [[ "${output}" == *"Coverage exported to coverage.lcov"* ]]
+}
