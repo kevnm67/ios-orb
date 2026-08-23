@@ -1,0 +1,31 @@
+---
+description: |
+    Scan for unused Swift code with Periphery. Installs via Homebrew if not
+    already available. No-Fastfile path — Fastlane users can wrap this in a
+    lane.
+
+parameters:
+    config:
+        description: Path to a Periphery configuration file.
+        type: string
+        default: ''
+    strict:
+        description: Whether to fail the scan on any result (--strict).
+        type: boolean
+        default: false
+    extra_args:
+        description: Additional space-separated flags to pass to `periphery scan`.
+        type: string
+        default: ''
+
+steps:
+    - run:
+          name: Install Periphery
+          command: << include(scripts/periphery_install.sh) >>
+    - run:
+          name: Run Periphery scan
+          environment:
+              PERIPHERY_CONFIG: << parameters.config >>
+              PERIPHERY_STRICT: << parameters.strict >>
+              PERIPHERY_EXTRA_ARGS: << parameters.extra_args >>
+          command: << include(scripts/periphery_run.sh) >>

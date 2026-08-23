@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo "periphery stub: $*" >&2
+echo "periphery $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+if [[ "$*" == "version" ]]; then
+    echo "2.99.0 (stub)"
+    exit 0
+fi
+echo "stub:periphery $*"

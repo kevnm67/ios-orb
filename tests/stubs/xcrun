@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 echo "xcrun stub: $*" >&2
 echo "xcrun $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+# Optional controlled failure for callers testing error handling
+# (e.g. a failed notarytool submission).
+if [[ -n "${STUB_XCRUN_FAIL:-}" ]]; then
+    echo "stub:xcrun failure" >&2
+    exit 1
+fi
 # Simulate llvm-cov export writing lcov data to stdout
 if [[ "$*" == *"llvm-cov export"* ]]; then
     echo "DA:1,1"

@@ -1,0 +1,37 @@
+---
+description: |
+    Upload dSYM debug symbol files to Sentry for crash symbolication.
+    Installs sentry-cli via Homebrew if not already available. No-Fastfile
+    path — Fastlane users can wrap this in a lane, or use the sentry-fastlane
+    plugin instead.
+
+parameters:
+    dsym_path:
+        description: Directory searched for .dSYM files to upload.
+        type: string
+        default: .
+    sentry_org:
+        description: Sentry organization slug.
+        type: string
+    sentry_project:
+        description: Sentry project slug.
+        type: string
+    auth_token:
+        description: Env var name holding the Sentry auth token.
+        type: env_var_name
+        default: SENTRY_AUTH_TOKEN
+    skip_errors:
+        description: Whether an upload failure should be non-fatal to the pipeline.
+        type: boolean
+        default: false
+
+steps:
+    - run:
+          name: Upload dSYMs to Sentry
+          environment:
+              DSYM_PATH: << parameters.dsym_path >>
+              SENTRY_ORG: << parameters.sentry_org >>
+              SENTRY_PROJECT: << parameters.sentry_project >>
+              AUTH_TOKEN_VAR: << parameters.auth_token >>
+              SKIP_ERRORS: << parameters.skip_errors >>
+          command: << include(scripts/upload_dsyms.sh) >>
