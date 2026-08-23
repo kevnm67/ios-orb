@@ -179,6 +179,10 @@ coverage, and optionally uploads to Qlty Cloud.
 | `install_tools` | Install Homebrew formulas (skips already-installed) | `tools` (space-separated, default: `xcodegen swiftlint`) |
 | `xcodegen` | Install XcodeGen and generate the Xcode project | `spec` (default: `project.yml`), `quiet` |
 | `swiftlint` | Install and run SwiftLint | `strict`, `config`, `reporter` |
+| `swiftformat` | Install and run SwiftFormat (check-only lint mode by default) | `lint` (default: `true`), `config`, `paths` (default: `.`) |
+| `periphery_scan` | Install Periphery and scan for unused Swift code | `config`, `strict`, `extra_args` |
+| `upload_dsyms` | Install sentry-cli and upload dSYMs to Sentry | `dsym_path` (default: `.`), `sentry_org`, `sentry_project`, `auth_token` (default: `SENTRY_AUTH_TOKEN`), `skip_errors` |
+| `notarize_macos` | Notarize and staple a macOS `.app` bundle via `notarytool` | `app_path`, `api_key_path` (default: `ASC_KEY_PATH`), `api_key_id` (default: `ASC_KEY_ID`), `api_issuer_id` (default: `ASC_ISSUER_ID`), `staple` (default: `true`) |
 | `lane` | Run a Fastlane lane | `named` |
 | `match_signing` | Sync code signing via Fastlane Match | `type` (default: `appstore`), `readonly`, `app_identifier` |
 | `build_xcode` | `xcodebuild build` piped through xcbeautify | `scheme`, `project`, `destination`, `configuration` |
@@ -221,6 +225,14 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `match_signing` | `type` | string | `appstore` | Comma-separated match types: development, adhoc, appstore, enterprise |
 | `match_signing` | `readonly` | boolean | `false` | Whether to run match in read-only mode |
 | `match_signing` | `app_identifier` | string | `""` | App bundle identifier. Leave empty to infer from Matchfile or `MATCH_APP_IDENTIFIER` |
+| `notarize_macos` | `app_path` | string | — | Path to the `.app` bundle to notarize |
+| `notarize_macos` | `api_key_path` | env_var_name | `ASC_KEY_PATH` | Env var name holding the path to the App Store Connect API key (`.p8`) |
+| `notarize_macos` | `api_key_id` | env_var_name | `ASC_KEY_ID` | Env var name holding the App Store Connect API key ID |
+| `notarize_macos` | `api_issuer_id` | env_var_name | `ASC_ISSUER_ID` | Env var name holding the App Store Connect API issuer ID |
+| `notarize_macos` | `staple` | boolean | `true` | Whether to staple the notarization ticket to the app after a successful submission |
+| `periphery_scan` | `config` | string | `""` | Path to a Periphery configuration file |
+| `periphery_scan` | `strict` | boolean | `false` | Whether to fail the scan on any result (`--strict`) |
+| `periphery_scan` | `extra_args` | string | `""` | Additional space-separated flags to pass to `periphery scan` |
 | `restore_brew` | `brew_cache_key` | string | `brew-v1` | Cache key (prefixed). The key is immutable |
 | `save_build_artifacts` | `gym_logs_path` | string | `~/Library/Logs/gym` | Path to Fastlane gym (build) logs |
 | `setup` | `persist_workspace` | boolean | `true` | Whether the job should persist files to a workspace |
@@ -228,6 +240,14 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `swiftlint` | `strict` | boolean | `false` | Whether to use strict mode (warnings become errors) |
 | `swiftlint` | `config` | string | `""` | Path to SwiftLint configuration file |
 | `swiftlint` | `reporter` | string | `""` | Reporter type (`xcode`, `json`, `csv`, `emoji`, etc.) |
+| `swiftformat` | `lint` | boolean | `true` | Whether to run in check-only mode (`--lint`, fails on unformatted files without changing them). Set to `false` to format in place |
+| `swiftformat` | `config` | string | `""` | Path to a SwiftFormat configuration file |
+| `swiftformat` | `paths` | string | `.` | Space-separated paths to format or lint |
+| `upload_dsyms` | `dsym_path` | string | `.` | Directory searched for `.dSYM` files to upload |
+| `upload_dsyms` | `sentry_org` | string | — | Sentry organization slug |
+| `upload_dsyms` | `sentry_project` | string | — | Sentry project slug |
+| `upload_dsyms` | `auth_token` | env_var_name | `SENTRY_AUTH_TOKEN` | Env var name holding the Sentry auth token |
+| `upload_dsyms` | `skip_errors` | boolean | `false` | Whether an upload failure should be non-fatal to the pipeline |
 | `upload_qlty_coverage` | `file` | string | `coverage.xml` | Path to the coverage file to upload |
 | `upload_qlty_coverage` | `format` | enum | `""` | Coverage report format. Empty infers from the file extension or contents (`simplecov`, `clover`, `cobertura`, `coverprofile`, `lcov`, `jacoco`, `qlty`) |
 | `upload_qlty_coverage` | `tag` | string | `""` | Optional tag for the coverage report (e.g. `unit`, `ui`) |

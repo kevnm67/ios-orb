@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+echo "sentry-cli stub: $*" >&2
+echo "sentry-cli $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+echo "sentry-cli saw SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN:-<unset>}" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+if [[ -n "${STUB_SENTRY_CLI_FAIL:-}" ]]; then
+    echo "stub:sentry-cli failure" >&2
+    exit 1
+fi
+echo "stub:sentry-cli $*"

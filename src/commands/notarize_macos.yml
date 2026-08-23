@@ -1,0 +1,37 @@
+---
+description: |
+    Notarize a macOS .app bundle with Apple's notarytool and staple the
+    ticket. Requires App Store Connect API key credentials (an env var name
+    per credential, so the values themselves never appear in orb parameters).
+
+parameters:
+    app_path:
+        description: Path to the .app bundle to notarize.
+        type: string
+    api_key_path:
+        description: Env var name holding the path to the App Store Connect API key (.p8).
+        type: env_var_name
+        default: ASC_KEY_PATH
+    api_key_id:
+        description: Env var name holding the App Store Connect API key ID.
+        type: env_var_name
+        default: ASC_KEY_ID
+    api_issuer_id:
+        description: Env var name holding the App Store Connect API issuer ID.
+        type: env_var_name
+        default: ASC_ISSUER_ID
+    staple:
+        description: Whether to staple the notarization ticket to the app after a successful submission.
+        type: boolean
+        default: true
+
+steps:
+    - run:
+          name: Notarize macOS app
+          environment:
+              APP_PATH: << parameters.app_path >>
+              API_KEY_PATH_VAR: << parameters.api_key_path >>
+              API_KEY_ID_VAR: << parameters.api_key_id >>
+              API_ISSUER_ID_VAR: << parameters.api_issuer_id >>
+              STAPLE: << parameters.staple >>
+          command: << include(scripts/notarize_macos.sh) >>

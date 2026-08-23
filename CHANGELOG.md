@@ -28,6 +28,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `allow_beta_xcode` job parameter — fails fast if `xcode_version` looks
     like a beta/build-string image (e.g. `27A5228h`) instead of a stable
     dotted release.
+- `swiftformat` command — installs SwiftFormat via Homebrew and runs it in
+    check-only `--lint` mode by default (`lint`, `config`, `paths`
+    parameters), matching the `swiftlint` command's shape.
+- `periphery_scan` command — installs Periphery via Homebrew (now a core
+    formula; the `peripheryapp/homebrew-periphery` tap is unmaintained) and
+    runs an unused-code scan (`config`, `strict`, `extra_args` parameters).
+- `upload_dsyms` command — installs `sentry-cli` via Homebrew if needed and
+    uploads `.dSYM` files to Sentry (`dsym_path`, `sentry_org`,
+    `sentry_project`, `auth_token`, `skip_errors` parameters).
+- `notarize_macos` command — zips a `.app` bundle, submits it to
+    `xcrun notarytool`, and staples the ticket (`app_path`, `api_key_path`,
+    `api_key_id`, `api_issuer_id`, `staple` parameters). Credential
+    parameters are `env_var_name`, never raw secret values.
+- `tests/stubs/swiftformat`, `tests/stubs/periphery`,
+    `tests/stubs/sentry-cli`, `tests/stubs/ditto`, plus a controlled-failure
+    hook added to `tests/stubs/xcrun` for notarization failure test cases.
 
 ## [3.2.0] - 2026-08-23
 

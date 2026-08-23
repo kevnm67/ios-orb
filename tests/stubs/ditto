@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+echo "ditto stub: $*" >&2
+echo "ditto $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+# Real ditto -c -k writes a zip archive to its last argument — create an
+# empty placeholder file so callers that check for its existence succeed.
+if [[ "$*" == *"-c"* ]]; then
+    touch "${!#}" 2>/dev/null || true
+fi
+echo "stub:ditto $*"

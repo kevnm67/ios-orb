@@ -1,0 +1,33 @@
+---
+description: |
+    Run SwiftFormat. Installs via Homebrew if not already available. Defaults
+    to check-only lint mode (non-destructive); set lint to false to format
+    files in place. No-Fastfile path — Fastlane users can wrap this in a lane.
+
+parameters:
+    lint:
+        description: |
+            Whether to run in check-only mode (--lint, fails on unformatted
+            files without changing them). Set to false to format in place.
+        type: boolean
+        default: true
+    config:
+        description: Path to a SwiftFormat configuration file.
+        type: string
+        default: ''
+    paths:
+        description: Space-separated paths to format or lint.
+        type: string
+        default: .
+
+steps:
+    - run:
+          name: Install SwiftFormat
+          command: << include(scripts/swiftformat_install.sh) >>
+    - run:
+          name: Run SwiftFormat
+          environment:
+              SWIFTFORMAT_LINT: << parameters.lint >>
+              SWIFTFORMAT_CONFIG: << parameters.config >>
+              SWIFTFORMAT_PATHS: << parameters.paths >>
+          command: << include(scripts/swiftformat_run.sh) >>
