@@ -28,7 +28,7 @@ usage:
                       qlty_tag: ios
                       requires:
                           - setup
-                      context: qlty-credentials
+                      context: ios_auth  # your context holding QLTY_COVERAGE_TOKEN
                 - ios-orb/test:
                       name: test-macos
                       xcode_version: '26.6'
@@ -38,4 +38,4 @@ usage:
                       qlty_tag: macos
                       requires:
                           - setup
-                      context: qlty-credentials
+                      context: ios_auth  # your context holding QLTY_COVERAGE_TOKEN
