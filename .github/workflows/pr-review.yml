@@ -7,6 +7,10 @@ on:
 jobs:
     review:
         runs-on: ubuntu-latest
+        # Advisory only: claude-code-action intermittently dies with
+        # "Internal error: directory mismatch" on large diffs (2026-08-23,
+        # both 24dcd50 and c81e3bc). A broken reviewer must not block PRs.
+        continue-on-error: true
         permissions:
             contents: read
             pull-requests: write
