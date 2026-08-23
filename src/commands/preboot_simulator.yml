@@ -1,0 +1,23 @@
+---
+description: |
+    Pre-boots the Simulator device parsed from an xcodebuild -destination
+    string (e.g. "platform=iOS Simulator,name=iPhone 17") before building, so
+    the simulator is already warm when the test step starts. No-ops safely
+    for a non-simulator destination (e.g. "platform=macOS") — implemented in
+    the underlying script rather than a `when:` step condition, since CircleCI
+    cannot inspect a destination string's runtime content at compile time.
+
+parameters:
+    destination:
+        description: Build/test destination string to parse for a simulator device name.
+        type: string
+
+steps:
+    - run:
+          name: Parse simulator destination
+          environment:
+              DESTINATION: << parameters.destination >>
+          command: << include(scripts/parse_simulator_destination.sh) >>
+    - run:
+          name: Preboot simulator
+          command: << include(scripts/preboot_simulator.sh) >>
