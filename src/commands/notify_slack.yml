@@ -1,0 +1,57 @@
+---
+description: |
+    Post a Slack notification via an Incoming Webhook on job success,
+    failure, or always. Never fails the build — a missing webhook or a curl
+    error is logged as a warning and the step exits 0.
+
+parameters:
+    webhook:
+        description: Env var name holding the Slack Incoming Webhook URL.
+        type: env_var_name
+        default: SLACK_WEBHOOK
+    message:
+        description: >
+            Message text to post. CircleCI environment variables
+            (e.g. ${CIRCLE_JOB}, ${CIRCLE_BRANCH}) are interpolated.
+        type: string
+        default: Job ${CIRCLE_JOB} on ${CIRCLE_BRANCH} finished
+    on:
+        description: 'When to send the notification: fail, success, or always.'
+        type: enum
+        enum: [fail, success, always]
+        default: fail
+
+steps:
+    - when:
+          condition:
+              equal: [fail, << parameters.on >>]
+          steps:
+              - run:
+                    name: Notify Slack (on fail)
+                    when: on_fail
+                    environment:
+                        WEBHOOK_VAR: << parameters.webhook >>
+                        MESSAGE: << parameters.message >>
+                    command: << include(scripts/notify_slack.sh) >>
+    - when:
+          condition:
+              equal: [success, << parameters.on >>]
+          steps:
+              - run:
+                    name: Notify Slack (on success)
+                    when: on_success
+                    environment:
+                        WEBHOOK_VAR: << parameters.webhook >>
+                        MESSAGE: << parameters.message >>
+                    command: << include(scripts/notify_slack.sh) >>
+    - when:
+          condition:
+              equal: [always, << parameters.on >>]
+          steps:
+              - run:
+                    name: Notify Slack (always)
+                    when: always
+                    environment:
+                        WEBHOOK_VAR: << parameters.webhook >>
+                        MESSAGE: << parameters.message >>
+                    command: << include(scripts/notify_slack.sh) >>

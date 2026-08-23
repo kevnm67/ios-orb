@@ -43,6 +43,8 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [assert\_xcode\_channel](#assert_xcode_channel)
     - [upload\_dsyms](#upload_dsyms)
     - [notarize\_macos](#notarize_macos)
+    - [deploy\_testflight](#deploy_testflight)
+    - [notify\_slack](#notify_slack)
 - [Jobs](#jobs)
     - [run\_with\_setup](#run_with_setup)
     - [test](#test)
@@ -558,6 +560,12 @@ cannot inspect a destination string's runtime content.
 steps:
     - ios/preboot_simulator:
         destination: "platform=iOS Simulator,name=iPhone 17"
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `destination` | string | — | Build/test destination string to parse for a simulator device name |
+
 ### `upload_dsyms`
 
 Upload dSYM debug symbol files to Sentry for crash symbolication. Installs
@@ -575,7 +583,11 @@ steps:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `destination` | string | — | Build/test destination string to parse for a simulator device name |
+| `dsym_path` | string | `.` | Directory searched for `.dSYM` files to upload |
+| `sentry_org` | string | — | Sentry organization slug |
+| `sentry_project` | string | — | Sentry project slug |
+| `auth_token` | env_var_name | `SENTRY_AUTH_TOKEN` | Env var name holding the Sentry auth token |
+| `skip_errors` | boolean | `false` | Whether an upload failure should be non-fatal to the pipeline |
 
 ### `assert_xcode_channel`
 
@@ -587,11 +599,12 @@ does not silently pin to an unstable Xcode channel.
 steps:
     - ios/assert_xcode_channel:
         xcode_version: "26.6"
-| `dsym_path` | string | `.` | Directory searched for `.dSYM` files to upload |
-| `sentry_org` | string | — | Sentry organization slug |
-| `sentry_project` | string | — | Sentry project slug |
-| `auth_token` | env_var_name | `SENTRY_AUTH_TOKEN` | Env var name holding the Sentry auth token |
-| `skip_errors` | boolean | `false` | Whether an upload failure should be non-fatal to the pipeline |
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `xcode_version` | string | — | Xcode version to validate (e.g. `26.6`) |
+| `allow_beta` | boolean | `false` | Whether to allow a beta/build-string Xcode version instead of failing |
 
 ### `notarize_macos`
 
@@ -609,13 +622,64 @@ steps:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `xcode_version` | string | — | Xcode version to validate (e.g. `26.6`) |
-| `allow_beta` | boolean | `false` | Whether to allow a beta/build-string Xcode version instead of failing |
 | `app_path` | string | — | Path to the `.app` bundle to notarize |
 | `api_key_path` | env_var_name | `ASC_KEY_PATH` | Env var name holding the path to the App Store Connect API key (`.p8`) |
 | `api_key_id` | env_var_name | `ASC_KEY_ID` | Env var name holding the App Store Connect API key ID |
 | `api_issuer_id` | env_var_name | `ASC_ISSUER_ID` | Env var name holding the App Store Connect API issuer ID |
 | `staple` | boolean | `true` | Whether to staple the notarization ticket to the app after a successful submission |
+
+### `deploy_testflight`
+
+Upload a build to TestFlight. **Fastlane-first**: pass `lane` to run your own
+Fastlane lane (recommended for anything beyond the basics — App Store
+Connect authentication quirks, changelog templating, multiple beta groups
+with different review states, etc. are all best handled in a Fastfile).
+Without `lane`, the command wraps Fastlane's
+[`upload_to_testflight`](https://docs.fastlane.tools/actions/upload_to_testflight/)
+action directly via `bundle exec fastlane run`.
+
+```yaml
+# Recommended: keep your own lane
+steps:
+    - ios/deploy_testflight:
+        lane: beta
+
+# No-Fastfile path: direct upload_to_testflight action
+steps:
+    - ios/deploy_testflight:
+        ipa_path: build/MyApp.ipa
+        groups: "Internal Testers,QA"
+        changelog: "Bug fixes and performance improvements"
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `lane` | string | `""` | Fastlane lane to run instead of the built-in `upload_to_testflight` invocation. When set, all other parameters are ignored and the command runs `bundle exec fastlane <lane>` |
+| `ipa_path` | string | `""` | Path to the `.ipa` to upload. Empty lets `upload_to_testflight` infer it from the most recent Gym/Fastlane build |
+| `app_identifier` | string | `""` | App bundle identifier. Leave empty to infer from the Appfile |
+| `api_key_path` | env_var_name | `ASC_API_KEY_PATH` | Env var name holding the path to the App Store Connect API key JSON used by `api_key_path:` |
+| `skip_waiting` | boolean | `true` | Whether to return immediately instead of waiting for build processing (`skip_waiting_for_build_processing:true`) |
+| `groups` | string | `""` | Comma-separated beta tester group names to distribute to |
+| `changelog` | string | `""` | "What to Test" changelog text for this build |
+
+### `notify_slack`
+
+Post a Slack notification on job success, failure, or always, via an
+Incoming Webhook. Never fails the build — a missing webhook or a `curl`
+error is logged as a warning and the step exits `0`.
+
+```yaml
+steps:
+    - ios/notify_slack:
+        on: fail
+        message: "Job ${CIRCLE_JOB} failed on ${CIRCLE_BRANCH}"
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `webhook` | env_var_name | `SLACK_WEBHOOK` | Env var name holding the Slack Incoming Webhook URL |
+| `message` | string | `Job ${CIRCLE_JOB} on ${CIRCLE_BRANCH} finished` | Message text to post. CircleCI environment variables are interpolated |
+| `on` | enum | `fail` | When to send the notification: `fail`, `success`, or `always` |
 
 ---
 
@@ -757,6 +821,8 @@ the orb or by the Fastlane/xcodebuild tooling it shells out to:
 | `MATCH_PASSWORD` | `match_signing` | Fastlane match's storage decryption passphrase. Not read by the orb's script directly — required by `bundle exec fastlane match` itself, set via a CircleCI context |
 | `MATCH_APP_IDENTIFIER` | `match_signing` | Bundle ID fallback read by Fastlane match when the `app_identifier` parameter is left empty and no Matchfile default is set |
 | `FASTLANE_USER` / App Store Connect API key vars (`ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_CONTENT`, etc.) | `lane`, `match_signing` | Not read by the orb — consumed by your Fastfile/Appfile when a lane authenticates to App Store Connect. Set them in the CircleCI context passed to `run_with_setup` / `test` so `bundle exec fastlane <lane>` can see them |
+| `ASC_API_KEY_PATH` | `deploy_testflight` | Path to the App Store Connect API key JSON, read by the orb and passed to `upload_to_testflight`'s `api_key_path:`. Default env var name for the `api_key_path` parameter — unused when `lane` is set |
+| `SLACK_WEBHOOK` | `notify_slack` | Slack Incoming Webhook URL. Default env var name for the `webhook` parameter — if unset or empty, `notify_slack` logs a warning and exits `0` without failing the build |
 
 ---
 
@@ -844,9 +910,15 @@ workflows:
                         readonly: true
                     - ios-orb/lane:
                         named: beta
+                    # No Fastfile lane? Replace the step above with:
+                    #   - ios-orb/deploy_testflight:
+                    #         groups: "Internal Testers"
+                    - ios-orb/notify_slack:
+                        on: fail
                 context:
                     - ios_auth      # your context holding QLTY_COVERAGE_TOKEN
                     - match_certs   # your context holding MATCH_PASSWORD, MATCH_APP_IDENTIFIER
+                    - slack_alerts  # your context holding SLACK_WEBHOOK
                 filters:
                     branches:
                         only: main
