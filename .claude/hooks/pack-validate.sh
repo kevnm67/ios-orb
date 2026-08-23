@@ -45,7 +45,7 @@ if ! ( cd "${PROJECT_DIR}/src" && ./pack.sh ) >"${PACK_LOG}" 2>&1; then
     exit 2
 fi
 
-GIT_DIR="$(cd "${PROJECT_DIR}" && git rev-parse --absolute-git-dir 2>/dev/null || true)"
+GIT_DIR="$(git -C "${PROJECT_DIR}" rev-parse --absolute-git-dir 2>/dev/null || true)"
 if [[ -n "${GIT_DIR}" ]]; then
     touch "${GIT_DIR}/.claude-verified"
 fi
