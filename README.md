@@ -28,6 +28,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [build\_spm / test\_spm](#build_spm--test_spm)
     - [create\_release\_tag](#create_release_tag)
     - [brew\_install](#brew_install)
+    - [restore\_brew](#restore_brew)
     - [cache\_spm / restore\_spm\_cache](#cache_spm--restore_spm_cache)
     - [save\_build\_artifacts](#save_build_artifacts)
     - [test\_with\_qlty](#test_with_qlty)
@@ -38,6 +39,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [test](#test)
     - [build\_and\_test\_xcode](#build_and_test_xcode)
     - [build\_and\_test\_spm](#build_and_test_spm)
+- [Environment Variables](#environment-variables)
 - [Workflow Examples](#workflow-examples)
 - [Orb Dependencies](#orb-dependencies)
 - [Resources](#resources)
@@ -67,7 +69,10 @@ workflows:
 
 ## Architecture
 
-![ios-orb architecture](docs/architecture/orb_pipeline.svg)
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/orb_pipeline.svg">
+    <img src="docs/architecture/orb_pipeline-light.svg" alt="ios-orb architecture">
+</picture>
 
 ---
 
@@ -79,10 +84,10 @@ Apple Silicon macOS executor with Xcode and Homebrew pre-configured. The
 default image is Xcode 26.6 (Swift 6.3, iOS 26.5 simulators, macOS 26.5);
 see CircleCI's [supported Xcode versions](https://circleci.com/docs/guides/execution-managed/using-macos/#supported-xcode-versions-silicon).
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `xcode_version` | `26.6` | Xcode version (CircleCI image tag, e.g. `26.6`, `26.5`, `27.0` beta) |
-| `resource_class` | `m4pro.medium` | macOS resource class (`m4pro.medium` or `m4pro.large`) |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `xcode_version` | string | `26.6` | Xcode version (CircleCI image tag, e.g. `26.6`, `26.5`, `27.0` beta) |
+| `resource_class` | string | `m4pro.medium` | macOS resource class (`m4pro.medium` or `m4pro.large`) |
 
 Sets `HOMEBREW_NO_AUTO_UPDATE=1` and `HOMEBREW_NO_INSTALL_CLEANUP=1`.
 
@@ -102,6 +107,19 @@ steps:
         persist_workspace: true
 ```
 
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `attach_workspace` | boolean | `false` | Whether to attach to an existing workspace |
+| `checkout` | boolean | `false` | Whether to checkout as a first step |
+| `bundle_install` | boolean | `true` | Whether to run `bundle install` |
+| `ruby_version` | string | `3.3` | Ruby version to install |
+| `key` | string | `gems-v2` | Cache key for Ruby gems (immutable) |
+| `persist_workspace` | boolean | `true` | Whether the job should persist files to a workspace |
+| `scripts` | steps | `[]` | Scripts to run between attaching and saving the workspace (installing dependencies) |
+| `xcode_project` | string | `""` | Name of your xcodeproj for setting the path to the `Package.resolved` file |
+| `with_spm` | boolean | `false` | Setup environment for installing SPM packages (works around xcbuild SSH errors) |
+| `workspace_root` | string | `.` | Absolute path, or a path relative to `working_directory` |
+
 ### `lane`
 
 Run a Fastlane lane.
@@ -111,6 +129,10 @@ steps:
     - ios/lane:
         named: test
 ```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `named` | string | — | Lane to run |
 
 ### `xcodegen`
 
@@ -123,6 +145,11 @@ steps:
         quiet: true
 ```
 
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `spec` | string | `project.yml` | Path to the XcodeGen spec file |
+| `quiet` | boolean | `true` | Whether to suppress XcodeGen output |
+
 ### `install_tools`
 
 Install Homebrew tools (only if missing).
@@ -133,6 +160,10 @@ steps:
         tools: xcodegen swiftlint xcresultparser
 ```
 
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `tools` | string | `xcodegen swiftlint` | Space-separated list of Homebrew formulas to install |
+
 ### `swiftlint`
 
 Run SwiftLint with optional strict mode.
@@ -142,6 +173,12 @@ steps:
     - ios/swiftlint:
         strict: true
 ```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `strict` | boolean | `false` | Whether to use strict mode (warnings become errors) |
+| `config` | string | `""` | Path to SwiftLint configuration file |
+| `reporter` | string | `""` | Reporter type (`xcode`, `json`, `csv`, `emoji`, etc.) |
 
 ### `match_signing`
 
@@ -154,11 +191,11 @@ steps:
         readonly: false
 ```
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `type` | `appstore` | Comma-separated match types |
-| `readonly` | `false` | Run match in read-only mode |
-| `app_identifier` | `""` | Bundle ID (inferred from Matchfile if empty) |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `type` | string | `appstore` | Comma-separated match types: development, adhoc, appstore, enterprise |
+| `readonly` | boolean | `false` | Run match in read-only mode |
+| `app_identifier` | string | `""` | Bundle ID (inferred from Matchfile or `MATCH_APP_IDENTIFIER` if empty) |
 
 ### `build_xcode` / `test_xcode`
 
@@ -179,6 +216,25 @@ steps:
         result_bundle_path: TestResults.xcresult
 ```
 
+**`build_xcode` parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `scheme` | string | — | The Xcode scheme to build |
+| `project` | string | `""` | Path to the `.xcodeproj` file (empty = default project in the directory) |
+| `destination` | string | `platform=macOS` | Build destination (e.g. `platform=macOS` or `platform=iOS Simulator,name=iPhone 17`) |
+| `configuration` | string | `Debug` | Build configuration (Debug or Release) |
+
+**`test_xcode` parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `scheme` | string | — | The Xcode scheme to test |
+| `project` | string | `""` | Path to the `.xcodeproj` file (empty = default project in the directory) |
+| `destination` | string | `platform=macOS` | Test destination (e.g. `platform=macOS` or `platform=iOS Simulator,name=iPhone 17`) |
+| `result_bundle_path` | string | `TestResults.xcresult` | Path to store the xcresult bundle |
+| `junit_report` | string | `test-results.xml` | Path of the JUnit XML report written by xcbeautify and stored as test results |
+
 ### `build_spm` / `test_spm`
 
 Build and test a Swift package. `test_spm` runs with coverage and `--parallel`
@@ -193,6 +249,22 @@ steps:
         filter: MyModuleTests
 ```
 
+**`build_spm` parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `build_flags` | string | `""` | Additional flags to pass to `swift build` |
+| `configuration` | string | `debug` | Build configuration (debug or release) |
+
+**`test_spm` parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `filter` | string | `""` | Test filter pattern (e.g. `MyModuleTests` or `MyModuleTests/testSpecificCase`) |
+| `parallel` | boolean | `true` | Whether to run tests in parallel |
+| `coverage` | boolean | `true` | Whether to enable code coverage collection |
+| `report_path` | string | `build/reports` | Directory the JUnit report is written to and stored from |
+
 ### `create_release_tag`
 
 Create and push the next `vX.Y.Z` tag — patch-increment of the latest tag
@@ -204,9 +276,43 @@ steps:
         version_source: marketing-version
 ```
 
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `version_source` | string | `git-describe` | How to determine the version number: `git-describe` increments patch from the latest tag, `marketing-version` reads `MARKETING_VERSION` from the Xcode project |
+
 ### `brew_install`
 
 Install a Homebrew formula with optional caching.
+
+```yaml
+steps:
+    - ios/brew_install:
+        formula: xcresultparser
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `brew_cache_key` | string | `brew-v1` | Cache key (prefixed). The key is immutable |
+| `brew_dir` | string | `/opt/homebrew` | Local homebrew directory |
+| `cellar_dir` | string | `/opt/homebrew/Cellar` | Local cellar directory for brew casks |
+| `formula` | string | `""` | Homebrew formula to install if needed |
+| `reinstall` | boolean | `false` | Whether to reinstall the formula |
+| `with_cache` | boolean | `true` | Whether to restore and save cache between brew commands |
+| `post_steps` | steps | `[]` | Additional steps to run after brew install |
+
+### `restore_brew`
+
+Tries to restore the local Homebrew cache written by [`brew_install`](#brew_install).
+
+```yaml
+steps:
+    - ios/restore_brew:
+        brew_cache_key: brew-v1
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `brew_cache_key` | string | `brew-v1` | Cache key (prefixed). The key is immutable |
 
 ### `cache_spm` / `restore_spm_cache`
 
@@ -215,9 +321,30 @@ on `<xcode_project>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.r
 when `xcode_project` is set, and falls back to the root `Package.resolved` for
 pure SPM packages (leave `xcode_project` empty).
 
+**`cache_spm` parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `key` | string | `spm-v1` | Cache key (prefixed). The key is immutable |
+| `xcode_project` | string | `""` | Name of your xcodeproj for setting the path to the `Package.resolved` file. Leave empty for pure SPM packages to key on the root `Package.resolved` |
+| `path` | string | `.build_output/SourcePackages` | Path where swift packages to be cached are located |
+
+**`restore_spm_cache` parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `key` | string | `spm-v1` | Cache key (prefixed). The key is immutable |
+| `xcode_project` | string | `""` | Name of your xcodeproj for setting the path to the `Package.resolved` file. Leave empty for pure SPM packages to key on the root `Package.resolved` |
+
 ### `save_build_artifacts`
 
 Store build logs, diagnostics, and test results as artifacts.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `logs_path` | string | `~/Library/Logs/scan` | Path to build logs |
+| `build_logs_path` | string | `~/Library/Logs/DiagnosticReports/` | Path to build logs |
+| `test_output_path` | string | `./fastlane/test_output` | Path to test reports |
 
 ### `test_with_qlty`
 
@@ -309,6 +436,19 @@ jobs:
             - run: bundle exec fastlane build
 ```
 
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `attach_workspace` | boolean | `true` | Whether to attach to an existing workspace |
+| `checkout` | boolean | `true` | Whether to checkout as a first step |
+| `xcode_project` | string | `""` | Name of your xcodeproj for setting the path to the `Package.resolved` file |
+| `homebrew_no_auto_update` | integer | `1` | Whether to auto update Homebrew. Default is `1` (don't update) |
+| `xcode_version` | string | `26.6` | Xcode version |
+| `resource_class` | string | `m4pro.medium` | macOS resource class |
+| `logs_path` | string | `~/Library/Logs/scan` | Path to build logs |
+| `build_logs_path` | string | `~/Library/Logs/DiagnosticReports/` | Path to build logs |
+| `test_output_path` | string | `./fastlane/test_output` | Path to test reports |
+| `scripts` | steps | `[]` | Scripts to run between attaching and saving the workspace |
+
 ### `test`
 
 **Preferred job for Fastlane projects.** Runs a lane (typically `scan`),
@@ -394,6 +534,23 @@ jobs:
 
 ---
 
+## Environment Variables
+
+Variables set directly by orb commands via `environment:` (e.g.
+`SWIFTLINT_STRICT`, `MATCH_TYPES`) are internal wiring and are not listed
+here — see each command's parameters above. The variables below are read
+from the process environment (typically injected by a CircleCI context) by
+the orb or by the Fastlane/xcodebuild tooling it shells out to:
+
+| Variable | Used by | Description |
+|----------|---------|-------------|
+| `QLTY_COVERAGE_TOKEN` | `upload_qlty_coverage`, `test_with_qlty`, `test` job, `build_and_test_xcode`, `build_and_test_spm` | Project or workspace coverage token from Qlty's settings (qlty.sh). Default env var name for the `token` parameter — set it in a CircleCI context or project env var |
+| `MATCH_PASSWORD` | `match_signing` | Fastlane match's storage decryption passphrase. Not read by the orb's script directly — required by `bundle exec fastlane match` itself, set via a CircleCI context |
+| `MATCH_APP_IDENTIFIER` | `match_signing` | Bundle ID fallback read by Fastlane match when the `app_identifier` parameter is left empty and no Matchfile default is set |
+| `FASTLANE_USER` / App Store Connect API key vars (`ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_CONTENT`, etc.) | `lane`, `match_signing` | Not read by the orb — consumed by your Fastfile/Appfile when a lane authenticates to App Store Connect. Set them in the CircleCI context passed to `run_with_setup` / `test` so `bundle exec fastlane <lane>` can see them |
+
+---
+
 ## Workflow Examples
 
 ### PR workflow with XcodeGen
@@ -434,6 +591,98 @@ workflows:
                 lane: test
                 requires:
                     - setup
+```
+
+### No-Fastfile Xcode project (single job)
+
+```yaml
+version: 2.1
+
+orbs:
+    ios-orb: kevnm67/ios-orb@3.1.1
+
+workflows:
+    ci:
+        jobs:
+            - ios-orb/build_and_test_xcode:
+                scheme: MyApp
+                xcodegen: true
+                xcode_project: MyApp
+                destination: "platform=iOS Simulator,name=iPhone 17"
+                qlty: true
+                context: ios_auth  # your context holding QLTY_COVERAGE_TOKEN
+```
+
+### Fastlane match signing before a deploy lane
+
+```yaml
+version: 2.1
+
+orbs:
+    ios-orb: kevnm67/ios-orb@3.1.1
+
+workflows:
+    deploy:
+        when:
+            equal: [main, << pipeline.git.branch >>]
+        jobs:
+            - ios-orb/run_with_setup:
+                name: setup
+                xcode_project: MyApp
+                scripts:
+                    - ios-orb/match_signing:
+                        type: appstore
+                        readonly: true
+                    - ios-orb/lane:
+                        named: beta
+                context:
+                    - ios_auth      # your context holding QLTY_COVERAGE_TOKEN
+                    - match_certs   # your context holding MATCH_PASSWORD, MATCH_APP_IDENTIFIER
+                filters:
+                    branches:
+                        only: main
+```
+
+### Threading a pipeline parameter into the Xcode version
+
+```yaml
+version: 2.1
+
+parameters:
+    xcode_version:
+        type: string
+        default: "26.6"
+
+orbs:
+    ios-orb: kevnm67/ios-orb@3.1.1
+
+workflows:
+    ci:
+        jobs:
+            - ios-orb/build_and_test_xcode:
+                scheme: MyApp
+                xcode_version: << pipeline.parameters.xcode_version >>
+                destination: "platform=iOS Simulator,name=iPhone 17"
+```
+
+### Matrix build across destinations
+
+```yaml
+version: 2.1
+
+orbs:
+    ios-orb: kevnm67/ios-orb@3.1.1
+
+workflows:
+    ci:
+        jobs:
+            - ios-orb/build_and_test_xcode:
+                matrix:
+                    parameters:
+                        destination:
+                            - platform=macOS
+                            - "platform=iOS Simulator,name=iPhone 17"
+                scheme: MyApp
 ```
 
 ---
