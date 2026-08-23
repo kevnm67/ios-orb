@@ -7,22 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-08-23
+
 ### Added
 
+- Complete `README.md` and `src/README.md` parameter documentation — every
+    orb command and job parameter now has a documented table row — plus new
+    `src/examples/` workflow examples (#118).
 - `.claude/skills/` (`orb-release`, `orb-param-sync`, `xcode-image-bump`,
     `orb-add-command`, `orb-diagram-sync`), `.claude/hooks/` (verified-push
     gate, packed-file edit guard, pack + validate on src/ change, README-sync
     advisory) and `.claude/settings.json` wiring them up, `.claude/agents/`
     (`bats-test-writer`, `orb-docs-syncer`) — committed project Claude Code
-    configuration.
+    configuration, plus `CONTRIBUTING.md`, this `CHANGELOG.md`, and other
+    repo hygiene (#120).
 - `scripts/ci/check-readme-params.sh` — verifies every orb command/job
     parameter has a documented row in both `README.md` and `src/README.md`.
 - `tests/hooks/*.bats` and `tests/ci/*.bats` suites, run as a `hook-tests`
-    step in the `script-tests` CI job.
-- `CONTRIBUTING.md` and this `CHANGELOG.md`.
+    step in the `script-tests` CI job, bringing the suite to 111 `bats`
+    tests (#119).
+- Advisory `pr-review` CI workflow that posts automated Claude review
+    comments on pull requests (#123, #124).
 
 ### Changed
 
+- Quality-audit fixes across orb commands and jobs, including missing
+    parameter pass-throughs on job wrappers, `setup`'s SPM cache falling
+    back to the root `Package.resolved` for pure-SPM packages (no
+    `xcode_project` set), and hardened `src/scripts/*.sh` (#119).
+- Pinned `anthropics/claude-code-action` to a specific commit digest
+    instead of a floating tag (#121).
 - `.gitignore`: `.claude/skills/`, `.claude/hooks/`, and `.claude/settings.json`
     are now committed (only `.claude/settings.local.json` stays ignored).
 - `.github/labeler.yml`: removed the dead `config-iOS` block (referenced
@@ -98,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `build_and_test_xcode` and `build_and_test_spm` flagship jobs, providing
     complete single-job CI for most Xcode and SPM projects respectively.
 
-[Unreleased]: https://github.com/kevnm67/ios-orb/compare/v3.1.1...HEAD
+[Unreleased]: https://github.com/kevnm67/ios-orb/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/kevnm67/ios-orb/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/kevnm67/ios-orb/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/kevnm67/ios-orb/compare/v3.0.2...v3.1.0
 [3.0.0]: https://github.com/kevnm67/ios-orb/compare/v2.0.1...v3.0.0
