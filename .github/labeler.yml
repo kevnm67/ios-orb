@@ -12,11 +12,10 @@ enhancement:
           - any-glob-to-any-file:
                 - src/**
 
-config-iOS:
+claude:
     - changed-files:
           - any-glob-to-any-file:
-                - orbs/ios/**
-                - orbs/ios-orb/**
+                - .claude/**
 
 configs-ruby:
     - changed-files:
@@ -43,7 +42,11 @@ documentation:
     - changed-files:
           - any-glob-to-any-file:
                 - CHANGELOG.md
+                - CONTRIBUTING.md
                 - doc/**
                 - Documentation/**
+                - docs/**
                 - jazzy.yml
                 - README.md
+                - src/README.md
+                - wiki/**

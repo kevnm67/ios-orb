@@ -32,8 +32,8 @@ jobs:
                   name: Run bats + kcov coverage
                   command: ./scripts/ci/run-script-tests.sh
             - run:
-                  name: Run CI script tests
-                  command: bats tests/ci
+                  name: Run hook and CI script tests
+                  command: bats tests/hooks tests/ci
             - qlty/coverage_publish:
                   files: coverage/cobertura.xml
                   format: cobertura

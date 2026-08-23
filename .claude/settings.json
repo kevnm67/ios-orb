@@ -1,0 +1,51 @@
+{
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "if": "Bash(git push*)",
+                        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/check-verified.sh",
+                        "timeout": 30
+                    }
+                ]
+            },
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-packed-files.sh",
+                        "timeout": 15
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/pack-validate.sh",
+                        "timeout": 120
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "matcher": "*",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/readme-sync-check.sh",
+                        "timeout": 20
+                    }
+                ]
+            }
+        ]
+    }
+}

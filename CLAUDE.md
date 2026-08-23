@@ -67,3 +67,37 @@ Merge to `main` with conventional commits, then push a semver tag (`vX.Y.Z`). CI
 - **Fastlane first.** Examples, quick starts and docs lead with `run_with_setup` + the `test` job / `lane` command (scan owns the xcresult + JUnit output). The raw `xcodebuild` commands (`build_xcode`, `test_xcode`, `build_and_test_xcode`) are the fallback for projects without a Fastfile; `swift build/test` is fine for pure SPM packages.
 - Coverage uploads go to Qlty Cloud (`QLTY_COVERAGE_TOKEN` in the `qlty-credentials` context). Code Climate is dead — never reintroduce `CC_TEST_REPORTER_ID` or `test_with_code_climate`.
 - README parameter tables (`README.md` + `src/README.md` — the registry-facing copy) must stay in sync with the YAML when adding/changing parameters; `src/README.md` also carries the v1→v2 and v2→v3 migration guides.
+
+## Project Claude items
+
+`.claude/` is committed (see `.gitignore`'s `.claude/*` + negations —
+`.claude/settings.local.json` stays ignored):
+
+- **Skills** (`.claude/skills/<name>/SKILL.md`): `orb-release` (pre-tag
+    gates, tag, verify registry + GitHub Release), `orb-param-sync`
+    (README parameter-table sync via `scripts/ci/check-readme-params.sh`),
+    `xcode-image-bump` (manifest lookup, stable-only, Ruby 3.3 guard),
+    `orb-add-command` (scaffold command yml + script + bats + stub + README
+    rows in one pass), `orb-diagram-sync` (dark d2 render + wiki SVG push).
+- **Agents** (`.claude/agents/*.md`): `circleci-orb-author` (any `src/`
+    change), `bats-test-writer` (bats coverage for `src/scripts/`,
+    `.claude/hooks/`, `scripts/ci/`), `orb-docs-syncer` (README/CHANGELOG/wiki
+    lockstep).
+- **Hooks** (`.claude/settings.json` → `.claude/hooks/*.sh`):
+    - `PreToolUse` on `Bash(git push*)` → `check-verified.sh` denies the push
+        if `src/`/`tests/` have commits (vs `origin/main`) newer than the last
+        successful `cd src && ./pack.sh` run.
+    - `PreToolUse` on `Edit|Write` → `block-packed-files.sh` denies edits to
+        the generated `src/ios.yml` / `orb.yml` — edit unpacked `src/` instead.
+    - `PostToolUse` on `Edit|Write` → `pack-validate.sh` re-runs
+        `cd src && ./pack.sh` when the file is under
+        `src/{commands,jobs,executors,examples}/` or `src/@orb.yml`, and
+        stamps the verification marker `check-verified.sh` requires. Exits 2
+        with the pack error on failure; exits 0 with a `systemMessage` if the
+        `circleci` CLI isn't installed (never blocks on a missing dependency).
+    - `Stop` → `readme-sync-check.sh` is advisory only: reminds (never
+        blocks) when `src/commands|jobs|executors` changed without a matching
+        `README.md` / `src/README.md` edit.
+    - Tested in `tests/hooks/*.bats` (`bats tests/hooks` / `make hooks-test`);
+        CI runs them as the `hook-tests` step in the `script-tests` job
+        alongside `tests/ci/*.bats`.
