@@ -54,7 +54,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
 version: 2.1
 
 orbs:
-    ios: kevnm67/ios-orb@3.1.1
+    ios: kevnm67/ios-orb@3.2.0
 
 workflows:
     build-test:
@@ -342,6 +342,7 @@ Store build logs, diagnostics, and test results as artifacts.
 | `logs_path` | string | `~/Library/Logs/scan` | Path to build logs |
 | `build_logs_path` | string | `~/Library/Logs/DiagnosticReports/` | Path to build logs |
 | `test_output_path` | string | `./fastlane/test_output` | Path to test reports |
+| `gym_logs_path` | string | `~/Library/Logs/gym` | Path to Fastlane gym (build) logs |
 
 ### `test_with_qlty`
 
@@ -556,7 +557,7 @@ the orb or by the Fastlane/xcodebuild tooling it shells out to:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.1.1
+    ios-orb: kevnm67/ios-orb@3.2.0
 
 workflows:
     pr:
@@ -596,7 +597,7 @@ workflows:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.1.1
+    ios-orb: kevnm67/ios-orb@3.2.0
 
 workflows:
     ci:
@@ -616,7 +617,7 @@ workflows:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.1.1
+    ios-orb: kevnm67/ios-orb@3.2.0
 
 workflows:
     deploy:
@@ -651,7 +652,7 @@ parameters:
         default: "26.6"
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.1.1
+    ios-orb: kevnm67/ios-orb@3.2.0
 
 workflows:
     ci:
@@ -668,7 +669,7 @@ workflows:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.1.1
+    ios-orb: kevnm67/ios-orb@3.2.0
 
 workflows:
     ci:

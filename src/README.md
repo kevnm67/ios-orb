@@ -16,6 +16,7 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 - [Executor](#executor)
 - [Jobs Reference](#jobs-reference)
 - [Commands Reference](#commands-reference)
+    - [Command Parameter Reference](#command-parameter-reference)
 - [Examples](#examples)
 - [Migration from v1](#migration-from-v1)
 - [Migration from v2 to v3](#migration-from-v2-to-v3)
@@ -28,7 +29,7 @@ A CircleCI orb for iOS and macOS CI/CD. Provides reusable jobs, commands, and ex
 ```yaml
 version: 2.1
 orbs:
-    ios: kevnm67/ios-orb@3.1.1
+    ios: kevnm67/ios-orb@3.2.0
 workflows:
     ci:
         jobs:
@@ -42,7 +43,7 @@ workflows:
 ```yaml
 version: 2.1
 orbs:
-    ios: kevnm67/ios-orb@3.1.1
+    ios: kevnm67/ios-orb@3.2.0
 workflows:
     ci:
         jobs:
@@ -88,6 +89,9 @@ General-purpose job: checkout, attach workspace, run custom scripts, save artifa
 | `build_logs_path` | string | `~/Library/Logs/DiagnosticReports/` | Path to diagnostic reports |
 | `test_output_path` | string | `./fastlane/test_output` | Path to test output |
 | `scripts` | steps | `[]` | Custom steps to run |
+| `bundle_install` | boolean | `true` | Whether to run `bundle install` during setup |
+| `ruby_version` | string | `3.3` | Ruby version to install during setup |
+| `key` | string | `gems-v2` | The cache key to use for the gems cache during setup. The key is immutable |
 
 ### `test`
 
@@ -113,6 +117,9 @@ Run tests via a fastlane lane and upload coverage to Qlty Cloud.
 | `test_steps` | steps | `[]` | Steps to run during test phase |
 | `lane` | string | `""` | Fastlane lane to execute |
 | `scripts` | steps | `[]` | Setup workspace scripts |
+| `bundle_install` | boolean | `true` | Whether to run `bundle install` during setup |
+| `ruby_version` | string | `3.3` | Ruby version to install during setup |
+| `key` | string | `gems-v2` | The cache key to use for the gems cache during setup. The key is immutable |
 
 ### `build_and_test_xcode`
 
@@ -134,6 +141,7 @@ tests, exports coverage, and uploads to Qlty Cloud.
 | `qlty` | boolean | `true` | Upload coverage to Qlty Cloud |
 | `xcode_project` | string | `""` | Project name for SPM cache key |
 | `pre_steps` | steps | `[]` | Steps to run before build |
+| `junit_report` | string | `test-results.xml` | Path of the JUnit XML report written by xcbeautify and stored as test results |
 
 ### `build_and_test_spm`
 
@@ -151,6 +159,8 @@ coverage, and optionally uploads to Qlty Cloud.
 | `configuration` | string | `debug` | Build configuration (`debug` or `release`) |
 | `filter` | string | `""` | Test filter pattern |
 | `pre_steps` | steps | `[]` | Steps to run before build |
+| `parallel` | boolean | `true` | Whether to run tests in parallel |
+| `report_path` | string | `build/reports` | Directory the JUnit report is written to and stored from |
 
 ---
 
@@ -158,7 +168,7 @@ coverage, and optionally uploads to Qlty Cloud.
 
 | Command | Description | Key Parameters |
 |---------|-------------|----------------|
-| `setup` | Checkout, attach workspace, install Ruby gems, restore caches | `checkout`, `attach_workspace`, `bundle_install`, `ruby_version`, `xcode_project`, `with_spm`, `scripts` |
+| `setup` | Checkout, attach workspace, install Ruby gems, restore caches | `checkout`, `attach_workspace`, `bundle_install`, `ruby_version`, `key`, `persist_workspace`, `xcode_project`, `with_spm`, `scripts`, `workspace_root` |
 | `install_tools` | Install Homebrew formulas (skips already-installed) | `tools` (space-separated, default: `xcodegen swiftlint`) |
 | `xcodegen` | Install XcodeGen and generate the Xcode project | `spec` (default: `project.yml`), `quiet` |
 | `swiftlint` | Install and run SwiftLint | `strict`, `config`, `reporter` |
@@ -173,10 +183,46 @@ coverage, and optionally uploads to Qlty Cloud.
 | `restore_brew` | Restore the Homebrew cache written by `brew_install` | `brew_cache_key` (default: `brew-v1`) |
 | `cache_spm` | Save SPM package cache | `key`, `xcode_project`, `path` |
 | `restore_spm_cache` | Restore SPM package cache | `key`, `xcode_project` |
-| `save_build_artifacts` | Store build logs and test results | `logs_path`, `build_logs_path`, `test_output_path` |
+| `save_build_artifacts` | Store build logs and test results | `logs_path`, `build_logs_path`, `test_output_path`, `gym_logs_path` |
 | `test_with_qlty` | Run tests and upload coverage to Qlty Cloud | `lane`, `pretest_steps`, `test_steps`, `result_bundle_path`, `coverage_file`, `qlty_tag`, `qlty_skip_errors`, `xcode_project` |
 | `upload_qlty_coverage` | Upload a coverage file to Qlty Cloud | `file`, `format`, `tag`, `token`, `skip_errors` |
 | `export_coverage` | Export coverage — `spm` → `coverage.lcov` (lcov), `xcode` → `coverage.xml` (cobertura) | `type` (`spm` or `xcode`), `result_bundle` |
+
+### Command Parameter Reference
+
+Full type/default/description detail for the "Key Parameters" named above.
+
+| Command | Parameter | Type | Default | Description |
+|---------|-----------|------|---------|-------------|
+| `brew_install` | `brew_cache_key` | string | `brew-v1` | Cache key (prefixed). The key is immutable |
+| `brew_install` | `brew_dir` | string | `/opt/homebrew` | Local homebrew directory |
+| `brew_install` | `cellar_dir` | string | `/opt/homebrew/Cellar` | Local cellar directory for brew casks |
+| `brew_install` | `formula` | string | `""` | Homebrew formula to install if needed |
+| `brew_install` | `reinstall` | boolean | `false` | Whether to reinstall the formula |
+| `brew_install` | `with_cache` | boolean | `true` | Whether to restore and save cache between brew commands |
+| `brew_install` | `post_steps` | steps | `[]` | Additional steps to run after brew install |
+| `cache_spm` | `path` | string | `.build_output/SourcePackages` | Path where swift packages to be cached are located. Defaults to the Xcode-managed SourcePackages path; pure SPM packages must pass `path: .build` |
+| `create_release_tag` | `version_source` | string | `git-describe` | How to determine the version number: `git-describe` increments patch from the latest tag, `marketing-version` reads `MARKETING_VERSION` from the Xcode project |
+| `export_coverage` | `type` | enum | — | Coverage source: `spm` (→ `coverage.lcov`) or `xcode` (→ `coverage.xml`) |
+| `export_coverage` | `result_bundle` | string | `TestResults.xcresult` | Path to the xcresult bundle (only used when `type` is `xcode`) |
+| `install_tools` | `tools` | string | `xcodegen swiftlint` | Space-separated list of Homebrew formulas to install |
+| `match_signing` | `type` | string | `appstore` | Comma-separated match types: development, adhoc, appstore, enterprise |
+| `match_signing` | `readonly` | boolean | `false` | Whether to run match in read-only mode |
+| `match_signing` | `app_identifier` | string | `""` | App bundle identifier. Leave empty to infer from Matchfile or `MATCH_APP_IDENTIFIER` |
+| `restore_brew` | `brew_cache_key` | string | `brew-v1` | Cache key (prefixed). The key is immutable |
+| `save_build_artifacts` | `gym_logs_path` | string | `~/Library/Logs/gym` | Path to Fastlane gym (build) logs |
+| `setup` | `persist_workspace` | boolean | `true` | Whether the job should persist files to a workspace |
+| `setup` | `workspace_root` | string | `.` | Either an absolute path or a path relative to `working_directory` |
+| `swiftlint` | `strict` | boolean | `false` | Whether to use strict mode (warnings become errors) |
+| `swiftlint` | `config` | string | `""` | Path to SwiftLint configuration file |
+| `swiftlint` | `reporter` | string | `""` | Reporter type (`xcode`, `json`, `csv`, `emoji`, etc.) |
+| `upload_qlty_coverage` | `file` | string | `coverage.xml` | Path to the coverage file to upload |
+| `upload_qlty_coverage` | `format` | enum | `""` | Coverage report format. Empty infers from the file extension or contents (`simplecov`, `clover`, `cobertura`, `coverprofile`, `lcov`, `jacoco`, `qlty`) |
+| `upload_qlty_coverage` | `tag` | string | `""` | Optional tag for the coverage report (e.g. `unit`, `ui`) |
+| `upload_qlty_coverage` | `token` | env_var_name | `QLTY_COVERAGE_TOKEN` | Env var name holding the Qlty coverage token |
+| `upload_qlty_coverage` | `skip_errors` | boolean | `false` | Whether upload errors should be non-fatal to the pipeline |
+| `xcodegen` | `spec` | string | `project.yml` | Path to the XcodeGen spec file |
+| `xcodegen` | `quiet` | boolean | `true` | Whether to suppress XcodeGen output |
 
 ---
 
