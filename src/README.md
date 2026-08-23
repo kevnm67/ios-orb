@@ -200,6 +200,8 @@ coverage, and optionally uploads to Qlty Cloud.
 | `export_coverage` | Export coverage — `spm` → `coverage.lcov` (lcov), `xcode` → `coverage.xml` (cobertura) | `type` (`spm` or `xcode`), `result_bundle` |
 | `preboot_simulator` | Preboot the Simulator device parsed from a `destination` string (no-op for non-simulator destinations) | `destination` |
 | `assert_xcode_channel` | Fail fast if `xcode_version` looks like a beta/build-string image | `xcode_version`, `allow_beta` (default: `false`) |
+| `deploy_testflight` | Upload a build to TestFlight (Fastlane-first: pass `lane`, or wraps `upload_to_testflight` directly) | `lane`, `ipa_path`, `app_identifier`, `api_key_path` (default: `ASC_API_KEY_PATH`), `skip_waiting` (default: `true`), `groups`, `changelog` |
+| `notify_slack` | Post a Slack Incoming Webhook notification on job fail/success/always | `webhook` (default: `SLACK_WEBHOOK`), `message`, `on` (default: `fail`) |
 
 ### Command Parameter Reference
 
@@ -216,6 +218,13 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `brew_install` | `post_steps` | steps | `[]` | Additional steps to run after brew install |
 | `cache_spm` | `path` | string | `.build_output/SourcePackages` | Path where swift packages to be cached are located. Defaults to the Xcode-managed SourcePackages path; pure SPM packages must pass `path: .build` |
 | `create_release_tag` | `version_source` | string | `git-describe` | How to determine the version number: `git-describe` increments patch from the latest tag, `marketing-version` reads `MARKETING_VERSION` from the Xcode project |
+| `deploy_testflight` | `lane` | string | `""` | Fastlane lane to run instead of the built-in `upload_to_testflight` invocation. When set, every other parameter is ignored |
+| `deploy_testflight` | `ipa_path` | string | `""` | Path to the `.ipa` to upload. Empty lets `upload_to_testflight` infer it from the most recent Gym/Fastlane build |
+| `deploy_testflight` | `app_identifier` | string | `""` | App bundle identifier. Leave empty to infer from the Appfile |
+| `deploy_testflight` | `api_key_path` | env_var_name | `ASC_API_KEY_PATH` | Env var name holding the path to the App Store Connect API key JSON used by `upload_to_testflight`'s `api_key_path:` |
+| `deploy_testflight` | `skip_waiting` | boolean | `true` | Whether to return immediately instead of waiting for build processing (`skip_waiting_for_build_processing:true`) |
+| `deploy_testflight` | `groups` | string | `""` | Comma-separated beta tester group names to distribute to |
+| `deploy_testflight` | `changelog` | string | `""` | "What to Test" changelog text for this build |
 | `export_coverage` | `type` | enum | — | Coverage source: `spm` (→ `coverage.lcov`) or `xcode` (→ `coverage.xml`) |
 | `export_coverage` | `result_bundle` | string | `TestResults.xcresult` | Path to the xcresult bundle (only used when `type` is `xcode`) |
 | `preboot_simulator` | `destination` | string | — | Build/test destination string to parse for a simulator device name |
@@ -230,6 +239,9 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `notarize_macos` | `api_key_id` | env_var_name | `ASC_KEY_ID` | Env var name holding the App Store Connect API key ID |
 | `notarize_macos` | `api_issuer_id` | env_var_name | `ASC_ISSUER_ID` | Env var name holding the App Store Connect API issuer ID |
 | `notarize_macos` | `staple` | boolean | `true` | Whether to staple the notarization ticket to the app after a successful submission |
+| `notify_slack` | `webhook` | env_var_name | `SLACK_WEBHOOK` | Env var name holding the Slack Incoming Webhook URL |
+| `notify_slack` | `message` | string | `` Job ${CIRCLE_JOB} on ${CIRCLE_BRANCH} finished `` | Message text to post. CircleCI environment variables are interpolated |
+| `notify_slack` | `on` | enum | `fail` | When to send the notification: `fail`, `success`, or `always` |
 | `periphery_scan` | `config` | string | `""` | Path to a Periphery configuration file |
 | `periphery_scan` | `strict` | boolean | `false` | Whether to fail the scan on any result (`--strict`) |
 | `periphery_scan` | `extra_args` | string | `""` | Additional space-separated flags to pass to `periphery scan` |
@@ -271,7 +283,7 @@ See the [`src/examples/`](examples/) directory for complete workflow examples:
 | [`xcodegen_workflow.yml`](examples/xcodegen_workflow.yml) | Hand-rolled two-stage Fastlane workflow on the `macos` executor |
 | [`spm_workflow.yml`](examples/spm_workflow.yml) | `build_and_test_spm` for pure Swift packages (no Fastfile) — debug test+coverage plus a release build |
 | [`xcode_single_job_workflow.yml`](examples/xcode_single_job_workflow.yml) | `build_and_test_xcode` no-Fastfile path — XcodeGen + raw `xcodebuild` in one job |
-| [`deploy_match_signing.yml`](examples/deploy_match_signing.yml) | Main-only deploy workflow: `match_signing` (read-only App Store profiles) then a Fastlane `beta` lane |
+| [`deploy_match_signing.yml`](examples/deploy_match_signing.yml) | Main-only deploy workflow: `match_signing` (read-only App Store profiles) then a Fastlane `beta` lane (or `deploy_testflight` without a Fastfile), with `notify_slack` on failure |
 | [`pipeline_parameters_workflow.yml`](examples/pipeline_parameters_workflow.yml) | Threads a top-level pipeline parameter into `xcode_version` |
 | [`matrix_destinations_workflow.yml`](examples/matrix_destinations_workflow.yml) | `matrix` build of `build_and_test_xcode` across macOS and iPhone 17 simulator destinations |
 

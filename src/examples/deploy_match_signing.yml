@@ -1,9 +1,12 @@
 ---
 description: >
     Main-only deploy workflow: setup syncs read-only App Store signing via
-    Fastlane match, then runs the beta lane to build and ship. Requires
-    match's own environment variables (MATCH_PASSWORD, etc.) and the Qlty
-    coverage token, both supplied via CircleCI contexts.
+    Fastlane match, then runs the beta lane to build and ship (your Fastfile
+    lane can call upload_to_testflight itself, or you can drop it for
+    ios-orb/deploy_testflight if there's no Fastfile). Notifies Slack on
+    failure. Requires match's own environment variables (MATCH_PASSWORD,
+    etc.), the Qlty coverage token, and a Slack webhook, all supplied via
+    CircleCI contexts.
 usage:
     version: 2.1
     orbs:
@@ -23,6 +26,12 @@ usage:
                                 readonly: true
                           - ios-orb/lane:
                                 named: beta
+                          # No Fastfile lane? Replace the step above with:
+                          #   - ios-orb/deploy_testflight:
+                          #         groups: "Internal Testers"
+                          - ios-orb/notify_slack:
+                                on: fail
                       context:
                           - ios_auth      # your context holding QLTY_COVERAGE_TOKEN
                           - match_certs   # your context holding MATCH_PASSWORD, MATCH_APP_IDENTIFIER
+                          - slack_alerts  # your context holding SLACK_WEBHOOK

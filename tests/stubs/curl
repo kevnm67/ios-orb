@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+echo "curl stub: $*" >&2
+echo "curl $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+# Optional controlled failure for callers testing error handling
+# (e.g. a webhook POST that fails).
+if [[ -n "${STUB_CURL_FAIL:-}" ]]; then
+    echo "stub:curl failure" >&2
+    exit 1
+fi
+echo "stub:curl $*"
