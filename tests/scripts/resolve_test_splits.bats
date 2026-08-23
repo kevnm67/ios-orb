@@ -69,7 +69,15 @@ setup() {
 @test "falls back to the full unit list with a warning when circleci CLI is absent" {
     mkdir -p Tests/FooTests Tests/BarTests
     export SPLIT_KIND=spm
-    export PATH="${SYSTEM_PATH}"
+    # cimg/base ships a real `circleci` inside the system paths, so PATH
+    # exclusion is not enough — build an isolated PATH holding only the
+    # binaries the script needs (same pattern as pack-validate.bats).
+    TMPBIN="$(mktemp -d "${BATS_TMPDIR}/nocli.XXXXXX")"
+    for b in bash find sort sed cat dirname mkdir grep basename tr wc; do
+        src="$(command -v "$b" 2>/dev/null)" || continue
+        ln -s "$src" "${TMPBIN}/$b"
+    done
+    export PATH="${TMPBIN}"
     run bash "${SCRIPT}"
     [ "${status}" -eq 0 ]
     [[ "${output}" == *"circleci CLI not found"* ]]
