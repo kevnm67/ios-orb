@@ -1,0 +1,57 @@
+---
+description: |
+    Upload a build to TestFlight. Fastlane-first: pass `lane` to run your own
+    Fastlane lane (recommended for anything beyond the basics). Without
+    `lane`, wraps Fastlane's upload_to_testflight action directly via
+    `bundle exec fastlane run`.
+
+parameters:
+    lane:
+        description: >
+            Fastlane lane to run instead of the built-in upload_to_testflight
+            invocation. When set, every other parameter is ignored.
+        type: string
+        default: ''
+    ipa_path:
+        description: >
+            Path to the .ipa to upload. Empty lets upload_to_testflight infer
+            it from the most recent Gym/Fastlane build.
+        type: string
+        default: ''
+    app_identifier:
+        description: App bundle identifier. Leave empty to infer from the Appfile.
+        type: string
+        default: ''
+    api_key_path:
+        description: >
+            Env var name holding the path to the App Store Connect API key
+            JSON used by upload_to_testflight's api_key_path:.
+        type: env_var_name
+        default: ASC_API_KEY_PATH
+    skip_waiting:
+        description: >
+            Whether to return immediately instead of waiting for build
+            processing (skip_waiting_for_build_processing:true).
+        type: boolean
+        default: true
+    groups:
+        description: Comma-separated beta tester group names to distribute to.
+        type: string
+        default: ''
+    changelog:
+        description: '"What to Test" changelog text for this build.'
+        type: string
+        default: ''
+
+steps:
+    - run:
+          name: Deploy to TestFlight
+          environment:
+              LANE: << parameters.lane >>
+              IPA_PATH: << parameters.ipa_path >>
+              APP_IDENTIFIER: << parameters.app_identifier >>
+              API_KEY_PATH_VAR: << parameters.api_key_path >>
+              SKIP_WAITING: << parameters.skip_waiting >>
+              TESTFLIGHT_GROUPS: << parameters.groups >>
+              CHANGELOG: << parameters.changelog >>
+          command: << include(scripts/deploy_testflight.sh) >>
