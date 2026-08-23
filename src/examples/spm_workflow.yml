@@ -14,7 +14,7 @@ usage:
                 - ios-orb/build_and_test_spm:
                       name: build-and-test
                       xcode_version: '26.6'
-                      context: qlty-credentials
+                      context: ios_auth  # your context holding QLTY_COVERAGE_TOKEN
                 - ios-orb/build_and_test_spm:
                       name: release-build
                       xcode_version: '26.6'

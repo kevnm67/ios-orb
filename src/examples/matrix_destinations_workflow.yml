@@ -1,0 +1,19 @@
+---
+description: >
+    Matrix build of build_and_test_xcode across a macOS destination and an
+    iPhone 17 simulator destination, producing one job per entry from a
+    single workflow declaration.
+usage:
+    version: 2.1
+    orbs:
+        ios-orb: kevnm67/ios-orb@3.1.1
+    workflows:
+        ci:
+            jobs:
+                - ios-orb/build_and_test_xcode:
+                      matrix:
+                          parameters:
+                              destination:
+                                  - platform=macOS
+                                  - platform=iOS Simulator,name=iPhone 17
+                      scheme: MyApp

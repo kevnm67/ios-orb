@@ -1,0 +1,28 @@
+---
+description: >
+    Main-only deploy workflow: setup syncs read-only App Store signing via
+    Fastlane match, then runs the beta lane to build and ship. Requires
+    match's own environment variables (MATCH_PASSWORD, etc.) and the Qlty
+    coverage token, both supplied via CircleCI contexts.
+usage:
+    version: 2.1
+    orbs:
+        ios-orb: kevnm67/ios-orb@3.1.1
+    workflows:
+        deploy:
+            when:
+                equal: [main, << pipeline.git.branch >>]
+            jobs:
+                - ios-orb/run_with_setup:
+                      name: deploy
+                      xcode_version: '26.6'
+                      xcode_project: MyApp
+                      scripts:
+                          - ios-orb/match_signing:
+                                type: appstore
+                                readonly: true
+                          - ios-orb/lane:
+                                named: beta
+                      context:
+                          - ios_auth      # your context holding QLTY_COVERAGE_TOKEN
+                          - match_certs   # your context holding MATCH_PASSWORD, MATCH_APP_IDENTIFIER

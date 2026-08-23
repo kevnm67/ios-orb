@@ -1,0 +1,21 @@
+---
+description: >
+    Threads a top-level pipeline parameter into the Xcode version so the
+    image can be overridden per-trigger (e.g. a scheduled job testing a
+    beta Xcode) without editing the workflow.
+usage:
+    version: 2.1
+    parameters:
+        xcode_version:
+            type: string
+            default: '26.6'
+    orbs:
+        ios-orb: kevnm67/ios-orb@3.1.1
+    workflows:
+        ci:
+            jobs:
+                - ios-orb/build_and_test_xcode:
+                      name: build-and-test
+                      xcode_version: << pipeline.parameters.xcode_version >>
+                      scheme: MyApp
+                      destination: platform=iOS Simulator,name=iPhone 17
