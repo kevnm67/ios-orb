@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `deploy_testflight` command — Fastlane-first TestFlight upload. Pass
+    `lane` to run your own Fastlane lane; otherwise wraps the
+    `upload_to_testflight` action directly via `bundle exec fastlane run`
+    (`ipa_path`, `app_identifier`, `api_key_path`, `skip_waiting`, `groups`,
+    `changelog` parameters).
+- `notify_slack` command — posts a Slack Incoming Webhook notification on
+    job `fail` (default), `success`, or `always`, chosen via three `when:`
+    guarded run steps. Never fails the build: a missing/empty webhook or a
+    `curl` error is logged as a warning and the step exits 0.
+- `tests/stubs/curl` — new stub for `notify_slack`'s bats coverage, with a
+    `STUB_CURL_FAIL` controlled-failure hook matching the `tests/stubs/xcrun`
+    pattern.
+
+## [3.3.0] - 2026-08-23
+
+### Added
+
 - `build_and_test_xcode`: `preboot_simulator` parameter — preboots the
     Simulator device parsed from `destination` before building via the new
     `preboot_simulator` command (`src/scripts/parse_simulator_destination.sh`
@@ -187,7 +204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `build_and_test_xcode` and `build_and_test_spm` flagship jobs, providing
     complete single-job CI for most Xcode and SPM projects respectively.
 
-[Unreleased]: https://github.com/kevnm67/ios-orb/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/kevnm67/ios-orb/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/kevnm67/ios-orb/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/kevnm67/ios-orb/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/kevnm67/ios-orb/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/kevnm67/ios-orb/compare/v3.0.2...v3.1.0
