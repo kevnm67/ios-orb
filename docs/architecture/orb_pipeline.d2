@@ -145,3 +145,7 @@ orb.commands.upload -> qlty: "coverage_publish" {class: uses}
 orb.commands.setup -> bundled.macos: "switch-ruby" {class: faint}
 orb.commands.setup -> bundled.ruby: "install-deps" {class: faint}
 orb.commands.upload -> bundled.qorb {class: faint}
+
+# Opaque dark canvas so the diagram stays legible on GitHub light mode (README) —
+# all diagrams are dark-themed by rule; no light render exists.
+style.fill: ${c.bg}

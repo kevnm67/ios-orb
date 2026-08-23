@@ -69,10 +69,7 @@ workflows:
 
 ## Architecture
 
-<picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/orb_pipeline.svg">
-    <img src="docs/architecture/orb_pipeline-light.svg" alt="ios-orb architecture">
-</picture>
+![ios-orb architecture](docs/architecture/orb_pipeline.svg)
 
 ---
 
