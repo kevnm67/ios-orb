@@ -23,9 +23,15 @@ orb.yml
 .vscode
 /src/ios.yml
 
-# Claude Code — commit project agents, keep local settings out
+# Claude Code — commit project agents/skills/hooks/settings, keep local
+# settings out. Negating a path inside an ignored directory requires the
+# `.claude/*` form (a trailing-slash `.claude/` pattern can't be un-ignored
+# piecemeal), which is why the entries below stay this shape.
 .claude/*
 !.claude/agents/
+!.claude/skills/
+!.claude/hooks/
+!.claude/settings.json
 Icon?
 
 # Fastlane fixture (tests/fixture) — CI-only outputs
