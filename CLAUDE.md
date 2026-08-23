@@ -45,7 +45,7 @@ Standard CircleCI unpacked-orb layout — `circleci config pack src` assembles `
 
 Two layers:
 
-1. **bats unit tests** (`tests/scripts/*.bats`) — one bats file per `src/scripts/*.sh`. External binaries (xcodebuild, swiftlint, brew, bundle, …) are stubbed via `tests/stubs/`, which prepend to `PATH` and append invocations to `$STUB_CALL_LOG`; tests assert on that log. When adding a script, add a matching bats file and any missing stubs. CI runs these under kcov and publishes coverage to Qlty.
+1. **bats unit tests** — one bats file per shell script: `tests/scripts/*.bats` for `src/scripts/*.sh`, `tests/ci/*.bats` for `scripts/ci/*.sh`, `tests/hooks/*.bats` for `.claude/hooks/*.sh` (~260 tests total; `bats tests/scripts tests/ci tests/hooks`). External binaries (xcodebuild, swiftlint, brew, bundle, …) are stubbed via `tests/stubs/`, which prepend to `PATH` and append invocations to `$STUB_CALL_LOG`; tests assert on that log. When adding a script, add a matching bats file and any missing stubs. CI runs these under kcov and publishes coverage to Qlty.
 2. **Integration fixtures** in `.circleci/test-deploy.yml` on a real macOS executor: `fixture-test` builds/tests the XcodeGen iOS app in `tests/fixture/` with the raw `build_xcode`/`test_xcode` commands; `fastlane-fixture-test` runs the same app through `setup` (Ruby 3.3 + bundle) and the `scan` lane in `tests/fixture/fastlane/Fastfile` — this is the proof that the orb's Ruby default resolves on the current image (`scripts/ci/assert-ruby-version.sh`); `spm-fixture-test` covers the pure-SPM path (`tests/fixture-spm/`). Both Xcode fixtures enforce an 80% coverage gate (`scripts/ci/check-coverage-threshold.sh`).
 
 ### CI pipeline
