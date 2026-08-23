@@ -15,6 +15,10 @@ parameters:
         description: Path to test reports.
         type: string
         default: ./fastlane/test_output
+    gym_logs_path:
+        description: Path to Fastlane gym (build) logs.
+        type: string
+        default: ~/Library/Logs/gym
 
 steps:
     - store_artifacts:
@@ -27,7 +31,7 @@ steps:
           destination: scan-logs
     - store_artifacts:
           name: Store gym artifacts
-          path: ~/Library/Logs/gym
+          path: << parameters.gym_logs_path >>
           destination: gym-logs
     - store_artifacts:
           name: Store build logs/diagnostic artifacts

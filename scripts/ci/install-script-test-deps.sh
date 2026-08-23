@@ -8,8 +8,15 @@ set -euo pipefail
 KCOV_VERSION="${KCOV_VERSION:-v43}"
 KCOV_PREFIX="${KCOV_PREFIX:-$HOME/kcov}"
 
-sudo apt-get update -qq
-sudo apt-get install -y bats cmake g++ binutils-dev libssl-dev \
+# Some executors (e.g. already-root containers) have no sudo binary at all.
+if [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+else
+    SUDO="sudo"
+fi
+
+${SUDO} apt-get update -qq
+${SUDO} apt-get install -y bats cmake g++ binutils-dev libssl-dev \
     libcurl4-openssl-dev libdw-dev libiberty-dev zlib1g-dev
 
 if [ ! -x "${KCOV_PREFIX}/bin/kcov" ]; then
@@ -23,7 +30,7 @@ if [ ! -x "${KCOV_PREFIX}/bin/kcov" ]; then
     rm -rf "$workdir"
 fi
 
-sudo ln -sf "${KCOV_PREFIX}/bin/kcov" /usr/local/bin/kcov
+${SUDO} ln -sf "${KCOV_PREFIX}/bin/kcov" /usr/local/bin/kcov
 
 bats --version
 kcov --version | head -1

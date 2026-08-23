@@ -14,23 +14,25 @@ jobs:
     script-tests:
         docker:
             - image: cimg/base:current
+        environment:
+            KCOV_VERSION: v43
         steps:
             - checkout
             - restore_cache:
                   keys:
-                      - kcov-v43-{{ arch }}
+                      - kcov-{{ .Environment.KCOV_VERSION }}-{{ arch }}
             - run:
                   name: Install bats-core and kcov
                   command: ./scripts/ci/install-script-test-deps.sh
             - save_cache:
-                  key: kcov-v43-{{ arch }}
+                  key: kcov-{{ .Environment.KCOV_VERSION }}-{{ arch }}
                   paths:
                       - ~/kcov
             - run:
                   name: Run bats + kcov coverage
                   command: ./scripts/ci/run-script-tests.sh
             - run:
-                  name: hook-tests
+                  name: Run hook and CI script tests
                   command: bats tests/hooks tests/ci
             - qlty/coverage_publish:
                   files: coverage/cobertura.xml

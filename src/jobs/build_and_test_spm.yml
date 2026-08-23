@@ -45,6 +45,14 @@ parameters:
         description: Steps to run before build.
         type: steps
         default: []
+    parallel:
+        description: Whether to run tests in parallel.
+        type: boolean
+        default: true
+    report_path:
+        description: Directory the JUnit report is written to and stored from.
+        type: string
+        default: build/reports
 
 parallelism: << parameters.parallelism >>
 
@@ -59,6 +67,8 @@ steps:
     - test_spm:
           filter: << parameters.filter >>
           coverage: << parameters.coverage >>
+          parallel: << parameters.parallel >>
+          report_path: << parameters.report_path >>
     - when:
           condition: << parameters.coverage >>
           steps:

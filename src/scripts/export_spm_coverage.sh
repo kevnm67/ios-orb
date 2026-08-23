@@ -3,6 +3,7 @@
 # Converts llvm-cov profdata -> lcov. The file is uploaded as-is with
 # format=lcov — never renamed to .xml, which would mislabel it as cobertura.
 # Non-fatal: exits 0 even if coverage export fails (CI should not break on coverage)
+set -euo pipefail
 
 BUILD_DIR=$(swift build --show-bin-path 2>/dev/null || echo "")
 
@@ -11,7 +12,7 @@ if [[ -z "${BUILD_DIR}" ]]; then
     exit 0
 fi
 
-PROFDATA=$(find "${BUILD_DIR}/../" -name "default.profdata" -type f 2>/dev/null | head -1)
+PROFDATA=$(find "${BUILD_DIR}/../" -name "default.profdata" -type f 2>/dev/null | head -1 || true)
 
 if [[ -z "${PROFDATA}" ]]; then
     echo "⚠ No profdata file found. Did tests run with --enable-code-coverage?"
@@ -22,7 +23,7 @@ fi
 TEST_BINARY=""
 
 # Try .xctest bundle first (macOS)
-XCTEST_BUNDLE=$(find "${BUILD_DIR}" -name "*.xctest" -type d 2>/dev/null | head -1)
+XCTEST_BUNDLE=$(find "${BUILD_DIR}" -name "*.xctest" -type d 2>/dev/null | head -1 || true)
 if [[ -n "${XCTEST_BUNDLE}" ]]; then
     EXEC_NAME=$(basename "${XCTEST_BUNDLE}" .xctest)
     CANDIDATE="${XCTEST_BUNDLE}/Contents/MacOS/${EXEC_NAME}"
@@ -33,7 +34,7 @@ fi
 
 # Fallback: look for any test executable
 if [[ -z "${TEST_BINARY}" ]]; then
-    TEST_BINARY=$(find "${BUILD_DIR}" -type f -perm -111 -name "*Tests" 2>/dev/null | head -1)
+    TEST_BINARY=$(find "${BUILD_DIR}" -type f -perm -111 -name "*Tests" 2>/dev/null | head -1 || true)
 fi
 
 if [[ -z "${TEST_BINARY}" ]]; then
@@ -53,7 +54,8 @@ xcrun llvm-cov export \
     > coverage.lcov 2>/dev/null || true
 
 if [[ -s coverage.lcov ]]; then
-    echo "-> Coverage exported to coverage.lcov ($(wc -l < coverage.lcov) lines)"
+    LINE_COUNT=$(wc -l < coverage.lcov || echo 0)
+    echo "-> Coverage exported to coverage.lcov (${LINE_COUNT} lines)"
 else
     echo "⚠ Coverage export produced empty output. Skipping."
     exit 0

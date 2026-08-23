@@ -8,7 +8,7 @@ parameters:
     key:
         description: Cache key (prefixed).  The key is immutable.
         type: string
-        default: spm-v1
+        default: spm-v2
     xcode_project:
         description: |
             Name of your xcodeproj for setting the path to the Package.resolved
