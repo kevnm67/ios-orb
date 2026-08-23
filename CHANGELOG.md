@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-08-23
+
 ### Added
 
 - `deploy_testflight` command — Fastlane-first TestFlight upload. Pass
@@ -204,7 +206,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `build_and_test_xcode` and `build_and_test_spm` flagship jobs, providing
     complete single-job CI for most Xcode and SPM projects respectively.
 
-[Unreleased]: https://github.com/kevnm67/ios-orb/compare/v3.3.0...HEAD
+[unreleased]: https://github.com/kevnm67/ios-orb/compare/v3.4.0...HEAD
+[3.4.0]: https://github.com/kevnm67/ios-orb/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/kevnm67/ios-orb/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/kevnm67/ios-orb/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/kevnm67/ios-orb/compare/v3.1.0...v3.1.1

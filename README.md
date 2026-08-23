@@ -65,7 +65,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
 version: 2.1
 
 orbs:
-    ios: kevnm67/ios-orb@3.2.0
+    ios: kevnm67/ios-orb@3.4.0
 
 workflows:
     build-test:
@@ -834,7 +834,7 @@ the orb or by the Fastlane/xcodebuild tooling it shells out to:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.2.0
+    ios-orb: kevnm67/ios-orb@3.4.0
 
 workflows:
     pr:
@@ -874,7 +874,7 @@ workflows:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.2.0
+    ios-orb: kevnm67/ios-orb@3.4.0
 
 workflows:
     ci:
@@ -894,7 +894,7 @@ workflows:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.2.0
+    ios-orb: kevnm67/ios-orb@3.4.0
 
 workflows:
     deploy:
@@ -935,7 +935,7 @@ parameters:
         default: "26.6"
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.2.0
+    ios-orb: kevnm67/ios-orb@3.4.0
 
 workflows:
     ci:
@@ -952,7 +952,7 @@ workflows:
 version: 2.1
 
 orbs:
-    ios-orb: kevnm67/ios-orb@3.2.0
+    ios-orb: kevnm67/ios-orb@3.4.0
 
 workflows:
     ci:
