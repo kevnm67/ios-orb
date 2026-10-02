@@ -20,5 +20,5 @@ display:
 
 orbs:
     macos: circleci/macos@3.0.0
-    ruby: circleci/ruby@3.0.0
+    ruby: circleci/ruby@4.0.0
     qlty: qltysh/qlty-orb@0.1.2
