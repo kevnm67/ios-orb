@@ -60,3 +60,30 @@ setup() {
     [ "${status}" -eq 0 ]
     [[ "${output}" == *"already installed"* ]]
 }
+
+@test "tolerates non-zero brew install when the formula is installed afterwards" {
+    TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
+    mkdir -p "${TMPBIN}"
+    cp "${STUBS}/brew_failing" "${TMPBIN}/brew"
+    chmod +x "${TMPBIN}/brew"
+    export PATH="${TMPBIN}:${SYSTEM_PATH}"
+    export BREW_STUB_INSTALLED=1
+    export TOOLS="imagemagick"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    [[ "${output}" == *"continuing"* ]]
+    grep -q "^brew list --formula imagemagick" "${STUB_CALL_LOG}"
+}
+
+@test "fails when brew install fails and the formula is not installed" {
+    TMPBIN="${BATS_TMPDIR}/bin_${BATS_TEST_NUMBER}"
+    mkdir -p "${TMPBIN}"
+    cp "${STUBS}/brew_failing" "${TMPBIN}/brew"
+    chmod +x "${TMPBIN}/brew"
+    export PATH="${TMPBIN}:${SYSTEM_PATH}"
+    export BREW_STUB_INSTALLED=0
+    export TOOLS="imagemagick"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 1 ]
+    [[ "${output}" == *"not installed"* ]]
+}

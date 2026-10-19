@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# brew stub: `install` exits 1; `list --formula <name>` succeeds iff BREW_STUB_INSTALLED=1.
+echo "brew $*" >> "${STUB_CALL_LOG:-/tmp/stub_calls.log}"
+case "$1" in
+    install) exit 1 ;;
+    list) [ "${BREW_STUB_INSTALLED:-0}" = 1 ] ;;
+esac
