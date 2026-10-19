@@ -1,0 +1,8 @@
+(** -> **)[*].style.font-size: 14
+direction: down
+title: {label: "Coverage flow"; near: top-center; shape: text; style.font-size: 28}
+jobs: "build_and_test_xcode / build_and_test_spm / test_with_qlty"
+exp: "export_coverage\nxcresult to cobertura via xcresultparser, or SPM llvm-cov"
+up: "upload_qlty_coverage\nqltysh/qlty-orb coverage_publish\nrequires QLTY_COVERAGE_TOKEN"
+qlty: "Qlty Cloud"
+jobs -> exp -> up -> qlty

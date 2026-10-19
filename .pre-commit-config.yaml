@@ -21,3 +21,11 @@ repos:
       hooks:
           - id: yamlfmt
             args: [--mapping, '4']
+
+    - repo: local
+      hooks:
+          - id: check-no-ascii-diagrams
+            name: no ASCII diagrams (use D2)
+            entry: scripts/ci/check-no-ascii-diagrams.py
+            language: script
+            types: [markdown]
