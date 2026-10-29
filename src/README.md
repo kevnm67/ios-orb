@@ -152,6 +152,8 @@ tests, exports coverage, and uploads to Qlty Cloud.
 | `test_target` | string | `""` | Test target name used to scope `-only-testing` filters when `split_tests` is enabled (defaults to the scheme name) |
 | `derived_data_cache` | boolean | `false` | Restore/save a best-effort DerivedData cache keyed on `project.yml`/`project.pbxproj` before building and after testing |
 | `junit_source` | enum | `xcbeautify` | How to produce the JUnit report: `xcbeautify` or `xcresultparser` |
+| `xcargs` | string | `""` | Extra `xcodebuild` arguments / build settings, word-split and appended last (e.g. `CODE_SIGNING_ALLOWED=NO` for unsigned builds) |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 ### `build_and_test_spm`
 
@@ -174,6 +176,9 @@ coverage, and optionally uploads to Qlty Cloud.
 | `test_framework` | enum | `auto` | Which test framework to run: `auto`, `xctest`, or `swift-testing` |
 | `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
 | `split_tests` | boolean | `false` | Discover `Tests/` target subdirectories and split them across parallel test nodes via `circleci tests split` before testing |
+| `package_path` | string | `.` | Directory containing `Package.swift`, relative to the repo root (e.g. `Packages/MyCore`); build, test, coverage export and the `.build` cache all use it |
+| `coverage_threshold` | integer | `0` | Minimum line coverage percent (0-100); the job fails below it, after the Qlty upload. `0` disables the gate |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 ---
 
@@ -189,13 +194,13 @@ coverage, and optionally uploads to Qlty Cloud.
 | `swiftformat` | Install and run SwiftFormat (check-only lint mode by default) | `lint` (default: `true`), `config`, `paths` (default: `.`) |
 | `periphery_scan` | Install Periphery and scan for unused Swift code | `config`, `strict`, `extra_args` |
 | `upload_dsyms` | Install sentry-cli and upload dSYMs to Sentry | `dsym_path` (default: `.`), `sentry_org`, `sentry_project`, `auth_token` (default: `SENTRY_AUTH_TOKEN`), `skip_errors` |
-| `notarize_macos` | Notarize and staple a macOS `.app` bundle via `notarytool` | `app_path`, `api_key_path` (default: `ASC_KEY_PATH`), `api_key_id` (default: `ASC_KEY_ID`), `api_issuer_id` (default: `ASC_ISSUER_ID`), `staple` (default: `true`) |
+| `notarize_macos` | Notarize and staple a macOS `.app` bundle via `notarytool` | `app_path`, `api_key_path` (default: `ASC_KEY_PATH`), `api_key_id` (default: `ASC_KEY_ID`), `api_issuer_id` (default: `ASC_ISSUER_ID`), `staple` (default: `true`), `step_timeout` (default: `0`) |
 | `lane` | Run a Fastlane lane | `named` |
 | `match_signing` | Sync code signing via Fastlane Match | `type` (default: `appstore`), `readonly`, `app_identifier` |
-| `build_xcode` | `xcodebuild build` piped through xcbeautify | `scheme`, `project`, `destination`, `configuration` |
-| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` (default: `test-results.xml`), `retry_on_failure`, `test_iterations` (default: `3`), `test_target`, `junit_source` (`xcbeautify` or `xcresultparser`) |
-| `build_spm` | `swift build` piped through xcbeautify | `configuration`, `build_flags` |
-| `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` (default: `build/reports`), `test_framework` (`auto`, `xctest`, or `swift-testing`) |
+| `build_xcode` | `xcodebuild build` piped through xcbeautify | `scheme`, `project`, `destination`, `configuration`, `xcargs`, `step_timeout` |
+| `test_xcode` | `xcodebuild test` with coverage + JUnit report | `scheme`, `project`, `destination`, `result_bundle_path`, `junit_report` (default: `test-results.xml`), `retry_on_failure`, `test_iterations` (default: `3`), `test_target`, `junit_source` (`xcbeautify` or `xcresultparser`), `xcargs`, `step_timeout` |
+| `build_spm` | `swift build` piped through xcbeautify | `configuration`, `build_flags`, `package_path` (default: `.`), `step_timeout` |
+| `test_spm` | `swift test` with coverage, `--parallel` and JUnit report | `filter`, `parallel`, `coverage`, `report_path` (default: `build/reports`), `test_framework` (`auto`, `xctest`, or `swift-testing`), `package_path` (default: `.`), `step_timeout` |
 | `create_release_tag` | Tag and push the next `vX.Y.Z` release | `version_source` (`git-describe` or `marketing-version`) |
 | `brew_install` | Install a Homebrew formula with caching | `formula`, `reinstall`, `with_cache`, `brew_cache_key`, `brew_dir`, `cellar_dir`, `post_steps` |
 | `restore_brew` | Restore the Homebrew cache written by `brew_install` | `brew_cache_key` (default: `brew-v1`) |
@@ -207,7 +212,8 @@ coverage, and optionally uploads to Qlty Cloud.
 | `save_build_artifacts` | Store build logs and test results | `logs_path`, `build_logs_path`, `test_output_path`, `gym_logs_path` |
 | `test_with_qlty` | Run tests and upload coverage to Qlty Cloud | `lane`, `pretest_steps`, `test_steps`, `result_bundle_path`, `coverage_file`, `qlty_tag`, `qlty_skip_errors`, `xcode_project` |
 | `upload_qlty_coverage` | Upload a coverage file to Qlty Cloud | `file`, `format`, `tag`, `token`, `skip_errors` |
-| `export_coverage` | Export coverage — `spm` → `coverage.lcov` (lcov), `xcode` → `coverage.xml` (cobertura) | `type` (`spm` or `xcode`), `result_bundle` |
+| `export_coverage` | Export coverage — `spm` → `coverage.lcov` (lcov), `xcode` → `coverage.xml` (cobertura) | `type` (`spm` or `xcode`), `result_bundle`, `package_path` (default: `.`) |
+| `check_coverage_threshold` | Fail the job when lcov line coverage is below a minimum percent | `file` (default: `coverage.lcov`), `threshold` (default: `0` = off) |
 | `preboot_simulator` | Preboot the Simulator device parsed from a `destination` string (no-op for non-simulator destinations) | `destination` |
 | `assert_xcode_channel` | Fail fast if `xcode_version` looks like a beta/build-string image | `xcode_version`, `allow_beta` (default: `false`) |
 | `deploy_testflight` | Upload a build to TestFlight (Fastlane-first: pass `lane`, or wraps `upload_to_testflight` directly) | `lane`, `ipa_path`, `app_identifier`, `api_key_path` (default: `ASC_API_KEY_PATH`), `skip_waiting` (default: `true`), `groups`, `changelog` |
@@ -241,6 +247,18 @@ Full type/default/description detail for the "Key Parameters" named above.
 | `deploy_testflight` | `changelog` | string | `""` | "What to Test" changelog text for this build |
 | `export_coverage` | `type` | enum | — | Coverage source: `spm` (→ `coverage.lcov`) or `xcode` (→ `coverage.xml`) |
 | `export_coverage` | `result_bundle` | string | `TestResults.xcresult` | Path to the xcresult bundle (only used when `type` is `xcode`) |
+| `export_coverage` | `package_path` | string | `.` | (spm) Directory containing `Package.swift`, relative to the repo root |
+| `check_coverage_threshold` | `file` | string | `coverage.lcov` | Path to the lcov coverage file |
+| `check_coverage_threshold` | `threshold` | integer | `0` | Minimum line coverage percent (0-100) required to pass. `0` disables the gate |
+| `build_xcode` | `xcargs` | string | `""` | Extra `xcodebuild` arguments / build settings, word-split and appended last (e.g. `CODE_SIGNING_ALLOWED=NO`) |
+| `build_xcode` | `step_timeout` | integer | `0` | Wall-clock limit in seconds (`0` = none); fails with exit 124 and an explicit message on expiry |
+| `test_xcode` | `xcargs` | string | `""` | Extra `xcodebuild` arguments / build settings, word-split and appended last |
+| `test_xcode` | `step_timeout` | integer | `0` | Wall-clock limit in seconds (`0` = none); fails with exit 124 and an explicit message on expiry |
+| `build_spm` | `package_path` | string | `.` | Directory containing `Package.swift`, relative to the repo root |
+| `build_spm` | `step_timeout` | integer | `0` | Wall-clock limit in seconds (`0` = none); fails with exit 124 and an explicit message on expiry |
+| `test_spm` | `package_path` | string | `.` | Directory containing `Package.swift`, relative to the repo root |
+| `test_spm` | `step_timeout` | integer | `0` | Wall-clock limit in seconds (`0` = none); fails with exit 124 and an explicit message on expiry |
+| `notarize_macos` | `step_timeout` | integer | `0` | Wall-clock limit in seconds (`0` = none); fails with exit 124 and an explicit message on expiry |
 | `preboot_simulator` | `destination` | string | — | Build/test destination string to parse for a simulator device name |
 | `resolve_test_splits` | `split_kind` | enum | — | Which project type to discover test units for: `xcode` or `spm` |
 | `resolve_test_splits` | `test_targets_dir` | string | `Tests` | (spm) Directory whose immediate subdirectories are treated as test target names |
@@ -301,6 +319,7 @@ See the [`src/examples/`](examples/) directory for complete workflow examples:
 | [`run_tests.yml`](examples/run_tests.yml) | Simple Fastlane test runner |
 | [`xcodegen_workflow.yml`](examples/xcodegen_workflow.yml) | Hand-rolled two-stage Fastlane workflow on the `macos` executor |
 | [`spm_workflow.yml`](examples/spm_workflow.yml) | `build_and_test_spm` for pure Swift packages (no Fastfile) — debug test+coverage plus a release build |
+| [`spm_package_path_workflow.yml`](examples/spm_package_path_workflow.yml) | `build_and_test_spm` for a package in a subdirectory (`package_path`) with an 85% `coverage_threshold` gate and a `step_timeout` |
 | [`xcode_single_job_workflow.yml`](examples/xcode_single_job_workflow.yml) | `build_and_test_xcode` no-Fastfile path — XcodeGen + raw `xcodebuild` in one job |
 | [`deploy_match_signing.yml`](examples/deploy_match_signing.yml) | Main-only deploy workflow: `match_signing` (read-only App Store profiles) then a Fastlane `beta` lane (or `deploy_testflight` without a Fastfile), with `notify_slack` on failure |
 | [`pipeline_parameters_workflow.yml`](examples/pipeline_parameters_workflow.yml) | Threads a top-level pipeline parameter into `xcode_version` |

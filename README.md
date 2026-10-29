@@ -39,6 +39,7 @@ and executors for building, testing, and deploying iOS/macOS apps.
     - [test\_with\_qlty](#test_with_qlty)
     - [upload\_qlty\_coverage](#upload_qlty_coverage)
     - [export\_coverage](#export_coverage)
+    - [check\_coverage\_threshold](#check_coverage_threshold)
     - [preboot\_simulator](#preboot_simulator)
     - [assert\_xcode\_channel](#assert_xcode_channel)
     - [upload\_dsyms](#upload_dsyms)
@@ -289,6 +290,8 @@ steps:
 | `project` | string | `""` | Path to the `.xcodeproj` file (empty = default project in the directory) |
 | `destination` | string | `platform=macOS` | Build destination (e.g. `platform=macOS` or `platform=iOS Simulator,name=iPhone 17`) |
 | `configuration` | string | `Debug` | Build configuration (Debug or Release) |
+| `xcargs` | string | `""` | Extra `xcodebuild` arguments / build settings, word-split and appended last (e.g. `CODE_SIGNING_ALLOWED=NO` for unsigned builds) |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 **`test_xcode` parameters**
 
@@ -303,6 +306,8 @@ steps:
 | `test_iterations` | integer | `3` | Maximum iterations per test when `retry_on_failure` is enabled (`xcodebuild -test-iterations`) |
 | `test_target` | string | `""` | Test target name used to scope `-only-testing` filters when a test-splits file is present on `TEST_SPLITS_FILE` (see [`resolve_test_splits`](#resolve_test_splits)). Leave empty to default to the scheme name |
 | `junit_source` | enum | `xcbeautify` | How to produce the JUnit report: `xcbeautify` (default) uses xcbeautify's own JUnit reporter; `xcresultparser` runs plain xcodebuild through xcbeautify (no report) and separately converts the xcresult bundle to JUnit XML with xcresultparser, installing it via Homebrew if missing |
+| `xcargs` | string | `""` | Extra `xcodebuild` arguments / build settings, word-split and appended last (e.g. `CODE_SIGNING_ALLOWED=NO` for unsigned builds) |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 ### `build_spm` / `test_spm`
 
@@ -328,6 +333,8 @@ steps:
 |-----------|------|---------|-------------|
 | `build_flags` | string | `""` | Additional flags to pass to `swift build` |
 | `configuration` | string | `debug` | Build configuration (debug or release) |
+| `package_path` | string | `.` | Directory containing `Package.swift`, relative to the repo root (e.g. `Packages/MyCore`); the step runs from there |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 **`test_spm` parameters**
 
@@ -338,6 +345,8 @@ steps:
 | `coverage` | boolean | `true` | Whether to enable code coverage collection |
 | `report_path` | string | `build/reports` | Directory the JUnit report is written to and stored from |
 | `test_framework` | enum | `auto` | Which test framework to run: `auto` detects Swift Testing via `import Testing` in `Tests/` (else xctest), or force `xctest` / `swift-testing`. `swift-testing` forces `--parallel` and writes an xunit report via `swift test --xunit-output` |
+| `package_path` | string | `.` | Directory containing `Package.swift`, relative to the repo root (e.g. `Packages/MyCore`); the step runs from there |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 ### `create_release_tag`
 
@@ -533,6 +542,7 @@ Export code coverage for upload. `type: spm` (`llvm-cov`) writes lcov to
 |-----------|------|---------|-------------|
 | `type` | enum | — | Coverage source: `spm` (→ `coverage.lcov`) or `xcode` (→ `coverage.xml`) |
 | `result_bundle` | string | `TestResults.xcresult` | Path to xcresult bundle (Xcode only) |
+| `package_path` | string | `.` | (spm) Directory containing `Package.swift`, relative to the repo root (e.g. `Packages/MyCore`); the step runs from there |
 
 ```yaml
 steps:
@@ -546,6 +556,29 @@ steps:
     - ios/upload_qlty_coverage:
         file: coverage.lcov
         format: lcov
+```
+
+### `check_coverage_threshold`
+
+Fail the job when line coverage in an lcov file (for example the
+`coverage.lcov` written by `export_coverage` with `type: spm`) is below a
+minimum percent. Line coverage is computed from the file's `LF`/`LH`
+totals, falling back to `DA` records. A threshold of `0` (the default)
+disables the gate; with a threshold set, a missing or empty file also
+fails the step. `build_and_test_spm` wires this via `coverage_threshold`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `file` | string | `coverage.lcov` | Path to the lcov coverage file |
+| `threshold` | integer | `0` | Minimum line coverage percent (0-100) required to pass. `0` disables the gate |
+
+```yaml
+steps:
+    - ios/export_coverage:
+        type: spm
+    - ios/check_coverage_threshold:
+        file: coverage.lcov
+        threshold: 85
 ```
 
 ### `preboot_simulator`
@@ -627,6 +660,7 @@ steps:
 | `api_key_id` | env_var_name | `ASC_KEY_ID` | Env var name holding the App Store Connect API key ID |
 | `api_issuer_id` | env_var_name | `ASC_ISSUER_ID` | Env var name holding the App Store Connect API issuer ID |
 | `staple` | boolean | `true` | Whether to staple the notarization ticket to the app after a successful submission |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 ### `deploy_testflight`
 
@@ -766,6 +800,8 @@ Qlty Cloud. Fastlane projects: prefer `run_with_setup` + the `test` job.
 | `test_target` | string | `""` | Test target name used to scope `-only-testing` filters when `split_tests` is enabled. Leave empty to default to the scheme name |
 | `derived_data_cache` | boolean | `false` | Restore/save a best-effort DerivedData cache keyed on `project.yml`/`project.pbxproj` before building and after testing |
 | `junit_source` | enum | `xcbeautify` | How to produce the JUnit report: `xcbeautify` (default) or `xcresultparser` |
+| `xcargs` | string | `""` | Extra `xcodebuild` arguments / build settings, word-split and appended last (e.g. `CODE_SIGNING_ALLOWED=NO` for unsigned builds) |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 ```yaml
 jobs:
@@ -797,6 +833,9 @@ coverage, and optionally uploads to Qlty Cloud.
 | `test_framework` | enum | `auto` | Which test framework to run: `auto`, `xctest`, or `swift-testing` |
 | `allow_beta_xcode` | boolean | `false` | Whether to allow a beta/build-string `xcode_version` instead of failing fast |
 | `split_tests` | boolean | `false` | Discover `Tests/` target subdirectories and split them across parallel test nodes via `circleci tests split` before testing. Only useful with `parallelism` greater than 1 |
+| `package_path` | string | `.` | Directory containing `Package.swift`, relative to the repo root (e.g. `Packages/MyCore`); build, test, coverage export and the `.build` cache all use it. The SPM cache key still hashes the repo-root `Package.resolved` |
+| `coverage_threshold` | integer | `0` | Minimum line coverage percent (0-100); the job fails below it, after the Qlty upload. `0` disables the gate. Requires `coverage: true` |
+| `step_timeout` | integer | `0` | Wall-clock limit in seconds for the step (`0` = no limit). On expiry the step's process group is terminated and it fails with exit code 124 and an "exceeded its Ns timeout" message. Independent of `no_output_timeout` |
 
 ```yaml
 jobs:

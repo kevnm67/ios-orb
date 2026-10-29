@@ -121,6 +121,16 @@ parameters:
         type: enum
         enum: [xcbeautify, xcresultparser]
         default: xcbeautify
+    xcargs:
+        description: Extra xcodebuild arguments or build settings appended to the build and test invocations (e.g. "CODE_SIGNING_ALLOWED=NO" for unsigned
+            builds).
+        type: string
+        default: ''
+    step_timeout:
+        description: Wall-clock limit in seconds applied to each of the build and test steps (0 = no limit). Fails with exit 124 and an explicit message
+            on expiry.
+        type: integer
+        default: 0
 
 parallelism: << parameters.parallelism >>
 
@@ -165,6 +175,8 @@ steps:
           project: << parameters.project >>
           destination: << parameters.destination >>
           configuration: << parameters.configuration >>
+          xcargs: << parameters.xcargs >>
+          step_timeout: << parameters.step_timeout >>
     - when:
           condition: << parameters.split_tests >>
           steps:
@@ -180,6 +192,8 @@ steps:
           test_iterations: << parameters.test_iterations >>
           test_target: << parameters.test_target >>
           junit_source: << parameters.junit_source >>
+          xcargs: << parameters.xcargs >>
+          step_timeout: << parameters.step_timeout >>
     - when:
           condition: << parameters.derived_data_cache >>
           steps:

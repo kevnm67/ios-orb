@@ -30,6 +30,18 @@ parameters:
         type: enum
         enum: [auto, xctest, swift-testing]
         default: auto
+    package_path:
+        description: Directory containing Package.swift, relative to the repo root (e.g. Packages/MyCore).
+        type: string
+        default: .
+    step_timeout:
+        description: |
+            Wall-clock limit in seconds for this step (0 = no limit). On
+            expiry the step's process group is terminated and the step
+            fails with exit code 124 and an explicit "exceeded its Ns
+            timeout" message. Independent of CircleCI's no_output_timeout.
+        type: integer
+        default: 0
 
 steps:
     - run:
@@ -37,12 +49,14 @@ steps:
           command: << include(scripts/xcbeautify_install.sh) >>
     - run:
           name: Run SPM tests
+          working_directory: << parameters.package_path >>
           environment:
               FILTER: << parameters.filter >>
               PARALLEL: << parameters.parallel >>
               COVERAGE: << parameters.coverage >>
               REPORT_PATH: << parameters.report_path >>
               TEST_FRAMEWORK: << parameters.test_framework >>
+              STEP_TIMEOUT: << parameters.step_timeout >>
           command: << include(scripts/spm_test.sh) >>
     - store_test_results:
-          path: << parameters.report_path >>
+          path: << parameters.package_path >>/<< parameters.report_path >>

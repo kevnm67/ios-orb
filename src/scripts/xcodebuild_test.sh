@@ -14,6 +14,8 @@
 #   TEST_SPLITS_FILE   - optional path to a newline-delimited file of test
 #                        class names (written by resolve_test_splits.sh);
 #                        each line adds "-only-testing:TEST_TARGET/<class>"
+#   XCARGS             - extra xcodebuild arguments / build settings, word-split
+#                        and appended last (e.g. "CODE_SIGNING_ALLOWED=NO")
 #   JUNIT_SOURCE       - "xcbeautify" (default) writes the JUnit report via
 #                        xcbeautify's own reporter. "xcresultparser" pipes
 #                        xcodebuild through plain xcbeautify (no report) and
@@ -30,7 +32,31 @@
 #                        bundled by this orb for cobertura export in
 #                        export_xcode_coverage.sh), which wraps xcresulttool
 #                        and does support --output-format junit.
+#   STEP_TIMEOUT  - optional wall-clock limit in seconds (0/empty = off)
 set -euo pipefail
+
+# Optional wall-clock limit: STEP_TIMEOUT seconds (0/empty = off). Re-runs
+# this script under a watchdog and TERMs its whole process group on expiry,
+# failing with exit 124 and a clear message (bash 3.2-compatible; macOS has
+# no `timeout`). Independent of CircleCI's no_output_timeout.
+if [ "${STEP_TIMEOUT:-0}" -gt 0 ] 2> /dev/null && [ -z "${STEP_TIMEOUT_ACTIVE:-}" ]; then
+    TIMED_OUT_MARKER="$(mktemp "${TMPDIR:-/tmp}/step-timeout.XXXXXX")"
+    rm -f "${TIMED_OUT_MARKER}"
+    set -m
+    STEP_TIMEOUT_ACTIVE=1 bash "$0" &
+    STEP_PID=$!
+    (sleep "${STEP_TIMEOUT}" && touch "${TIMED_OUT_MARKER}" && kill -TERM -- "-${STEP_PID}") 2> /dev/null &
+    WATCHDOG_PID=$!
+    STEP_STATUS=0
+    wait "${STEP_PID}" || STEP_STATUS=$?
+    kill -- "-${WATCHDOG_PID}" 2> /dev/null || true
+    if [ -e "${TIMED_OUT_MARKER}" ]; then
+        rm -f "${TIMED_OUT_MARKER}"
+        echo "Error: step exceeded its ${STEP_TIMEOUT}s timeout and was terminated." >&2
+        exit 124
+    fi
+    exit "${STEP_STATUS}"
+fi
 
 JUNIT_REPORT="${JUNIT_REPORT:-test-results.xml}"
 JUNIT_SOURCE="${JUNIT_SOURCE:-xcbeautify}"
@@ -61,6 +87,11 @@ if [ -n "${TEST_SPLITS_FILE:-}" ] && [ -s "${TEST_SPLITS_FILE}" ]; then
         [ -z "${CLASS}" ] && continue
         ARGS+=("-only-testing:${TEST_TARGET}/${CLASS}")
     done < "${TEST_SPLITS_FILE}"
+fi
+
+if [ -n "${XCARGS:-}" ]; then
+    # shellcheck disable=SC2206  # intentional word-splitting of user args
+    ARGS+=(${XCARGS})
 fi
 
 echo "→ Running: xcodebuild ${ARGS[*]}"

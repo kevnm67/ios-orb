@@ -16,6 +16,10 @@ parameters:
         description: Path to the xcresult bundle (only used when type is "xcode").
         type: string
         default: TestResults.xcresult
+    package_path:
+        description: (spm) Directory containing Package.swift, relative to the repo root (e.g. Packages/MyCore).
+        type: string
+        default: .
 
 steps:
     - when:
@@ -24,6 +28,7 @@ steps:
           steps:
               - run:
                     name: Export SPM coverage
+                    working_directory: << parameters.package_path >>
                     when: always
                     command: <<include(scripts/export_spm_coverage.sh)>>
     - when:

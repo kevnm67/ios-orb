@@ -12,6 +12,18 @@ parameters:
         description: Build configuration (debug or release).
         type: string
         default: debug
+    package_path:
+        description: Directory containing Package.swift, relative to the repo root (e.g. Packages/MyCore).
+        type: string
+        default: .
+    step_timeout:
+        description: |
+            Wall-clock limit in seconds for this step (0 = no limit). On
+            expiry the step's process group is terminated and the step
+            fails with exit code 124 and an explicit "exceeded its Ns
+            timeout" message. Independent of CircleCI's no_output_timeout.
+        type: integer
+        default: 0
 
 steps:
     - run:
@@ -19,7 +31,9 @@ steps:
           command: << include(scripts/xcbeautify_install.sh) >>
     - run:
           name: Build SPM package
+          working_directory: << parameters.package_path >>
           environment:
               CONFIGURATION: << parameters.configuration >>
               BUILD_FLAGS: << parameters.build_flags >>
+              STEP_TIMEOUT: << parameters.step_timeout >>
           command: << include(scripts/spm_build.sh) >>
