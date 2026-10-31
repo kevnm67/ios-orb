@@ -24,6 +24,14 @@ parameters:
         description: Whether to staple the notarization ticket to the app after a successful submission.
         type: boolean
         default: true
+    step_timeout:
+        description: |
+            Wall-clock limit in seconds for this step (0 = no limit). On
+            expiry the step's process group is terminated and the step
+            fails with exit code 124 and an explicit "exceeded its Ns
+            timeout" message. Independent of CircleCI's no_output_timeout.
+        type: integer
+        default: 0
 
 steps:
     - run:
@@ -34,4 +42,5 @@ steps:
               API_KEY_ID_VAR: << parameters.api_key_id >>
               API_ISSUER_ID_VAR: << parameters.api_issuer_id >>
               STAPLE: << parameters.staple >>
+              STEP_TIMEOUT: << parameters.step_timeout >>
           command: << include(scripts/notarize_macos.sh) >>

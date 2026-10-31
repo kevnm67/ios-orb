@@ -19,6 +19,21 @@ parameters:
         description: Build configuration (Debug or Release).
         type: string
         default: Debug
+    xcargs:
+        description: |
+            Extra xcodebuild arguments or build settings, word-split and
+            appended to the invocation (e.g. "CODE_SIGNING_ALLOWED=NO" for
+            unsigned builds). Leave empty for none.
+        type: string
+        default: ''
+    step_timeout:
+        description: |
+            Wall-clock limit in seconds for this step (0 = no limit). On
+            expiry the step's process group is terminated and the step
+            fails with exit code 124 and an explicit "exceeded its Ns
+            timeout" message. Independent of CircleCI's no_output_timeout.
+        type: integer
+        default: 0
 
 steps:
     - run:
@@ -31,4 +46,6 @@ steps:
               PROJECT: << parameters.project >>
               DESTINATION: << parameters.destination >>
               CONFIGURATION: << parameters.configuration >>
+              XCARGS: << parameters.xcargs >>
+              STEP_TIMEOUT: << parameters.step_timeout >>
           command: << include(scripts/xcodebuild_build.sh) >>

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `xcargs` parameter on `build_xcode`, `test_xcode` and the
+    `build_and_test_xcode` job — extra `xcodebuild` arguments / build
+    settings appended to the invocation (e.g. `CODE_SIGNING_ALLOWED=NO` for
+    unsigned builds). Default empty = unchanged behaviour. [#134]
+- `package_path` parameter on `build_spm`, `test_spm`, `export_coverage`
+    and the `build_and_test_spm` job (default `.`), and a
+    `coverage_threshold` job parameter backed by the new
+    `check_coverage_threshold` command / `check_lcov_threshold.sh` script
+    that fails the job when lcov line coverage is below the given percent
+    (default `0` = off). [#135]
+- `step_timeout` parameter (seconds, default `0` = off) on `build_xcode`,
+    `test_xcode`, `build_spm`, `test_spm`, `notarize_macos` and both
+    `build_and_test_*` jobs — terminates the step's process group on expiry
+    and fails with exit 124 and an explicit "exceeded its Ns timeout"
+    message, independent of `no_output_timeout`. [#136]
+- `spm_package_path_workflow` usage example.
+
 ## [3.4.0] - 2026-08-23
 
 ### Added

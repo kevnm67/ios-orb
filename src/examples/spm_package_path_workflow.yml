@@ -1,0 +1,20 @@
+---
+description: >
+    Swift package that lives in a subdirectory (a monorepo with an app plus
+    Packages/MyCore). build_and_test_spm runs from package_path, fails the
+    job below an 85% line-coverage gate and caps each build/test step at
+    10 minutes so a hung step fails with a clear message.
+usage:
+    version: 2.1
+    orbs:
+        ios-orb: kevnm67/ios-orb@3.4.0
+    workflows:
+        ci:
+            jobs:
+                - ios-orb/build_and_test_spm:
+                      name: core-package
+                      xcode_version: '26.6'
+                      package_path: Packages/MyCore
+                      coverage_threshold: 85
+                      step_timeout: 600
+                      context: ios_auth  # your context holding QLTY_COVERAGE_TOKEN

@@ -144,3 +144,47 @@ setup() {
     [ "${status}" -eq 0 ]
     ! grep -q "^xcresultparser" "${STUB_CALL_LOG}"
 }
+
+@test "STEP_TIMEOUT terminates a hung step with exit 124 and a clear message" {
+    TMPBIN="${BATS_TMPDIR}/slow_${BATS_TEST_NUMBER}"
+    mkdir -p "${TMPBIN}"
+    printf '#!/usr/bin/env bash\nsleep 30\n' > "${TMPBIN}/xcodebuild"
+    chmod +x "${TMPBIN}/xcodebuild"
+    export PATH="${TMPBIN}:${STUBS}:${SYSTEM_PATH}"
+    export SCHEME=MyApp DESTINATION="platform=macOS" RESULT_BUNDLE_PATH="${BATS_TMPDIR}/to_${BATS_TEST_NUMBER}.xcresult" PROJECT=""
+    export STEP_TIMEOUT=1
+    start=$SECONDS
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 124 ]
+    [[ "${output}" == *"exceeded its 1s timeout"* ]]
+    [ $((SECONDS - start)) -lt 15 ]
+}
+
+@test "STEP_TIMEOUT above the runtime does not change a successful run" {
+    export SCHEME=MyApp DESTINATION="platform=macOS" RESULT_BUNDLE_PATH="${BATS_TMPDIR}/to_${BATS_TEST_NUMBER}.xcresult" PROJECT=""
+    export STEP_TIMEOUT=60
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    [[ "${output}" != *"timeout"* ]]
+}
+
+@test "STEP_TIMEOUT preserves the failing exit status of the step" {
+    TMPBIN="${BATS_TMPDIR}/fail_${BATS_TEST_NUMBER}"
+    mkdir -p "${TMPBIN}"
+    printf '#!/usr/bin/env bash\nexit 65\n' > "${TMPBIN}/xcodebuild"
+    chmod +x "${TMPBIN}/xcodebuild"
+    export PATH="${TMPBIN}:${STUBS}:${SYSTEM_PATH}"
+    export SCHEME=MyApp DESTINATION="platform=macOS" RESULT_BUNDLE_PATH="${BATS_TMPDIR}/to_${BATS_TEST_NUMBER}.xcresult" PROJECT=""
+    export STEP_TIMEOUT=60
+    run bash "${SCRIPT}"
+    [ "${status}" -ne 0 ]
+    [ "${status}" -ne 124 ]
+}
+
+@test "appends XCARGS after the result bundle path" {
+    export SCHEME=MyApp DESTINATION="platform=macOS" RESULT_BUNDLE_PATH="${BATS_TMPDIR}/X.xcresult" PROJECT=""
+    export XCARGS="CODE_SIGNING_ALLOWED=NO"
+    run bash "${SCRIPT}"
+    [ "${status}" -eq 0 ]
+    grep -q "^xcodebuild test -scheme MyApp -destination platform=macOS -enableCodeCoverage YES -resultBundlePath ${RESULT_BUNDLE_PATH} CODE_SIGNING_ALLOWED=NO$" "${STUB_CALL_LOG}"
+}

@@ -1,0 +1,23 @@
+---
+description: |
+    Fail the job when line coverage in an lcov file (e.g. coverage.lcov from
+    export_coverage type spm) is below a minimum percent. Disabled when the
+    threshold is 0.
+
+parameters:
+    file:
+        description: Path to the lcov coverage file.
+        type: string
+        default: coverage.lcov
+    threshold:
+        description: Minimum line coverage percent (0-100) required to pass. 0 disables the gate.
+        type: integer
+        default: 0
+
+steps:
+    - run:
+          name: Check coverage threshold
+          environment:
+              COVERAGE_FILE: << parameters.file >>
+              COVERAGE_THRESHOLD: << parameters.threshold >>
+          command: << include(scripts/check_lcov_threshold.sh) >>
